@@ -26,6 +26,7 @@ coverage
 localtest.sh
 repomix.sh
 doc
+examples/ignored/
 
 ws-private-spot-wsapi-performance.ts
 ws-private-perp-futures-wsapi-readonly.ts
