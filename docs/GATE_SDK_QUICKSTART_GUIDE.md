@@ -1451,7 +1451,7 @@ An authenticated integration usually needs these views:
 | Positions           | Not applicable            | `getFuturesPositions({ settle: 'usdt' })`                  |
 | Open orders         | `getSpotOpenOrders()`     | `getFuturesOrders({ settle: 'usdt', status: 'open' })`     |
 | Recent orders       | `getSpotOrders()`         | `getFuturesOrders({ settle: 'usdt', status: 'finished' })` |
-| Trades              | `getSpotTradingHistory()` | `getFuturesTradingHistory()`                               |
+| Trades              | `getSpotTradingHistory()` | `getFuturesTradingHistory({ settle: 'usdt' })`             |
 
 These REST API views form a reliable [account state](https://siebly.io/reference/glossary#accountstate) baseline before stream updates are applied.
 
@@ -1739,7 +1739,10 @@ Gate TestNet is a separate environment with separate credentials. Use it for all
 | Spot WebSocket           | `wss://ws-testnet.gate.com/v4/ws/spot`         |
 | USDT perpetual WebSocket | `wss://ws-testnet.gate.com/v4/ws/futures/usdt` |
 
-Set the REST API host with `baseUrl` and the WebSocket host with `wsUrl`:
+Set the REST API host with `baseUrl` and the WebSocket host with `wsUrl`. Prefer explicit hosts for TestNet examples:
+
+- Spot WebSocket TestNet is not wired through `useTestnet: true` in this SDK. The Spot testnet map entry is a stub (`NoTestnetForSpotWebsockets!`), so set `wsUrl` to the Spot TestNet host above.
+- For Futures-only REST TestNet, the SDK also accepts `baseUrlKey: 'futuresTestnet'`, which resolves to `https://fx-api-testnet.gateio.ws/api/v4`. The Global TestNet REST host in the table is the host used by the Spot and Futures order examples in this guide.
 
 ```javascript
 import { RestClient, WebsocketClient } from 'gateio-api';
