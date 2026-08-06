@@ -88,10 +88,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tiagosiebler/gateio-api"
+    "url": "git+https://github.com/sieblyio/gateio-api.git"
   },
   "bugs": {
-    "url": "https://github.com/tiagosiebler/gateio-api/issues"
+    "url": "https://github.com/sieblyio/gateio-api/issues"
   },
-  "homepage": "https://github.com/tiagosiebler/gateio-api#readme"
+  "homepage": "https://github.com/sieblyio/gateio-api#readme"
 }
