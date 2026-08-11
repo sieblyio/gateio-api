@@ -162,7 +162,6 @@ webpack/
 .gitignore
 .nvmrc
 .prettierrc
-check-july2026-gaps.ts
 jest.config.ts
 LICENSE.md
 package.json
@@ -1006,93 +1005,6 @@ export interface GetMultiLoanAdjustmentRecordsReq {
 }
 
 ================
-File: src/types/request/stock.ts
-================
-/** Stock / TradFi Spot API request types */
-⋮----
-export interface GetStockUserAssetsReq {
-  pnl_calc_type?: number;
-  pnl_calc_price?: number;
-}
-⋮----
-export interface GetStockSymbolsReq {
-  symbols?: string;
-  exchange?: string;
-  with_desc_i18n?: boolean;
-  page?: number;
-  page_size?: number;
-}
-⋮----
-export interface GetStockSymbolDetailReq {
-  symbols?: string;
-  exchange?: string;
-  page?: number;
-  page_size?: number;
-}
-⋮----
-export interface GetStockOrdersReq {
-  symbol?: string;
-}
-⋮----
-export interface CreateStockOrderReq {
-  volume: string;
-  symbol: string;
-  side: 1 | 2;
-  price_type: 'market' | 'limit';
-  /** Limit: all only; market: regular only */
-  trading_session: 'all' | 'regular';
-  time_in_force: 'day';
-  price?: string;
-  client_order_id?: string;
-}
-⋮----
-/** Limit: all only; market: regular only */
-⋮----
-export interface GetStockOrderHistoryReq {
-  symbol?: string;
-  order_ids?: string;
-  begin_time?: number;
-  end_time?: number;
-  side?: 1 | 2;
-  page?: number;
-  page_size?: number;
-}
-⋮----
-export interface UpdateStockOrderReq {
-  volume: string;
-  price: string;
-}
-⋮----
-export interface GetStockPositionsReq {
-  pnl_calc_type?: number;
-  pnl_calc_price?: number;
-  symbol?: string;
-  exchange?: string;
-}
-⋮----
-export interface CloseStockPositionReq {
-  symbol: string;
-  close_type: 1 | 2;
-  close_volume?: string;
-}
-⋮----
-export interface GetStockTransactionsReq {
-  begin_time?: number;
-  end_time?: number;
-  ref_id?: string;
-  type?: string;
-  page?: number;
-  page_size?: number;
-}
-⋮----
-export interface CreateStockTransactionReq {
-  asset: string;
-  change: string;
-  type: 'deposit' | 'withdraw';
-  ref_id: string;
-}
-
-================
 File: src/types/request/subaccount.ts
 ================
 export interface CreateSubAccountReq {
@@ -1302,229 +1214,6 @@ export interface SubmitFlashSwapOrderPreviewResp {
   buy_currency: string;
   buy_amount: string;
   price: string;
-}
-
-================
-File: src/types/response/stock.ts
-================
-/** Stock / TradFi Spot API response types */
-⋮----
-export interface StockApiResp<T> {
-  timestamp?: number;
-  data?: T;
-  code?: number;
-  message?: string;
-  label?: string;
-}
-⋮----
-export interface StockListData<T> {
-  list?: T[];
-  total?: number;
-  total_page?: number;
-}
-⋮----
-export interface StockUserAssets {
-  equity?: string;
-  balance?: string;
-  available?: string;
-  position_market_value?: string;
-  position_pnl?: string;
-  today_pnl?: string;
-  user_exists?: boolean;
-}
-⋮----
-export interface StockSymbolDescI18n {
-  lang?: string;
-  value?: string;
-}
-⋮----
-export interface StockSymbolItem {
-  symbol?: string;
-  exchange?: string;
-  exchange_desc?: string;
-  quote_currency?: string;
-  quote_currency_precision?: number;
-  fx_rate?: string;
-  symbol_desc?: string;
-  category?: string;
-  trade_status?: string;
-  trade_mode?: number;
-  order_fill_timing?: number;
-  icon_link?: string;
-  quote_currency_symbol?: string;
-  price_precision?: number;
-  volume_precision?: number;
-  is_ipo?: boolean;
-  ipo_price?: string;
-  sell_price_protection?: string;
-  buy_price_protection?: string;
-  symbol_descs?: StockSymbolDescI18n[];
-  timestamp?: number;
-}
-⋮----
-export interface StockSymbolDetailItem {
-  symbol?: string;
-  exchange?: string;
-  exchange_desc?: string;
-  quote_currency?: string;
-  quote_currency_precision?: number;
-  fx_rate?: string;
-  symbol_desc?: string;
-  category?: string;
-  settlement_currency?: string;
-  max_order_volume?: string;
-  step_order_volume?: string;
-  min_order_volume?: string;
-  price_precision?: number;
-  volume_precision?: number;
-  is_ipo?: boolean;
-  ipo_price?: string;
-  price_protection?: string;
-  sell_price_protection?: string;
-  buy_price_protection?: string;
-  slippage_rate?: string;
-  commission_rate?: string;
-  trade_status?: string;
-  trade_mode?: number;
-  order_fill_timing?: number;
-  symbol_descs?: StockSymbolDescI18n[];
-  [key: string]: unknown;
-}
-⋮----
-export interface StockOrderBookLevel {
-  p?: string;
-  user_order?: boolean;
-  [key: string]: unknown;
-}
-⋮----
-export interface StockOrderBook {
-  symbol?: string;
-  bids?: StockOrderBookLevel[];
-  asks?: StockOrderBookLevel[];
-  timestamp?: number;
-}
-⋮----
-export interface StockOrderItem {
-  order_id?: string;
-  symbol?: string;
-  exchange?: string;
-  quote_currency?: string;
-  fx_rate?: string;
-  symbol_desc?: string;
-  trade_status?: string;
-  trade_mode?: number;
-  price_type?: string;
-  side?: number;
-  status?: number;
-  volume?: string;
-  fill_volume?: string;
-  price?: string;
-  time_setup?: number;
-  time_update?: number;
-  max_order_volume?: string;
-  step_order_volume?: string;
-  min_order_volume?: string;
-  price_precision?: number;
-  price_protection?: string;
-  sell_price_protection?: string;
-  buy_price_protection?: string;
-  commission_rate?: string;
-  slippage_rate?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface StockCreateOrderResult {
-  id?: string;
-}
-⋮----
-export interface StockOrderHistoryItem {
-  order_id?: string;
-  symbol?: string;
-  exchange?: string;
-  quote_currency?: string;
-  fx_rate?: string;
-  symbol_desc?: string;
-  price_type?: string;
-  status?: number;
-  status_desc?: string;
-  status_detail?: { title?: string; message?: string } | null;
-  finish_as?: number;
-  side?: number;
-  time_in_force?: string;
-  volume?: string;
-  fill_volume?: string;
-  price?: string;
-  avg_fill_price?: string | null;
-  commission?: string;
-  time_setup?: number;
-  time_done?: number;
-  [key: string]: unknown;
-}
-⋮----
-export interface StockUpdateOrderResult {
-  order_id?: number;
-}
-⋮----
-export interface StockPositionItem {
-  symbol?: string;
-  exchange?: string;
-  quote_currency?: string;
-  quote_currency_precision?: number;
-  fx_rate?: string;
-  trade_status?: string;
-  symbol_desc?: string;
-  position_pnl?: string;
-  today_pnl?: string;
-  pnl_rate?: string;
-  today_sell_amount?: string;
-  today_buy_amount?: string;
-  today_sell_volume?: string;
-  today_buy_volume?: string;
-  yesterday_volume?: string;
-  volume?: string;
-  available?: string;
-  transfer_out_pending_qty?: string;
-  avg_cost_price?: string;
-  diluted_cost_price?: string;
-  last_price?: string;
-  extended_last_price?: string | null;
-  max_order_volume?: string;
-  step_order_volume?: string;
-  min_order_volume?: string;
-  price_precision?: number;
-  price_protection?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface StockClosePositionResult {
-  order_id?: number;
-}
-⋮----
-export interface StockTransactionItem {
-  asset?: string;
-  symbol?: string;
-  symbol_display?: string;
-  type?: string;
-  type_desc?: string;
-  change?: string;
-  balance?: string;
-  ref_id?: string;
-  time?: number;
-  unit_text?: string;
-  detail?: object;
-}
-⋮----
-export interface StockExchangeItem {
-  exchange?: string;
-  exchange_desc?: string;
-  icon_link?: string;
-  support_transfer?: boolean;
-}
-⋮----
-export interface StockFeeRateItem {
-  vip_level?: number;
-  maker_fee?: string;
-  taker_fee?: string;
 }
 
 ================
@@ -2357,15 +2046,6 @@ File: .prettierrc
   "singleQuote": true,
   "trailingComma": "all"
 }
-
-================
-File: check-july2026-gaps.ts
-================
-/**
- * ponytail: assert new July/Aug 2026 endpoints exist on RestClient.
- * Run after build: node --input-type=module check-july2026-gaps.ts
- */
-import { RestClient } from './dist/mjs/RestClient.js';
 
 ================
 File: jest.config.ts
@@ -4474,6 +4154,93 @@ export interface GetPartnerAgentDataAggregatedReq {
    */
 
 ================
+File: src/types/request/stock.ts
+================
+/** Stock / TradFi Spot API request types */
+⋮----
+export interface GetStockUserAssetsReq {
+  pnl_calc_type?: number;
+  pnl_calc_price?: number;
+}
+⋮----
+export interface GetStockSymbolsReq {
+  symbols?: string;
+  exchange?: string;
+  with_desc_i18n?: boolean;
+  page?: number;
+  page_size?: number;
+}
+⋮----
+export interface GetStockSymbolDetailReq {
+  symbols?: string;
+  exchange?: string;
+  page?: number;
+  page_size?: number;
+}
+⋮----
+export interface GetStockOrdersReq {
+  symbol?: string;
+}
+⋮----
+export interface CreateStockOrderReq {
+  volume: string;
+  symbol: string;
+  side: 1 | 2;
+  price_type: 'market' | 'limit';
+  /** Limit: all only; market: regular only */
+  trading_session: 'all' | 'regular';
+  time_in_force: 'day';
+  price?: string;
+  client_order_id?: string;
+}
+⋮----
+/** Limit: all only; market: regular only */
+⋮----
+export interface GetStockOrderHistoryReq {
+  symbol?: string;
+  order_ids?: string;
+  begin_time?: number;
+  end_time?: number;
+  side?: 1 | 2;
+  page?: number;
+  page_size?: number;
+}
+⋮----
+export interface UpdateStockOrderReq {
+  volume: string;
+  price: string;
+}
+⋮----
+export interface GetStockPositionsReq {
+  pnl_calc_type?: number;
+  pnl_calc_price?: number;
+  symbol?: string;
+  exchange?: string;
+}
+⋮----
+export interface CloseStockPositionReq {
+  symbol: string;
+  close_type: 1 | 2;
+  close_volume?: string;
+}
+⋮----
+export interface GetStockTransactionsReq {
+  begin_time?: number;
+  end_time?: number;
+  ref_id?: string;
+  type?: string;
+  page?: number;
+  page_size?: number;
+}
+⋮----
+export interface CreateStockTransactionReq {
+  asset: string;
+  change: string;
+  type: 'deposit' | 'withdraw';
+  ref_id: string;
+}
+
+================
 File: src/types/response/account.ts
 ================
 /**==========================================================================================================================
@@ -5722,6 +5489,229 @@ export interface PartnerDataAggregatedResponse {
   message: string;
   data: PartnerDataAggregated;
   timestamp: number;
+}
+
+================
+File: src/types/response/stock.ts
+================
+/** Stock / TradFi Spot API response types */
+⋮----
+export interface StockApiResp<T> {
+  timestamp?: number;
+  data?: T;
+  code?: number;
+  message?: string;
+  label?: string;
+}
+⋮----
+export interface StockListData<T> {
+  list?: T[];
+  total?: number;
+  total_page?: number;
+}
+⋮----
+export interface StockUserAssets {
+  equity?: string;
+  balance?: string;
+  available?: string;
+  position_market_value?: string;
+  position_pnl?: string;
+  today_pnl?: string;
+  user_exists?: boolean;
+}
+⋮----
+export interface StockSymbolDescI18n {
+  lang?: string;
+  value?: string;
+}
+⋮----
+export interface StockSymbolItem {
+  symbol?: string;
+  exchange?: string;
+  exchange_desc?: string;
+  quote_currency?: string;
+  quote_currency_precision?: number;
+  fx_rate?: string;
+  symbol_desc?: string;
+  category?: string;
+  trade_status?: string;
+  trade_mode?: number;
+  order_fill_timing?: number;
+  icon_link?: string;
+  quote_currency_symbol?: string;
+  price_precision?: number;
+  volume_precision?: number;
+  is_ipo?: boolean;
+  ipo_price?: string;
+  sell_price_protection?: string;
+  buy_price_protection?: string;
+  symbol_descs?: StockSymbolDescI18n[];
+  timestamp?: number;
+}
+⋮----
+export interface StockSymbolDetailItem {
+  symbol?: string;
+  exchange?: string;
+  exchange_desc?: string;
+  quote_currency?: string;
+  quote_currency_precision?: number;
+  fx_rate?: string;
+  symbol_desc?: string;
+  category?: string;
+  settlement_currency?: string;
+  max_order_volume?: string;
+  step_order_volume?: string;
+  min_order_volume?: string;
+  price_precision?: number;
+  volume_precision?: number;
+  is_ipo?: boolean;
+  ipo_price?: string;
+  price_protection?: string;
+  sell_price_protection?: string;
+  buy_price_protection?: string;
+  slippage_rate?: string;
+  commission_rate?: string;
+  trade_status?: string;
+  trade_mode?: number;
+  order_fill_timing?: number;
+  symbol_descs?: StockSymbolDescI18n[];
+  [key: string]: unknown;
+}
+⋮----
+export interface StockOrderBookLevel {
+  p?: string;
+  user_order?: boolean;
+  [key: string]: unknown;
+}
+⋮----
+export interface StockOrderBook {
+  symbol?: string;
+  bids?: StockOrderBookLevel[];
+  asks?: StockOrderBookLevel[];
+  timestamp?: number;
+}
+⋮----
+export interface StockOrderItem {
+  order_id?: string;
+  symbol?: string;
+  exchange?: string;
+  quote_currency?: string;
+  fx_rate?: string;
+  symbol_desc?: string;
+  trade_status?: string;
+  trade_mode?: number;
+  price_type?: string;
+  side?: number;
+  status?: number;
+  volume?: string;
+  fill_volume?: string;
+  price?: string;
+  time_setup?: number;
+  time_update?: number;
+  max_order_volume?: string;
+  step_order_volume?: string;
+  min_order_volume?: string;
+  price_precision?: number;
+  price_protection?: string;
+  sell_price_protection?: string;
+  buy_price_protection?: string;
+  commission_rate?: string;
+  slippage_rate?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface StockCreateOrderResult {
+  id?: string;
+}
+⋮----
+export interface StockOrderHistoryItem {
+  order_id?: string;
+  symbol?: string;
+  exchange?: string;
+  quote_currency?: string;
+  fx_rate?: string;
+  symbol_desc?: string;
+  price_type?: string;
+  status?: number;
+  status_desc?: string;
+  status_detail?: { title?: string; message?: string } | null;
+  finish_as?: number;
+  side?: number;
+  time_in_force?: string;
+  volume?: string;
+  fill_volume?: string;
+  price?: string;
+  avg_fill_price?: string | null;
+  commission?: string;
+  time_setup?: number;
+  time_done?: number;
+  [key: string]: unknown;
+}
+⋮----
+export interface StockUpdateOrderResult {
+  order_id?: number;
+}
+⋮----
+export interface StockPositionItem {
+  symbol?: string;
+  exchange?: string;
+  quote_currency?: string;
+  quote_currency_precision?: number;
+  fx_rate?: string;
+  trade_status?: string;
+  symbol_desc?: string;
+  position_pnl?: string;
+  today_pnl?: string;
+  pnl_rate?: string;
+  today_sell_amount?: string;
+  today_buy_amount?: string;
+  today_sell_volume?: string;
+  today_buy_volume?: string;
+  yesterday_volume?: string;
+  volume?: string;
+  available?: string;
+  transfer_out_pending_qty?: string;
+  avg_cost_price?: string;
+  diluted_cost_price?: string;
+  last_price?: string;
+  extended_last_price?: string | null;
+  max_order_volume?: string;
+  step_order_volume?: string;
+  min_order_volume?: string;
+  price_precision?: number;
+  price_protection?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface StockClosePositionResult {
+  order_id?: number;
+}
+⋮----
+export interface StockTransactionItem {
+  asset?: string;
+  symbol?: string;
+  symbol_display?: string;
+  type?: string;
+  type_desc?: string;
+  change?: string;
+  balance?: string;
+  ref_id?: string;
+  time?: number;
+  unit_text?: string;
+  detail?: object;
+}
+⋮----
+export interface StockExchangeItem {
+  exchange?: string;
+  exchange_desc?: string;
+  icon_link?: string;
+  support_transfer?: boolean;
+}
+⋮----
+export interface StockFeeRateItem {
+  vip_level?: number;
+  maker_fee?: string;
+  taker_fee?: string;
 }
 
 ================
@@ -8479,6 +8469,671 @@ export interface GetAutoInvestPlansReq {
 /** Plan status: e.g. History (history) or Active (active) */
 
 ================
+File: src/types/request/p2pMerchant.ts
+================
+/** P2P Merchant API request types */
+⋮----
+export interface P2PMerchantGetCounterpartyUserInfoReq {
+  biz_uid: string;
+}
+⋮----
+export interface P2PMerchantGetMyselfPaymentReq {
+  fiat?: string;
+}
+⋮----
+export interface P2PMerchantGetPendingTransactionListReq {
+  crypto_currency: string;
+  fiat_currency: string;
+  order_tab?: string;
+  select_type?: string;
+  status?: string;
+  txid?: number;
+  start_time?: number;
+  end_time?: number;
+}
+⋮----
+export interface P2PMerchantGetCompletedTransactionListReq {
+  crypto_currency: string;
+  fiat_currency: string;
+  select_type?: string;
+  status?: string;
+  txid?: number;
+  start_time?: number;
+  end_time?: number;
+  query_dispute?: number;
+  page?: number;
+  per_page?: number;
+}
+⋮----
+export interface P2PMerchantGetTransactionDetailsReq {
+  txid: number;
+  channel?: string;
+}
+⋮----
+export interface P2PMerchantConfirmPaymentReq {
+  trade_id: string;
+  payment_method: string;
+}
+⋮----
+export interface P2PMerchantConfirmReceiptReq {
+  trade_id: string;
+}
+⋮----
+export interface P2PMerchantCancelTransactionReq {
+  trade_id: string;
+  reason_id?: string;
+  reason_memo?: string;
+}
+⋮----
+export interface P2PMerchantPlaceBizPushOrderReq {
+  currencyType: string;
+  exchangeType: string;
+  type: string;
+  unitPrice: string;
+  number: string;
+  payType: string;
+  minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+  maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+  pay_type_json?: string;
+  rateFixed?: string;
+  oid?: string;
+  tierLimit?: string;
+  verifiedLimit?: string;
+  regTimeLimit?: string;
+  advertisersLimit?: string;
+  hide_payment?: string;
+  expire_min?: string;
+  trade_tips?: string;
+  auto_reply?: string;
+  min_completed_limit?: string;
+  max_completed_limit?: string;
+  completed_rate_limit?: string;
+  user_country_limit?: string;
+  user_order_limit?: string;
+  rateReferenceId?: string;
+  rateOffset?: string;
+  float_trend?: string;
+  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
+  fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
+  fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
+  polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
+}
+⋮----
+minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+⋮----
+limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
+fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
+fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
+polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
+⋮----
+/** POST /p2p/merchant/account/set_merchant_work_hours — v4.106.96 */
+export interface P2PMerchantSetMerchantWorkHoursReq {
+  work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
+  cycle_type?: string;
+  day_of_week?: string;
+  time_zone?: string; // UTC offset -12 to +14
+  start_time?: string;
+  end_time?: string;
+}
+⋮----
+work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
+⋮----
+time_zone?: string; // UTC offset -12 to +14
+⋮----
+export interface P2PMerchantAdsUpdateStatusReq {
+  adv_no: number;
+  adv_status: 1 | 3 | 4;
+  /** Optional query param */
+  trade_type?: string;
+}
+⋮----
+/** Optional query param */
+⋮----
+export interface P2PMerchantAdsDetailReq {
+  adv_no: string;
+}
+⋮----
+export interface P2PMerchantMyAdsListReq {
+  asset?: string;
+  fiat_unit?: string;
+  trade_type?: string;
+}
+⋮----
+export interface P2PMerchantGetAdsListReq {
+  asset: string;
+  fiat_unit: string;
+  trade_type: string;
+}
+⋮----
+export interface P2PMerchantGetChatsListReq {
+  txid: number;
+  lastreceived?: number;
+  firstreceived?: number;
+}
+⋮----
+export interface P2PMerchantSendChatMessageReq {
+  txid: number;
+  message: string;
+  /** 0=Text, 1=File (video or image). Default 0 */
+  type?: 0 | 1;
+}
+⋮----
+/** 0=Text, 1=File (video or image). Default 0 */
+⋮----
+export interface P2PMerchantUploadChatFileReq {
+  image_content_type: string;
+  base64_img: string;
+}
+
+================
+File: src/types/response/p2pMerchant.ts
+================
+/** P2P Merchant API response types */
+⋮----
+export interface P2PMerchantApiResp<T> {
+  timestamp: number;
+  method: string;
+  code: number;
+  message: string;
+  data: T;
+  version: string;
+}
+⋮----
+export interface P2PMerchantUserInfo {
+  is_self?: boolean;
+  user_timest?: string;
+  counterparties_num?: number;
+  email_verified?: string;
+  verified?: string;
+  has_phone?: string;
+  user_name?: string;
+  user_note?: string;
+  complete_transactions?: string;
+  paid_transactions?: string;
+  accepted_transactions?: string;
+  transactions_used_time?: string;
+  cancelled_used_time_month?: string;
+  complete_transactions_month?: string;
+  complete_rate_month?: number;
+  orders_buy_rate_month?: number;
+  is_black?: number;
+  is_follow?: number;
+  have_traded?: number;
+  biz_uid?: string;
+  blue_vip?: number;
+  work_status?: number;
+  registration_days?: number;
+  first_trade_days?: number;
+  need_replenish?: number;
+  merchant_info?: { type?: string; market?: string };
+  online_status?: number;
+  work_hours?: Record<string, unknown> | null;
+  transactions_month?: number;
+  transactions_all?: number;
+  trade_versatile?: boolean;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantCounterpartyUserInfo {
+  user_timest?: string;
+  email_verified?: string;
+  verified?: string;
+  has_phone?: string;
+  user_name?: string;
+  user_note?: string;
+  complete_transactions?: string;
+  paid_transactions?: string;
+  accepted_transactions?: string;
+  transactions_used_time?: string;
+  cancelled_used_time_month?: string;
+  complete_transactions_month?: string;
+  complete_rate_month?: number;
+  is_follow?: number;
+  have_traded?: number;
+  biz_uid?: string;
+  registration_days?: number;
+  first_trade_days?: number;
+  trade_versatile?: boolean;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantPaymentMethod {
+  pay_type: string;
+  pay_name: string;
+  ids: number[];
+  list: Record<string, unknown>[];
+}
+⋮----
+export interface P2PMerchantTransactionListItem {
+  type_buy?: number;
+  timest?: string;
+  timest_expire?: string;
+  type?: string;
+  trade_type?: string;
+  timestamp?: number;
+  rate?: string;
+  amount?: string;
+  total?: string;
+  txid?: number;
+  status?: string;
+  order_status?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantTransactionListData {
+  list: P2PMerchantTransactionListItem[];
+  trans_time?: { od_time?: number }[];
+  count: number;
+  exported_num: number;
+}
+⋮----
+export interface P2PMerchantTransactionDetails {
+  is_sell?: number;
+  txid?: number;
+  orderid?: number;
+  timest?: number;
+  last_pay_time?: number;
+  remain_pay_time?: number;
+  currencyType?: string;
+  want_type?: string;
+  rate?: string;
+  amount?: string;
+  total?: string;
+  status?: string;
+  state?: string;
+  its_uid?: string;
+  its_nickname?: string;
+  its_realname?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantAdsDetail {
+  rate?: string;
+  type?: string;
+  amount?: string;
+  min_amount?: string;
+  max_amount?: string;
+  fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
+  fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
+  minFiatAmount?: string; // v4.106.102
+  maxFiatAmount?: string; // v4.106.102
+  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
+  limitBasisText?: string; // v4.106.102
+  polymarket_limit?: string; // v4.106.102
+  total?: string;
+  orderid?: number;
+  timestamp?: number;
+  currencyType?: string;
+  want_type?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+⋮----
+fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
+fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
+minFiatAmount?: string; // v4.106.102
+maxFiatAmount?: string; // v4.106.102
+limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
+limitBasisText?: string; // v4.106.102
+polymarket_limit?: string; // v4.106.102
+⋮----
+export interface P2PMerchantMyAdsListItem {
+  type?: string;
+  rate?: string;
+  amount?: string;
+  total?: string;
+  id?: string;
+  status?: string;
+  currencyType?: string;
+  want_type?: string;
+  fiat_min_amount?: string; // v4.106.102
+  fiat_max_amount?: string; // v4.106.102
+  limit_basis?: string; // v4.106.103
+  limit_basis_text?: string; // v4.106.103
+  [key: string]: unknown;
+}
+⋮----
+fiat_min_amount?: string; // v4.106.102
+fiat_max_amount?: string; // v4.106.102
+limit_basis?: string; // v4.106.103
+limit_basis_text?: string; // v4.106.103
+⋮----
+export interface P2PMerchantMyAdsListData {
+  lists: P2PMerchantMyAdsListItem[];
+}
+⋮----
+export interface P2PMerchantAdsListItem {
+  index?: number;
+  asset?: string;
+  fiat_unit?: string;
+  adv_no?: number;
+  price?: string;
+  max_single_trans_amount?: string;
+  min_single_trans_amount?: string;
+  nick_name?: string;
+  surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
+  trade_methods?: string[]; // v4.106.103: Supported payment methods list
+  fiat_min_amount?: string; // v4.106.103
+  fiat_max_amount?: string; // v4.106.103
+  limit_basis?: string; // v4.106.103
+  limit_basis_text?: string; // v4.106.103
+}
+⋮----
+surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
+trade_methods?: string[]; // v4.106.103: Supported payment methods list
+fiat_min_amount?: string; // v4.106.103
+fiat_max_amount?: string; // v4.106.103
+limit_basis?: string; // v4.106.103
+limit_basis_text?: string; // v4.106.103
+⋮----
+export interface P2PMerchantChatMessage {
+  is_sell?: number;
+  msg_type?: number;
+  msg?: string;
+  username?: string;
+  uid?: string;
+  timest?: number;
+  type?: number;
+  pic?: string;
+  file_key?: string;
+  file_type?: string;
+  width?: string;
+  height?: string;
+  msg_obj?: Record<string, unknown>;
+  risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
+  toast_msg?: string; // v4.106.96
+  [key: string]: unknown;
+}
+⋮----
+risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
+toast_msg?: string; // v4.106.96
+⋮----
+/** v4.106.96: Risk control response when place_biz_push_order hits off-platform diversion check */
+export interface P2PMerchantPlaceOrderRiskData {
+  risk_code?: string;
+  risk_event?: {
+    type?: string;
+    title?: string;
+    msg?: string;
+    action?: string;
+    content_risk_type?: string;
+    trade_tips?: string;
+    auto_reply?: string;
+  };
+}
+⋮----
+/** v4.106.96: send_chat_message risk fields in data */
+export interface P2PMerchantSendChatMessageData {
+  risk_type?: number;
+  toast_msg?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantChatsListData {
+  messages: P2PMerchantChatMessage[];
+  has_history?: boolean;
+  txid?: number;
+  SRVTM?: number;
+  order_status?: string;
+  memo?: string;
+}
+
+================
+File: src/types/response/withdrawal.ts
+================
+export interface WithdrawalRecord {
+  id: string;
+  txid: string;
+  block_number: string;
+  withdraw_order_id: string;
+  /** When `status` is DONE, withdrawal success time (not conditioned on `block_number`). */
+  timestamp: string;
+  amount: string;
+  currency: string;
+  address: string;
+  memo?: string;
+  status:
+    | 'BCODE' // Deposit Code Operation
+    | 'CANCEL' // Cancelled
+    | 'CANCELPEND' // Withdrawal Cancellation Pending
+    | 'DMOVE' // Pending Manual Review
+    | 'DONE' // Completed
+    | 'EXTPEND' // Sent and Waiting for Confirmation
+    | 'FAIL' // On-Chain Failure Pending Confirmation
+    | 'FVERIFY' // Facial Verification in Progress
+    | 'INVALID' // Invalid Transaction
+    | 'LOCKED' // Wallet-Side Order Locked
+    | 'MANUAL' // Pending Manual Review
+    | 'PEND' // Processing
+    | 'PROCES' // Processing
+    | 'REJECT' // Rejected
+    | 'REQUEST' // Request in Progress
+    | 'REVIEW' // Under Review
+    | 'SPLITPEND' // Split Pending
+    | 'VERIFY'; // Verification in Progress
+  chain: string;
+}
+⋮----
+/** When `status` is DONE, withdrawal success time (not conditioned on `block_number`). */
+⋮----
+| 'BCODE' // Deposit Code Operation
+| 'CANCEL' // Cancelled
+| 'CANCELPEND' // Withdrawal Cancellation Pending
+| 'DMOVE' // Pending Manual Review
+| 'DONE' // Completed
+| 'EXTPEND' // Sent and Waiting for Confirmation
+| 'FAIL' // On-Chain Failure Pending Confirmation
+| 'FVERIFY' // Facial Verification in Progress
+| 'INVALID' // Invalid Transaction
+| 'LOCKED' // Wallet-Side Order Locked
+| 'MANUAL' // Pending Manual Review
+| 'PEND' // Processing
+| 'PROCES' // Processing
+| 'REJECT' // Rejected
+| 'REQUEST' // Request in Progress
+| 'REVIEW' // Under Review
+| 'SPLITPEND' // Split Pending
+| 'VERIFY'; // Verification in Progress
+
+================
+File: .gitignore
+================
+!.gitkeep
+.DS_STORE
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+pids
+*.pid
+*.seed
+*.pid.lock
+node_modules/
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.env
+.env.test
+.cache
+bundleReport.html
+.history/
+dist
+coverage
+localtest.sh
+repomix.sh
+doc
+examples/ignored/
+
+ws-private-spot-wsapi-performance.ts
+ws-private-perp-futures-wsapi-readonly.ts
+privatetest.ts
+
+privaterepotracker
+restClientRegex.ts
+
+testfile.ts
+
+================
+File: src/types/request/earn.ts
+================
+/**==========================================================================================================================
+ * EARN
+ * ==========================================================================================================================
+ */
+⋮----
+/** GET /earn/dual/investment_plan */
+export interface GetDualInvestmentPlansReq {
+  plan_id?: number | string;
+  coin?: string;
+  type?: string;
+  quote_currency?: string;
+  /** `apy` | `short-period` | `multiple` */
+  sort?: string;
+  page?: number;
+  page_size?: number;
+}
+⋮----
+/** `apy` | `short-period` | `multiple` */
+⋮----
+/** GET /earn/dual/orders */
+export interface GetDualInvestmentOrdersReq {
+  from?: number;
+  to?: number;
+  type?: string;
+  status?: string;
+  coin?: string;
+  page?: number;
+  limit?: number;
+}
+⋮----
+/** GET /earn/dual/order-refund-preview */
+export interface GetDualOrderRefundPreviewReq {
+  order_id: string;
+}
+⋮----
+/** POST /earn/dual/order-refund */
+export interface SubmitDualOrderRefundParams {
+  order_id: string;
+  /** From order-refund-preview */
+  req_id: string;
+}
+⋮----
+/** From order-refund-preview */
+⋮----
+/** POST /earn/dual/modify-order-reinvest */
+export interface UpdateDualOrderReinvestParams {
+  order_id?: number;
+  /** 0 off, 1 on */
+  status?: number;
+  /** Effective duration in seconds; default 86400 */
+  effective_time_duration?: number;
+}
+⋮----
+/** 0 off, 1 on */
+⋮----
+/** Effective duration in seconds; default 86400 */
+⋮----
+/** GET /earn/dual/project-recommend */
+export interface GetDualProjectRecommendReq {
+  mode?: string;
+  coin?: string;
+  type?: string;
+  /** Comma-separated project IDs to exclude */
+  history_pids?: string;
+}
+⋮----
+/** Comma-separated project IDs to exclude */
+⋮----
+/** Request params for POST /earn/dual/orders */
+export interface PlaceDualInvestmentOrderParams {
+  plan_id: string;
+  /** Subscription amount. Mutually exclusive with copies. */
+  amount: string;
+  /** Units. Mutually exclusive with amount. */
+  copies?: string;
+  /** Custom order info, must start with t- */
+  text?: string;
+}
+⋮----
+/** Subscription amount. Mutually exclusive with copies. */
+⋮----
+/** Units. Mutually exclusive with amount. */
+⋮----
+/** Custom order info, must start with t- */
+⋮----
+/**==========================================================================================================================
+ * EARN FIXED-TERM
+ * ==========================================================================================================================
+ */
+⋮----
+export interface GetEarnFixedTermProductsReq {
+  asset?: string;
+  type?: number; // 1 regular, 2 VIP
+  page: number;
+  limit: number;
+}
+⋮----
+type?: number; // 1 regular, 2 VIP
+⋮----
+export interface GetEarnFixedTermProductsByAssetReq {
+  /** Product type: "" or 1 regular, 2 VIP, 0 all */
+  type?: string;
+}
+⋮----
+/** Product type: "" or 1 regular, 2 VIP, 0 all */
+⋮----
+export interface CreateEarnFixedTermLendReq {
+  product_id: number;
+  amount: string;
+  year_rate?: string;
+  reinvest_status?: number; // 0 off, 1 on
+  redeem_account_type?: number; // 1 spot
+  financial_rate_id?: number; // interest boost coupon id, 0 = none
+  sub_business?: number;
+}
+⋮----
+reinvest_status?: number; // 0 off, 1 on
+redeem_account_type?: number; // 1 spot
+financial_rate_id?: number; // interest boost coupon id, 0 = none
+⋮----
+export interface GetEarnFixedTermLendsReq {
+  product_id?: number;
+  order_id?: number;
+  asset?: string;
+  order_type: '1' | '2'; // 1 current, 2 historical
+  page: number;
+  limit: number;
+  sub_business?: number;
+  business_filter?: string;
+}
+⋮----
+order_type: '1' | '2'; // 1 current, 2 historical
+⋮----
+export interface EarnFixedTermPreRedeemReq {
+  order_id: string;
+}
+⋮----
+export interface GetEarnFixedTermHistoryReq {
+  product_id?: number;
+  order_id?: string;
+  asset?: string;
+  type: '1' | '2' | '3' | '4'; // 1 subscribe, 2 redeem, 3 interest, 4 bonus
+  page: number;
+  limit: number;
+  start_at?: number;
+  end_at?: number;
+  sub_business?: number;
+  business_filter?: string;
+}
+⋮----
+type: '1' | '2' | '3' | '4'; // 1 subscribe, 2 redeem, 3 interest, 4 bonus
+
+================
 File: src/types/request/otc.ts
 ================
 import { GateMultipartFile } from '../../lib/multipartUtil.js';
@@ -8644,164 +9299,6 @@ export interface SubmitOTCBankEnterpriseSupplementReq {
   uid?: string;
   funds_statement?: GateMultipartFile;
   additional?: GateMultipartFile;
-}
-
-================
-File: src/types/request/p2pMerchant.ts
-================
-/** P2P Merchant API request types */
-⋮----
-export interface P2PMerchantGetCounterpartyUserInfoReq {
-  biz_uid: string;
-}
-⋮----
-export interface P2PMerchantGetMyselfPaymentReq {
-  fiat?: string;
-}
-⋮----
-export interface P2PMerchantGetPendingTransactionListReq {
-  crypto_currency: string;
-  fiat_currency: string;
-  order_tab?: string;
-  select_type?: string;
-  status?: string;
-  txid?: number;
-  start_time?: number;
-  end_time?: number;
-}
-⋮----
-export interface P2PMerchantGetCompletedTransactionListReq {
-  crypto_currency: string;
-  fiat_currency: string;
-  select_type?: string;
-  status?: string;
-  txid?: number;
-  start_time?: number;
-  end_time?: number;
-  query_dispute?: number;
-  page?: number;
-  per_page?: number;
-}
-⋮----
-export interface P2PMerchantGetTransactionDetailsReq {
-  txid: number;
-  channel?: string;
-}
-⋮----
-export interface P2PMerchantConfirmPaymentReq {
-  trade_id: string;
-  payment_method: string;
-}
-⋮----
-export interface P2PMerchantConfirmReceiptReq {
-  trade_id: string;
-}
-⋮----
-export interface P2PMerchantCancelTransactionReq {
-  trade_id: string;
-  reason_id?: string;
-  reason_memo?: string;
-}
-⋮----
-export interface P2PMerchantPlaceBizPushOrderReq {
-  currencyType: string;
-  exchangeType: string;
-  type: string;
-  unitPrice: string;
-  number: string;
-  payType: string;
-  minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-  maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-  pay_type_json?: string;
-  rateFixed?: string;
-  oid?: string;
-  tierLimit?: string;
-  verifiedLimit?: string;
-  regTimeLimit?: string;
-  advertisersLimit?: string;
-  hide_payment?: string;
-  expire_min?: string;
-  trade_tips?: string;
-  auto_reply?: string;
-  min_completed_limit?: string;
-  max_completed_limit?: string;
-  completed_rate_limit?: string;
-  user_country_limit?: string;
-  user_order_limit?: string;
-  rateReferenceId?: string;
-  rateOffset?: string;
-  float_trend?: string;
-  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
-  fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
-  fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
-  polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
-}
-⋮----
-minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-⋮----
-limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
-fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
-fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
-polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
-⋮----
-/** POST /p2p/merchant/account/set_merchant_work_hours — v4.106.96 */
-export interface P2PMerchantSetMerchantWorkHoursReq {
-  work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
-  cycle_type?: string;
-  day_of_week?: string;
-  time_zone?: string; // UTC offset -12 to +14
-  start_time?: string;
-  end_time?: string;
-}
-⋮----
-work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
-⋮----
-time_zone?: string; // UTC offset -12 to +14
-⋮----
-export interface P2PMerchantAdsUpdateStatusReq {
-  adv_no: number;
-  adv_status: 1 | 3 | 4;
-  /** Optional query param */
-  trade_type?: string;
-}
-⋮----
-/** Optional query param */
-⋮----
-export interface P2PMerchantAdsDetailReq {
-  adv_no: string;
-}
-⋮----
-export interface P2PMerchantMyAdsListReq {
-  asset?: string;
-  fiat_unit?: string;
-  trade_type?: string;
-}
-⋮----
-export interface P2PMerchantGetAdsListReq {
-  asset: string;
-  fiat_unit: string;
-  trade_type: string;
-}
-⋮----
-export interface P2PMerchantGetChatsListReq {
-  txid: number;
-  lastreceived?: number;
-  firstreceived?: number;
-}
-⋮----
-export interface P2PMerchantSendChatMessageReq {
-  txid: number;
-  message: string;
-  /** 0=Text, 1=File (video or image). Default 0 */
-  type?: 0 | 1;
-}
-⋮----
-/** 0=Text, 1=File (video or image). Default 0 */
-⋮----
-export interface P2PMerchantUploadChatFileReq {
-  image_content_type: string;
-  base64_img: string;
 }
 
 ================
@@ -9289,356 +9786,117 @@ export interface GetTransferReq {
 }
 
 ================
-File: src/types/response/p2pMerchant.ts
+File: src/types/websockets/client.ts
 ================
-/** P2P Merchant API response types */
+import type { ClientRequestArgs } from 'http';
+import WebSocket from 'isomorphic-ws';
 ⋮----
-export interface P2PMerchantApiResp<T> {
-  timestamp: number;
-  method: string;
-  code: number;
-  message: string;
-  data: T;
-  version: string;
+/**
+ * Event args for subscribing/unsubscribing
+ */
+⋮----
+// export type WsTopicSubscribePrivateArgsV2 =
+//   | WsTopicSubscribePrivateInstIdArgsV2
+//   | WsTopicSubscribePrivateCoinArgsV2;
+⋮----
+// export type WsTopicSubscribeEventArgsV2 =
+//   | WsTopicSubscribePublicArgsV2
+//   | WsTopicSubscribePrivateArgsV2;
+⋮----
+/** General configuration for the WebsocketClient */
+export interface WSClientConfigurableOptions {
+  /** Your API key */
+  apiKey?: string;
+
+  /** Your API secret */
+  apiSecret?: string;
+
+  useTestnet?: boolean;
+
+  /** Define a recv window when preparing a private websocket signature. This is in milliseconds, so 5000 == 5 seconds */
+  recvWindow?: number;
+
+  /** How often to check if the connection is alive */
+  pingInterval?: number;
+
+  /** How long to wait for a pong (heartbeat reply) before assuming the connection is dead */
+  pongTimeout?: number;
+
+  /** Delay in milliseconds before respawning the connection */
+  reconnectTimeout?: number;
+
+  requestOptions?: {};
+
+  wsUrl?: string;
+
+  wsOptions?: {
+    protocols?: string[];
+    agent?: any;
+  } & (
+    | Omit<Partial<WebSocket.ClientOptions>, 'agent'>
+    | Omit<Partial<ClientRequestArgs>, 'agent'>
+  );
+
+  /**
+   * Allows you to provide a custom "signMessage" function, e.g. to use node's much faster createHmac method
+   *
+   * Look in the examples folder for a demonstration on using node's createHmac instead.
+   */
+  customSignMessageFn?: (message: string, secret: string) => Promise<string>;
+
+  /**
+   * If you authenticated the WS API before, automatically try to re-authenticate the WS API if you're disconnected/reconnected for any reason.
+   */
+  reauthWSAPIOnReconnect?: boolean;
 }
 ⋮----
-export interface P2PMerchantUserInfo {
-  is_self?: boolean;
-  user_timest?: string;
-  counterparties_num?: number;
-  email_verified?: string;
-  verified?: string;
-  has_phone?: string;
-  user_name?: string;
-  user_note?: string;
-  complete_transactions?: string;
-  paid_transactions?: string;
-  accepted_transactions?: string;
-  transactions_used_time?: string;
-  cancelled_used_time_month?: string;
-  complete_transactions_month?: string;
-  complete_rate_month?: number;
-  orders_buy_rate_month?: number;
-  is_black?: number;
-  is_follow?: number;
-  have_traded?: number;
-  biz_uid?: string;
-  blue_vip?: number;
-  work_status?: number;
-  registration_days?: number;
-  first_trade_days?: number;
-  need_replenish?: number;
-  merchant_info?: { type?: string; market?: string };
-  online_status?: number;
-  work_hours?: Record<string, unknown> | null;
-  transactions_month?: number;
-  transactions_all?: number;
-  trade_versatile?: boolean;
-  [key: string]: unknown;
-}
+/** Your API key */
 ⋮----
-export interface P2PMerchantCounterpartyUserInfo {
-  user_timest?: string;
-  email_verified?: string;
-  verified?: string;
-  has_phone?: string;
-  user_name?: string;
-  user_note?: string;
-  complete_transactions?: string;
-  paid_transactions?: string;
-  accepted_transactions?: string;
-  transactions_used_time?: string;
-  cancelled_used_time_month?: string;
-  complete_transactions_month?: string;
-  complete_rate_month?: number;
-  is_follow?: number;
-  have_traded?: number;
-  biz_uid?: string;
-  registration_days?: number;
-  first_trade_days?: number;
-  trade_versatile?: boolean;
-  [key: string]: unknown;
-}
+/** Your API secret */
 ⋮----
-export interface P2PMerchantPaymentMethod {
-  pay_type: string;
-  pay_name: string;
-  ids: number[];
-  list: Record<string, unknown>[];
-}
+/** Define a recv window when preparing a private websocket signature. This is in milliseconds, so 5000 == 5 seconds */
 ⋮----
-export interface P2PMerchantTransactionListItem {
-  type_buy?: number;
-  timest?: string;
-  timest_expire?: string;
-  type?: string;
-  trade_type?: string;
-  timestamp?: number;
-  rate?: string;
-  amount?: string;
-  total?: string;
-  txid?: number;
-  status?: string;
-  order_status?: string;
-  [key: string]: unknown;
-}
+/** How often to check if the connection is alive */
 ⋮----
-export interface P2PMerchantTransactionListData {
-  list: P2PMerchantTransactionListItem[];
-  trans_time?: { od_time?: number }[];
-  count: number;
-  exported_num: number;
-}
+/** How long to wait for a pong (heartbeat reply) before assuming the connection is dead */
 ⋮----
-export interface P2PMerchantTransactionDetails {
-  is_sell?: number;
-  txid?: number;
-  orderid?: number;
-  timest?: number;
-  last_pay_time?: number;
-  remain_pay_time?: number;
-  currencyType?: string;
-  want_type?: string;
-  rate?: string;
-  amount?: string;
-  total?: string;
-  status?: string;
-  state?: string;
-  its_uid?: string;
-  its_nickname?: string;
-  its_realname?: string;
-  [key: string]: unknown;
-}
+/** Delay in milliseconds before respawning the connection */
 ⋮----
-export interface P2PMerchantAdsDetail {
-  rate?: string;
-  type?: string;
-  amount?: string;
-  min_amount?: string;
-  max_amount?: string;
-  fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
-  fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
-  minFiatAmount?: string; // v4.106.102
-  maxFiatAmount?: string; // v4.106.102
-  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
-  limitBasisText?: string; // v4.106.102
-  polymarket_limit?: string; // v4.106.102
-  total?: string;
-  orderid?: number;
-  timestamp?: number;
-  currencyType?: string;
-  want_type?: string;
-  status?: string;
-  [key: string]: unknown;
-}
+/**
+   * Allows you to provide a custom "signMessage" function, e.g. to use node's much faster createHmac method
+   *
+   * Look in the examples folder for a demonstration on using node's createHmac instead.
+   */
 ⋮----
-fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
-fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
-minFiatAmount?: string; // v4.106.102
-maxFiatAmount?: string; // v4.106.102
-limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
-limitBasisText?: string; // v4.106.102
-polymarket_limit?: string; // v4.106.102
+/**
+   * If you authenticated the WS API before, automatically try to re-authenticate the WS API if you're disconnected/reconnected for any reason.
+   */
 ⋮----
-export interface P2PMerchantMyAdsListItem {
-  type?: string;
-  rate?: string;
-  amount?: string;
-  total?: string;
-  id?: string;
-  status?: string;
-  currencyType?: string;
-  want_type?: string;
-  fiat_min_amount?: string; // v4.106.102
-  fiat_max_amount?: string; // v4.106.102
-  limit_basis?: string; // v4.106.103
-  limit_basis_text?: string; // v4.106.103
-  [key: string]: unknown;
-}
-⋮----
-fiat_min_amount?: string; // v4.106.102
-fiat_max_amount?: string; // v4.106.102
-limit_basis?: string; // v4.106.103
-limit_basis_text?: string; // v4.106.103
-⋮----
-export interface P2PMerchantMyAdsListData {
-  lists: P2PMerchantMyAdsListItem[];
-}
-⋮----
-export interface P2PMerchantAdsListItem {
-  index?: number;
-  asset?: string;
-  fiat_unit?: string;
-  adv_no?: number;
-  price?: string;
-  max_single_trans_amount?: string;
-  min_single_trans_amount?: string;
-  nick_name?: string;
-  surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
-  trade_methods?: string[]; // v4.106.103: Supported payment methods list
-  fiat_min_amount?: string; // v4.106.103
-  fiat_max_amount?: string; // v4.106.103
-  limit_basis?: string; // v4.106.103
-  limit_basis_text?: string; // v4.106.103
-}
-⋮----
-surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
-trade_methods?: string[]; // v4.106.103: Supported payment methods list
-fiat_min_amount?: string; // v4.106.103
-fiat_max_amount?: string; // v4.106.103
-limit_basis?: string; // v4.106.103
-limit_basis_text?: string; // v4.106.103
-⋮----
-export interface P2PMerchantChatMessage {
-  is_sell?: number;
-  msg_type?: number;
-  msg?: string;
-  username?: string;
-  uid?: string;
-  timest?: number;
-  type?: number;
-  pic?: string;
-  file_key?: string;
-  file_type?: string;
-  width?: string;
-  height?: string;
-  msg_obj?: Record<string, unknown>;
-  risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
-  toast_msg?: string; // v4.106.96
-  [key: string]: unknown;
-}
-⋮----
-risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
-toast_msg?: string; // v4.106.96
-⋮----
-/** v4.106.96: Risk control response when place_biz_push_order hits off-platform diversion check */
-export interface P2PMerchantPlaceOrderRiskData {
-  risk_code?: string;
-  risk_event?: {
-    type?: string;
-    title?: string;
-    msg?: string;
-    action?: string;
-    content_risk_type?: string;
-    trade_tips?: string;
-    auto_reply?: string;
-  };
-}
-⋮----
-/** v4.106.96: send_chat_message risk fields in data */
-export interface P2PMerchantSendChatMessageData {
-  risk_type?: number;
-  toast_msg?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantChatsListData {
-  messages: P2PMerchantChatMessage[];
-  has_history?: boolean;
-  txid?: number;
-  SRVTM?: number;
-  order_status?: string;
-  memo?: string;
+/**
+ * WS configuration that's always defined, regardless of user configuration
+ * (usually comes from defaults if there's no user-provided values)
+ */
+export interface WebsocketClientOptions extends WSClientConfigurableOptions {
+  pingInterval: number;
+  pongTimeout: number;
+  reconnectTimeout: number;
+  recvWindow: number;
+  authPrivateConnectionsOnConnect: boolean;
+  authPrivateRequests: boolean;
+  reauthWSAPIOnReconnect: boolean;
 }
 
 ================
-File: src/types/response/withdrawal.ts
+File: webpack/webpack.config.cjs
 ================
-export interface WithdrawalRecord {
-  id: string;
-  txid: string;
-  block_number: string;
-  withdraw_order_id: string;
-  /** When `status` is DONE, withdrawal success time (not conditioned on `block_number`). */
-  timestamp: string;
-  amount: string;
-  currency: string;
-  address: string;
-  memo?: string;
-  status:
-    | 'BCODE' // Deposit Code Operation
-    | 'CANCEL' // Cancelled
-    | 'CANCELPEND' // Withdrawal Cancellation Pending
-    | 'DMOVE' // Pending Manual Review
-    | 'DONE' // Completed
-    | 'EXTPEND' // Sent and Waiting for Confirmation
-    | 'FAIL' // On-Chain Failure Pending Confirmation
-    | 'FVERIFY' // Facial Verification in Progress
-    | 'INVALID' // Invalid Transaction
-    | 'LOCKED' // Wallet-Side Order Locked
-    | 'MANUAL' // Pending Manual Review
-    | 'PEND' // Processing
-    | 'PROCES' // Processing
-    | 'REJECT' // Rejected
-    | 'REQUEST' // Request in Progress
-    | 'REVIEW' // Under Review
-    | 'SPLITPEND' // Split Pending
-    | 'VERIFY'; // Verification in Progress
-  chain: string;
-}
+function generateConfig(name)
 ⋮----
-/** When `status` is DONE, withdrawal success time (not conditioned on `block_number`). */
+// Add '.ts' and '.tsx' as resolvable extensions.
 ⋮----
-| 'BCODE' // Deposit Code Operation
-| 'CANCEL' // Cancelled
-| 'CANCELPEND' // Withdrawal Cancellation Pending
-| 'DMOVE' // Pending Manual Review
-| 'DONE' // Completed
-| 'EXTPEND' // Sent and Waiting for Confirmation
-| 'FAIL' // On-Chain Failure Pending Confirmation
-| 'FVERIFY' // Facial Verification in Progress
-| 'INVALID' // Invalid Transaction
-| 'LOCKED' // Wallet-Side Order Locked
-| 'MANUAL' // Pending Manual Review
-| 'PEND' // Processing
-| 'PROCES' // Processing
-| 'REJECT' // Rejected
-| 'REQUEST' // Request in Progress
-| 'REVIEW' // Under Review
-| 'SPLITPEND' // Split Pending
-| 'VERIFY'; // Verification in Progress
-
-================
-File: .gitignore
-================
-!.gitkeep
-.DS_STORE
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-pids
-*.pid
-*.seed
-*.pid.lock
-node_modules/
-.npm
-.eslintcache
-.node_repl_history
-*.tgz
-.yarn-integrity
-.env
-.env.test
-.cache
-bundleReport.html
-.history/
-dist
-coverage
-localtest.sh
-repomix.sh
-doc
-examples/ignored/
-
-ws-private-spot-wsapi-performance.ts
-ws-private-perp-futures-wsapi-readonly.ts
-privatetest.ts
-
-privaterepotracker
-restClientRegex.ts
-
-testfile.ts
+// Node.js core modules not available in browsers
+// The REST client's https.Agent (for keepAlive) is Node.js-only and won't work in browsers
+⋮----
+// Code is already transpiled from TypeScript, no additional loaders needed
 
 ================
 File: src/types/request/crossex.ts
@@ -9940,161 +10198,6 @@ export interface GetCrossExCoinDiscountRateReq {
 }
 ⋮----
 exchange_type?: string; // OKX/GATE/BINANCE/BYBIT
-
-================
-File: src/types/request/earn.ts
-================
-/**==========================================================================================================================
- * EARN
- * ==========================================================================================================================
- */
-⋮----
-/** GET /earn/dual/investment_plan */
-export interface GetDualInvestmentPlansReq {
-  plan_id?: number | string;
-  coin?: string;
-  type?: string;
-  quote_currency?: string;
-  /** `apy` | `short-period` | `multiple` */
-  sort?: string;
-  page?: number;
-  page_size?: number;
-}
-⋮----
-/** `apy` | `short-period` | `multiple` */
-⋮----
-/** GET /earn/dual/orders */
-export interface GetDualInvestmentOrdersReq {
-  from?: number;
-  to?: number;
-  type?: string;
-  status?: string;
-  coin?: string;
-  page?: number;
-  limit?: number;
-}
-⋮----
-/** GET /earn/dual/order-refund-preview */
-export interface GetDualOrderRefundPreviewReq {
-  order_id: string;
-}
-⋮----
-/** POST /earn/dual/order-refund */
-export interface SubmitDualOrderRefundParams {
-  order_id: string;
-  /** From order-refund-preview */
-  req_id: string;
-}
-⋮----
-/** From order-refund-preview */
-⋮----
-/** POST /earn/dual/modify-order-reinvest */
-export interface UpdateDualOrderReinvestParams {
-  order_id?: number;
-  /** 0 off, 1 on */
-  status?: number;
-  /** Effective duration in seconds; default 86400 */
-  effective_time_duration?: number;
-}
-⋮----
-/** 0 off, 1 on */
-⋮----
-/** Effective duration in seconds; default 86400 */
-⋮----
-/** GET /earn/dual/project-recommend */
-export interface GetDualProjectRecommendReq {
-  mode?: string;
-  coin?: string;
-  type?: string;
-  /** Comma-separated project IDs to exclude */
-  history_pids?: string;
-}
-⋮----
-/** Comma-separated project IDs to exclude */
-⋮----
-/** Request params for POST /earn/dual/orders */
-export interface PlaceDualInvestmentOrderParams {
-  plan_id: string;
-  /** Subscription amount. Mutually exclusive with copies. */
-  amount: string;
-  /** Units. Mutually exclusive with amount. */
-  copies?: string;
-  /** Custom order info, must start with t- */
-  text?: string;
-}
-⋮----
-/** Subscription amount. Mutually exclusive with copies. */
-⋮----
-/** Units. Mutually exclusive with amount. */
-⋮----
-/** Custom order info, must start with t- */
-⋮----
-/**==========================================================================================================================
- * EARN FIXED-TERM
- * ==========================================================================================================================
- */
-⋮----
-export interface GetEarnFixedTermProductsReq {
-  asset?: string;
-  type?: number; // 1 regular, 2 VIP
-  page: number;
-  limit: number;
-}
-⋮----
-type?: number; // 1 regular, 2 VIP
-⋮----
-export interface GetEarnFixedTermProductsByAssetReq {
-  /** Product type: "" or 1 regular, 2 VIP, 0 all */
-  type?: string;
-}
-⋮----
-/** Product type: "" or 1 regular, 2 VIP, 0 all */
-⋮----
-export interface CreateEarnFixedTermLendReq {
-  product_id: number;
-  amount: string;
-  year_rate?: string;
-  reinvest_status?: number; // 0 off, 1 on
-  redeem_account_type?: number; // 1 spot
-  financial_rate_id?: number; // interest boost coupon id, 0 = none
-  sub_business?: number;
-}
-⋮----
-reinvest_status?: number; // 0 off, 1 on
-redeem_account_type?: number; // 1 spot
-financial_rate_id?: number; // interest boost coupon id, 0 = none
-⋮----
-export interface GetEarnFixedTermLendsReq {
-  product_id?: number;
-  order_id?: number;
-  asset?: string;
-  order_type: '1' | '2'; // 1 current, 2 historical
-  page: number;
-  limit: number;
-  sub_business?: number;
-  business_filter?: string;
-}
-⋮----
-order_type: '1' | '2'; // 1 current, 2 historical
-⋮----
-export interface EarnFixedTermPreRedeemReq {
-  order_id: string;
-}
-⋮----
-export interface GetEarnFixedTermHistoryReq {
-  product_id?: number;
-  order_id?: string;
-  asset?: string;
-  type: '1' | '2' | '3' | '4'; // 1 subscribe, 2 redeem, 3 interest, 4 bonus
-  page: number;
-  limit: number;
-  start_at?: number;
-  end_at?: number;
-  sub_business?: number;
-  business_filter?: string;
-}
-⋮----
-type: '1' | '2' | '3' | '4'; // 1 subscribe, 2 redeem, 3 interest, 4 bonus
 
 ================
 File: src/types/response/crossex.ts
@@ -10771,6 +10874,300 @@ tier: string; // Tier
 min_value: string; // Minimum value
 max_value: string; // Maximum value
 discount_rate: string; // Discount rate
+
+================
+File: src/types/response/earn.ts
+================
+/**==========================================================================================================================
+ * EARN
+ * ==========================================================================================================================
+ */
+⋮----
+export interface DualInvestmentProduct {
+  id: number;
+  instrument_name: string;
+  invest_currency: string;
+  exercise_currency: string;
+  exercise_price: number;
+  delivery_time: number;
+  min_amount?: string;
+  min_copies: number;
+  max_copies: number;
+  /** @deprecated */
+  per_value: string;
+  apy_display: string;
+  start_time: number;
+  end_time: number;
+  status: 'NOTSTARTED' | 'ONGOING' | 'ENDED';
+}
+⋮----
+/** @deprecated */
+⋮----
+/** GET /earn/dual/order-refund-preview */
+export interface DualOrderRefundPreview {
+  create_timest: number;
+  delivery_timest: number;
+  exercise_price: string;
+  invest_amount: string;
+  invest_currency: string;
+  name: string;
+  order_id: number;
+  req_id: string;
+  refund_service_charge: number;
+  settle_price: string;
+  settlement_amount: string;
+  settlement_currency: string;
+  settlement_interest: string;
+  settlement_principle: string;
+  type: string;
+  money_back_timest: number;
+}
+⋮----
+/** GET /earn/dual/project-recommend item */
+export interface DualProjectRecommend {
+  id: number;
+  category: number;
+  type: string;
+  invest_currency: string;
+  exercise_currency: string;
+  apy_display: string;
+  exercise_price: string;
+  delivery_timest: number;
+  min_amount: string;
+  max_amount: string;
+  min_copies: number;
+  max_copies: number;
+  invest_days: number;
+  invest_hours: string;
+}
+⋮----
+export interface DualInvestmentOrder {
+  id: number;
+  plan_id: number;
+  copies: string;
+  invest_amount: string;
+  settlement_amount: string;
+  create_time: number;
+  complete_time: number;
+  status:
+    | 'INIT'
+    | 'SETTLEMENT_SUCCESS'
+    | 'SETTLEMENT_PROCESSING'
+    | 'CANCELED'
+    | 'FAILED';
+  invest_currency: string;
+  exercise_currency: string;
+  exercise_price: string;
+  settlement_price: string;
+  settlement_currency: string;
+  apy_display: string;
+  apy_settlement: string;
+  delivery_time: number;
+  text: string;
+}
+⋮----
+/**==========================================================================================================================
+ * EARN FIXED-TERM
+ * ==========================================================================================================================
+ */
+⋮----
+export interface FixedTermLadderApr {
+  apr: string;
+  left: string;
+  right: string;
+}
+⋮----
+export interface FixedTermProductInfo {
+  pre_redeem: number;
+  reinvest: number;
+  redeem_account: number;
+  min_vip: number;
+  max_vip: number;
+}
+⋮----
+export interface FixedTermBonusInfo {
+  id?: number;
+  product_id?: number;
+  asset?: string;
+  bonus_asset?: string;
+  kyc_limit?: string;
+  ladder_apr?: FixedTermLadderApr[];
+  total_bonus_amount?: string;
+  user_total_bonus_amount?: string;
+  status?: number;
+  start_time?: string;
+  end_time?: string;
+  create_time?: string;
+  start_at?: number;
+  end_at?: number;
+  total_issued_amount?: string;
+  user_total_issued_amount?: string;
+  bonus_asset_price?: string;
+  product_asset_price?: string;
+  product_year_rate?: string;
+}
+⋮----
+export interface FixedTermCouponInfo {
+  id?: number;
+  business?: number;
+  user_id?: number;
+  asset?: string;
+  order_id?: number;
+  financial_rate_id?: number;
+  buy_limit_low?: string;
+  buy_limit_high?: string;
+  rate_day?: number;
+  rate_ratio?: string;
+  coupon_days?: number;
+  coupon_principal?: string;
+  coupon_year_rate?: string;
+  coupon_interest?: string;
+  status?: number;
+  finish_time?: string;
+  create_time?: string;
+}
+⋮----
+export interface FixedTermLendOrder {
+  id?: number;
+  business?: number;
+  order_id?: number;
+  user_id?: number;
+  asset?: string;
+  product_id?: number;
+  lock_up_period?: number;
+  principal?: string;
+  year_rate?: string;
+  product_type?: number;
+  interest?: string;
+  status?: number;
+  reinvest_status?: number;
+  redeem_account_type?: number;
+  origin_order?: string;
+  redeem_type?: number;
+  redeem_time?: string;
+  finish_time?: string;
+  create_time?: string;
+  year_rate_perent?: string;
+  total_year_rate_percent?: string;
+  total_interest?: string;
+  product_info?: FixedTermProductInfo;
+  bonus_info?: FixedTermBonusInfo;
+  coupon_info?: FixedTermCouponInfo;
+  redeem_at?: number;
+  finish_at?: number;
+  create_at?: number;
+  icon?: string;
+}
+⋮----
+export interface FixedTermProduct {
+  id?: number;
+  name?: string;
+  asset?: string;
+  lock_up_period?: number;
+  min_lend_amount?: string;
+  user_max_lend_amount?: string;
+  total_lend_amount?: string;
+  year_rate?: string;
+  type?: number;
+  pre_redeem?: number;
+  reinvest?: number;
+  redeem_account?: number;
+  min_vip?: number;
+  max_vip?: number;
+  status?: number;
+  create_time?: string;
+  user_max_lend_volume?: string;
+  user_total_amount?: string;
+  sale_status?: number;
+}
+⋮----
+export interface FixedTermProductSimple {
+  id?: number;
+  asset?: string;
+  lock_up_period?: number;
+  year_rate?: string;
+  type?: number;
+  pre_redeem?: number;
+  reinvest?: number;
+  simple_earn?: number;
+  min_vip?: number;
+  max_vip?: number;
+  sale_status?: number;
+}
+⋮----
+export interface GetEarnFixedTermProductsResponse {
+  code: number;
+  message: string;
+  data: {
+    list: FixedTermProduct[];
+    total: number;
+  };
+  timestamp: number;
+}
+⋮----
+export interface GetEarnFixedTermProductsByAssetResponse {
+  code: number;
+  message: string;
+  data: {
+    list: FixedTermProductSimple[];
+  };
+  timestamp: number;
+}
+⋮----
+export interface CreateEarnFixedTermLendResponse {
+  code?: number;
+  message?: string;
+  data?: {
+    order_id?: number;
+  };
+  timestamp?: number;
+}
+⋮----
+export interface GetEarnFixedTermLendsResponse {
+  code: number;
+  message: string;
+  data: {
+    list: FixedTermLendOrder[];
+    total: number;
+  };
+  timestamp: number;
+}
+⋮----
+export interface CreateEarnFixedTermPreRedeemResponse {
+  code?: number;
+  message?: string;
+  data?: Record<string, never>;
+  timestamp?: number;
+}
+⋮----
+export interface FixedTermHistoryRecord {
+  id?: number;
+  order_id?: number;
+  user_id?: number;
+  asset?: string;
+  uniq_time?: string;
+  bonus_id?: number;
+  product_id?: number;
+  bonus_asset?: string;
+  total_principal?: string;
+  amount?: string;
+  asset_price?: string;
+  status?: number;
+  detail?: string;
+  create_time?: string;
+  create_at?: number;
+  lock_up_period?: number;
+}
+⋮----
+export interface GetEarnFixedTermHistoryResponse {
+  code?: number;
+  message?: string;
+  data?: {
+    list?: FixedTermHistoryRecord[];
+    total?: number;
+  };
+  timestamp?: number;
+}
 
 ================
 File: src/types/response/otc.ts
@@ -11572,107 +11969,6 @@ export interface AccountTransferDetail {
 }
 
 ================
-File: src/types/websockets/client.ts
-================
-import type { ClientRequestArgs } from 'http';
-import WebSocket from 'isomorphic-ws';
-⋮----
-/**
- * Event args for subscribing/unsubscribing
- */
-⋮----
-// export type WsTopicSubscribePrivateArgsV2 =
-//   | WsTopicSubscribePrivateInstIdArgsV2
-//   | WsTopicSubscribePrivateCoinArgsV2;
-⋮----
-// export type WsTopicSubscribeEventArgsV2 =
-//   | WsTopicSubscribePublicArgsV2
-//   | WsTopicSubscribePrivateArgsV2;
-⋮----
-/** General configuration for the WebsocketClient */
-export interface WSClientConfigurableOptions {
-  /** Your API key */
-  apiKey?: string;
-
-  /** Your API secret */
-  apiSecret?: string;
-
-  useTestnet?: boolean;
-
-  /** Define a recv window when preparing a private websocket signature. This is in milliseconds, so 5000 == 5 seconds */
-  recvWindow?: number;
-
-  /** How often to check if the connection is alive */
-  pingInterval?: number;
-
-  /** How long to wait for a pong (heartbeat reply) before assuming the connection is dead */
-  pongTimeout?: number;
-
-  /** Delay in milliseconds before respawning the connection */
-  reconnectTimeout?: number;
-
-  requestOptions?: {};
-
-  wsUrl?: string;
-
-  wsOptions?: {
-    protocols?: string[];
-    agent?: any;
-  } & (
-    | Omit<Partial<WebSocket.ClientOptions>, 'agent'>
-    | Omit<Partial<ClientRequestArgs>, 'agent'>
-  );
-
-  /**
-   * Allows you to provide a custom "signMessage" function, e.g. to use node's much faster createHmac method
-   *
-   * Look in the examples folder for a demonstration on using node's createHmac instead.
-   */
-  customSignMessageFn?: (message: string, secret: string) => Promise<string>;
-
-  /**
-   * If you authenticated the WS API before, automatically try to re-authenticate the WS API if you're disconnected/reconnected for any reason.
-   */
-  reauthWSAPIOnReconnect?: boolean;
-}
-⋮----
-/** Your API key */
-⋮----
-/** Your API secret */
-⋮----
-/** Define a recv window when preparing a private websocket signature. This is in milliseconds, so 5000 == 5 seconds */
-⋮----
-/** How often to check if the connection is alive */
-⋮----
-/** How long to wait for a pong (heartbeat reply) before assuming the connection is dead */
-⋮----
-/** Delay in milliseconds before respawning the connection */
-⋮----
-/**
-   * Allows you to provide a custom "signMessage" function, e.g. to use node's much faster createHmac method
-   *
-   * Look in the examples folder for a demonstration on using node's createHmac instead.
-   */
-⋮----
-/**
-   * If you authenticated the WS API before, automatically try to re-authenticate the WS API if you're disconnected/reconnected for any reason.
-   */
-⋮----
-/**
- * WS configuration that's always defined, regardless of user configuration
- * (usually comes from defaults if there's no user-provided values)
- */
-export interface WebsocketClientOptions extends WSClientConfigurableOptions {
-  pingInterval: number;
-  pongTimeout: number;
-  reconnectTimeout: number;
-  recvWindow: number;
-  authPrivateConnectionsOnConnect: boolean;
-  authPrivateRequests: boolean;
-  reauthWSAPIOnReconnect: boolean;
-}
-
-================
 File: src/index.ts
 ================
 // Request Types
@@ -11682,312 +11978,6 @@ File: src/index.ts
 // Websockets Types
 ⋮----
 // Shared Types
-
-================
-File: webpack/webpack.config.cjs
-================
-function generateConfig(name)
-⋮----
-// Add '.ts' and '.tsx' as resolvable extensions.
-⋮----
-// Node.js core modules not available in browsers
-// The REST client's https.Agent (for keepAlive) is Node.js-only and won't work in browsers
-⋮----
-// Code is already transpiled from TypeScript, no additional loaders needed
-
-================
-File: src/types/response/earn.ts
-================
-/**==========================================================================================================================
- * EARN
- * ==========================================================================================================================
- */
-⋮----
-export interface DualInvestmentProduct {
-  id: number;
-  instrument_name: string;
-  invest_currency: string;
-  exercise_currency: string;
-  exercise_price: number;
-  delivery_time: number;
-  min_amount?: string;
-  min_copies: number;
-  max_copies: number;
-  /** @deprecated */
-  per_value: string;
-  apy_display: string;
-  start_time: number;
-  end_time: number;
-  status: 'NOTSTARTED' | 'ONGOING' | 'ENDED';
-}
-⋮----
-/** @deprecated */
-⋮----
-/** GET /earn/dual/order-refund-preview */
-export interface DualOrderRefundPreview {
-  create_timest: number;
-  delivery_timest: number;
-  exercise_price: string;
-  invest_amount: string;
-  invest_currency: string;
-  name: string;
-  order_id: number;
-  req_id: string;
-  refund_service_charge: number;
-  settle_price: string;
-  settlement_amount: string;
-  settlement_currency: string;
-  settlement_interest: string;
-  settlement_principle: string;
-  type: string;
-  money_back_timest: number;
-}
-⋮----
-/** GET /earn/dual/project-recommend item */
-export interface DualProjectRecommend {
-  id: number;
-  category: number;
-  type: string;
-  invest_currency: string;
-  exercise_currency: string;
-  apy_display: string;
-  exercise_price: string;
-  delivery_timest: number;
-  min_amount: string;
-  max_amount: string;
-  min_copies: number;
-  max_copies: number;
-  invest_days: number;
-  invest_hours: string;
-}
-⋮----
-export interface DualInvestmentOrder {
-  id: number;
-  plan_id: number;
-  copies: string;
-  invest_amount: string;
-  settlement_amount: string;
-  create_time: number;
-  complete_time: number;
-  status:
-    | 'INIT'
-    | 'SETTLEMENT_SUCCESS'
-    | 'SETTLEMENT_PROCESSING'
-    | 'CANCELED'
-    | 'FAILED';
-  invest_currency: string;
-  exercise_currency: string;
-  exercise_price: string;
-  settlement_price: string;
-  settlement_currency: string;
-  apy_display: string;
-  apy_settlement: string;
-  delivery_time: number;
-  text: string;
-}
-⋮----
-/**==========================================================================================================================
- * EARN FIXED-TERM
- * ==========================================================================================================================
- */
-⋮----
-export interface FixedTermLadderApr {
-  apr: string;
-  left: string;
-  right: string;
-}
-⋮----
-export interface FixedTermProductInfo {
-  pre_redeem: number;
-  reinvest: number;
-  redeem_account: number;
-  min_vip: number;
-  max_vip: number;
-}
-⋮----
-export interface FixedTermBonusInfo {
-  id?: number;
-  product_id?: number;
-  asset?: string;
-  bonus_asset?: string;
-  kyc_limit?: string;
-  ladder_apr?: FixedTermLadderApr[];
-  total_bonus_amount?: string;
-  user_total_bonus_amount?: string;
-  status?: number;
-  start_time?: string;
-  end_time?: string;
-  create_time?: string;
-  start_at?: number;
-  end_at?: number;
-  total_issued_amount?: string;
-  user_total_issued_amount?: string;
-  bonus_asset_price?: string;
-  product_asset_price?: string;
-  product_year_rate?: string;
-}
-⋮----
-export interface FixedTermCouponInfo {
-  id?: number;
-  business?: number;
-  user_id?: number;
-  asset?: string;
-  order_id?: number;
-  financial_rate_id?: number;
-  buy_limit_low?: string;
-  buy_limit_high?: string;
-  rate_day?: number;
-  rate_ratio?: string;
-  coupon_days?: number;
-  coupon_principal?: string;
-  coupon_year_rate?: string;
-  coupon_interest?: string;
-  status?: number;
-  finish_time?: string;
-  create_time?: string;
-}
-⋮----
-export interface FixedTermLendOrder {
-  id?: number;
-  business?: number;
-  order_id?: number;
-  user_id?: number;
-  asset?: string;
-  product_id?: number;
-  lock_up_period?: number;
-  principal?: string;
-  year_rate?: string;
-  product_type?: number;
-  interest?: string;
-  status?: number;
-  reinvest_status?: number;
-  redeem_account_type?: number;
-  origin_order?: string;
-  redeem_type?: number;
-  redeem_time?: string;
-  finish_time?: string;
-  create_time?: string;
-  year_rate_perent?: string;
-  total_year_rate_percent?: string;
-  total_interest?: string;
-  product_info?: FixedTermProductInfo;
-  bonus_info?: FixedTermBonusInfo;
-  coupon_info?: FixedTermCouponInfo;
-  redeem_at?: number;
-  finish_at?: number;
-  create_at?: number;
-  icon?: string;
-}
-⋮----
-export interface FixedTermProduct {
-  id?: number;
-  name?: string;
-  asset?: string;
-  lock_up_period?: number;
-  min_lend_amount?: string;
-  user_max_lend_amount?: string;
-  total_lend_amount?: string;
-  year_rate?: string;
-  type?: number;
-  pre_redeem?: number;
-  reinvest?: number;
-  redeem_account?: number;
-  min_vip?: number;
-  max_vip?: number;
-  status?: number;
-  create_time?: string;
-  user_max_lend_volume?: string;
-  user_total_amount?: string;
-  sale_status?: number;
-}
-⋮----
-export interface FixedTermProductSimple {
-  id?: number;
-  asset?: string;
-  lock_up_period?: number;
-  year_rate?: string;
-  type?: number;
-  pre_redeem?: number;
-  reinvest?: number;
-  simple_earn?: number;
-  min_vip?: number;
-  max_vip?: number;
-  sale_status?: number;
-}
-⋮----
-export interface GetEarnFixedTermProductsResponse {
-  code: number;
-  message: string;
-  data: {
-    list: FixedTermProduct[];
-    total: number;
-  };
-  timestamp: number;
-}
-⋮----
-export interface GetEarnFixedTermProductsByAssetResponse {
-  code: number;
-  message: string;
-  data: {
-    list: FixedTermProductSimple[];
-  };
-  timestamp: number;
-}
-⋮----
-export interface CreateEarnFixedTermLendResponse {
-  code?: number;
-  message?: string;
-  data?: {
-    order_id?: number;
-  };
-  timestamp?: number;
-}
-⋮----
-export interface GetEarnFixedTermLendsResponse {
-  code: number;
-  message: string;
-  data: {
-    list: FixedTermLendOrder[];
-    total: number;
-  };
-  timestamp: number;
-}
-⋮----
-export interface CreateEarnFixedTermPreRedeemResponse {
-  code?: number;
-  message?: string;
-  data?: Record<string, never>;
-  timestamp?: number;
-}
-⋮----
-export interface FixedTermHistoryRecord {
-  id?: number;
-  order_id?: number;
-  user_id?: number;
-  asset?: string;
-  uniq_time?: string;
-  bonus_id?: number;
-  product_id?: number;
-  bonus_asset?: string;
-  total_principal?: string;
-  amount?: string;
-  asset_price?: string;
-  status?: number;
-  detail?: string;
-  create_time?: string;
-  create_at?: number;
-  lock_up_period?: number;
-}
-⋮----
-export interface GetEarnFixedTermHistoryResponse {
-  code?: number;
-  message?: string;
-  data?: {
-    list?: FixedTermHistoryRecord[];
-    total?: number;
-  };
-  timestamp?: number;
-}
 
 ================
 File: src/types/response/spot.ts
@@ -12606,6 +12596,263 @@ export interface LeverageFailedCurrency {
   currency: string;
   reason: string;
 }
+
+================
+File: src/lib/BaseRestClient.ts
+================
+import axios, { AxiosRequestConfig, AxiosResponse, Method } from 'axios';
+// NOTE: https.Agent is Node.js-only and not available in browser environments
+// Browser builds (via webpack) exclude this module - see webpack.config.js fallback settings
+import https from 'https';
+⋮----
+import { neverGuard } from './misc-util.js';
+import {
+  CHANNEL_ID,
+  getRestBaseUrl,
+  RestClientOptions,
+  serializeParams,
+} from './requestUtils.js';
+import {
+  checkWebCryptoAPISupported,
+  hashMessage,
+  SignAlgorithm,
+  SignEncodeMethod,
+  signMessage,
+} from './webCryptoAPI.js';
+⋮----
+/**
+ * Used to switch how authentication/requests work under the hood
+ */
+⋮----
+export type RestClientType =
+  (typeof REST_CLIENT_TYPE_ENUM)[keyof typeof REST_CLIENT_TYPE_ENUM];
+⋮----
+interface SignedRequest<T extends object | undefined = {}> {
+  originalParams: T;
+  paramsWithSign?: T & { sign: string };
+  serializedParams: string;
+  sign: string;
+  queryParamsWithSign: string;
+  timestamp: number;
+  recvWindow: number;
+}
+⋮----
+interface UnsignedRequest<T extends object | undefined = {}> {
+  originalParams: T;
+  paramsWithSign: T;
+}
+⋮----
+type SignMethod = 'gateV4';
+⋮----
+/**
+ * Some requests require some params to be in the query string and some in the body. Some even support passing params via headers.
+ * This type anticipates these are possible in any combination.
+ *
+ * The request builder will automatically handle where parameters should go.
+ */
+type ParamsInQueryBodyOrHeader = {
+  query?: object;
+  body?: object;
+  headers?: object;
+  /** multipart/form-data body; mutually exclusive with `body` */
+  multipart?: FormData;
+};
+⋮----
+/** multipart/form-data body; mutually exclusive with `body` */
+⋮----
+/**
+ * Enables:
+ * - Detailed request/response logging
+ * - Full request dump in any exceptions thrown from API responses
+ */
+⋮----
+// request: {
+//   url: response.config.url,
+//   method: response.config.method,
+//   data: response.config.data,
+//   headers: response.config.headers,
+// },
+⋮----
+/**
+ * Impure, mutates params to remove any values that have a key but are undefined.
+ */
+function deleteUndefinedValues(params?: any): void
+⋮----
+export abstract class BaseRestClient
+⋮----
+/** Defines the client type (affecting how requests & signatures behave) */
+abstract getClientType(): RestClientType;
+⋮----
+/**
+   * Create an instance of the REST client. Pass API credentials in the object in the first parameter.
+   * @param {RestClientOptions} [restClientOptions={}] options to configure REST API connectivity
+   * @param {AxiosRequestConfig} [networkOptions={}] HTTP networking options for axios
+   */
+constructor(
+    restClientOptions: RestClientOptions = {},
+    networkOptions: AxiosRequestConfig = {},
+)
+⋮----
+/** Throw errors if any request params are empty */
+⋮----
+/** in ms == 5 minutes by default */
+⋮----
+/** inject custom rquest options based on axios specs - see axios docs for more guidance on AxiosRequestConfig: https://github.com/axios/axios#request-config */
+⋮----
+// If enabled, configure a https agent with keepAlive enabled
+// NOTE: This is Node.js-only functionality. In browser environments, this code is skipped
+// as the 'https' module is excluded via webpack fallback configuration.
+// Browser connection pooling is handled automatically by the browser itself.
+⋮----
+// Extract existing https agent parameters, if provided, to prevent the keepAlive flag from overwriting an existing https agent completely
+⋮----
+// For more advanced configuration, raise an issue on GitHub or use the "networkOptions"
+// parameter to define a custom httpsAgent with the desired properties
+⋮----
+// Check Web Crypto API support when credentials are provided and no custom sign function is used
+⋮----
+// Throw if one of the 3 values is missing, but at least one of them is set
+⋮----
+/**
+   * Timestamp used to sign the request. Override this method to implement your own timestamp/sync mechanism
+   */
+getSignTimestampMs(): number
+⋮----
+protected get(endpoint: string, params?: object)
+⋮----
+// GET only supports params in the query string
+⋮----
+protected post(endpoint: string, params?: ParamsInQueryBodyOrHeader)
+⋮----
+protected getPrivate(endpoint: string, params?: object)
+⋮----
+// GET only supports params in the query string
+⋮----
+protected postPrivate(endpoint: string, params?: ParamsInQueryBodyOrHeader)
+⋮----
+/** POST private endpoint with multipart/form-data (empty body hash for signing) */
+protected postPrivateMultipart(
+    endpoint: string,
+    formData: FormData,
+    query?: object,
+)
+⋮----
+protected deletePrivate(
+    endpoint: string,
+    params?: ParamsInQueryBodyOrHeader,
+)
+⋮----
+protected putPrivate(endpoint: string, params?: ParamsInQueryBodyOrHeader)
+⋮----
+// protected patchPrivate(endpoint: string, params?: any) {
+protected patchPrivate(endpoint: string, params?: ParamsInQueryBodyOrHeader)
+⋮----
+/**
+   * @private Make a HTTP request to a specific endpoint. Private endpoint API calls are automatically signed.
+   */
+private async _call(
+    method: Method,
+    endpoint: string,
+    params?: ParamsInQueryBodyOrHeader,
+    isPublicApi?: boolean,
+): Promise<any>
+⋮----
+// Sanity check to make sure it's only ever prefixed by one forward slash
+⋮----
+// Build a request and handle signature process
+⋮----
+// Dispatch request
+⋮----
+// See: https://www.gate.io/docs/developers/apiv4/en/#return-format
+⋮----
+// Throw API rejections by parsing the response code from the body
+⋮----
+/**
+   * @private generic handler to parse request exceptions
+   */
+parseException(e: any, request: AxiosRequestConfig<any>): unknown
+⋮----
+// Something happened in setting up the request that triggered an error
+⋮----
+// request made but no response received
+⋮----
+// The request was made and the server responded with a status code
+// that falls out of the range of 2xx
+⋮----
+// console.error('err: ', response?.data);
+⋮----
+// Prevent credentials from leaking into error messages
+⋮----
+/**
+   * @private sign request and set recv window
+   */
+private async signRequest<
+    T extends ParamsInQueryBodyOrHeader | undefined = {},
+  >(
+    data: T,
+    endpoint: string,
+    method: Method,
+    signMethod: SignMethod,
+): Promise<SignedRequest<T>>
+⋮----
+const timestamp = +(this.getSignTimestampMs() / 1000).toFixed(0); // in seconds
+⋮----
+// recvWindow: this.options.recvWindow,
+⋮----
+// It's possible to override the recv window on a per rquest level
+⋮----
+// console.log('sign params: ', {
+//   requestBodyToHash,
+//   paramsStr: toSign,
+//   url: this.baseUrl,
+//   urlPath: this.baseUrlPath,
+// });
+⋮----
+private async signMessage(
+    paramsStr: string,
+    secret: string,
+    method: 'hex' | 'base64',
+    algorithm: SignAlgorithm,
+): Promise<string>
+⋮----
+private async prepareSignParams<
+    TParams extends ParamsInQueryBodyOrHeader | undefined,
+  >(
+    method: Method,
+    endpoint: string,
+    signMethod: SignMethod,
+    params?: TParams,
+    isPublicApi?: true,
+  ): Promise<UnsignedRequest<TParams>>;
+⋮----
+private async prepareSignParams<
+    TParams extends ParamsInQueryBodyOrHeader | undefined,
+  >(
+    method: Method,
+    endpoint: string,
+    signMethod: SignMethod,
+    params?: TParams,
+    isPublicApi?: false | undefined,
+  ): Promise<SignedRequest<TParams>>;
+⋮----
+private async prepareSignParams<
+    TParams extends ParamsInQueryBodyOrHeader | undefined,
+  >(
+    method: Method,
+    endpoint: string,
+    signMethod: SignMethod,
+    params?: TParams,
+    isPublicApi?: boolean,
+)
+⋮----
+/** Returns an axios request object. Handles signing process automatically if this is a private API call */
+private async buildRequest(
+    method: Method,
+    endpoint: string,
+    url: string,
+    params?: ParamsInQueryBodyOrHeader,
+    isPublicApi?: boolean,
+): Promise<AxiosRequestConfig>
 
 ================
 File: src/types/request/futures.ts
@@ -13879,263 +14126,6 @@ export interface GetChaseOrdersResp {
 export interface GetChaseOrderDetailResp {
   order?: ChaseOrder;
 }
-
-================
-File: src/lib/BaseRestClient.ts
-================
-import axios, { AxiosRequestConfig, AxiosResponse, Method } from 'axios';
-// NOTE: https.Agent is Node.js-only and not available in browser environments
-// Browser builds (via webpack) exclude this module - see webpack.config.js fallback settings
-import https from 'https';
-⋮----
-import { neverGuard } from './misc-util.js';
-import {
-  CHANNEL_ID,
-  getRestBaseUrl,
-  RestClientOptions,
-  serializeParams,
-} from './requestUtils.js';
-import {
-  checkWebCryptoAPISupported,
-  hashMessage,
-  SignAlgorithm,
-  SignEncodeMethod,
-  signMessage,
-} from './webCryptoAPI.js';
-⋮----
-/**
- * Used to switch how authentication/requests work under the hood
- */
-⋮----
-export type RestClientType =
-  (typeof REST_CLIENT_TYPE_ENUM)[keyof typeof REST_CLIENT_TYPE_ENUM];
-⋮----
-interface SignedRequest<T extends object | undefined = {}> {
-  originalParams: T;
-  paramsWithSign?: T & { sign: string };
-  serializedParams: string;
-  sign: string;
-  queryParamsWithSign: string;
-  timestamp: number;
-  recvWindow: number;
-}
-⋮----
-interface UnsignedRequest<T extends object | undefined = {}> {
-  originalParams: T;
-  paramsWithSign: T;
-}
-⋮----
-type SignMethod = 'gateV4';
-⋮----
-/**
- * Some requests require some params to be in the query string and some in the body. Some even support passing params via headers.
- * This type anticipates these are possible in any combination.
- *
- * The request builder will automatically handle where parameters should go.
- */
-type ParamsInQueryBodyOrHeader = {
-  query?: object;
-  body?: object;
-  headers?: object;
-  /** multipart/form-data body; mutually exclusive with `body` */
-  multipart?: FormData;
-};
-⋮----
-/** multipart/form-data body; mutually exclusive with `body` */
-⋮----
-/**
- * Enables:
- * - Detailed request/response logging
- * - Full request dump in any exceptions thrown from API responses
- */
-⋮----
-// request: {
-//   url: response.config.url,
-//   method: response.config.method,
-//   data: response.config.data,
-//   headers: response.config.headers,
-// },
-⋮----
-/**
- * Impure, mutates params to remove any values that have a key but are undefined.
- */
-function deleteUndefinedValues(params?: any): void
-⋮----
-export abstract class BaseRestClient
-⋮----
-/** Defines the client type (affecting how requests & signatures behave) */
-abstract getClientType(): RestClientType;
-⋮----
-/**
-   * Create an instance of the REST client. Pass API credentials in the object in the first parameter.
-   * @param {RestClientOptions} [restClientOptions={}] options to configure REST API connectivity
-   * @param {AxiosRequestConfig} [networkOptions={}] HTTP networking options for axios
-   */
-constructor(
-    restClientOptions: RestClientOptions = {},
-    networkOptions: AxiosRequestConfig = {},
-)
-⋮----
-/** Throw errors if any request params are empty */
-⋮----
-/** in ms == 5 minutes by default */
-⋮----
-/** inject custom rquest options based on axios specs - see axios docs for more guidance on AxiosRequestConfig: https://github.com/axios/axios#request-config */
-⋮----
-// If enabled, configure a https agent with keepAlive enabled
-// NOTE: This is Node.js-only functionality. In browser environments, this code is skipped
-// as the 'https' module is excluded via webpack fallback configuration.
-// Browser connection pooling is handled automatically by the browser itself.
-⋮----
-// Extract existing https agent parameters, if provided, to prevent the keepAlive flag from overwriting an existing https agent completely
-⋮----
-// For more advanced configuration, raise an issue on GitHub or use the "networkOptions"
-// parameter to define a custom httpsAgent with the desired properties
-⋮----
-// Check Web Crypto API support when credentials are provided and no custom sign function is used
-⋮----
-// Throw if one of the 3 values is missing, but at least one of them is set
-⋮----
-/**
-   * Timestamp used to sign the request. Override this method to implement your own timestamp/sync mechanism
-   */
-getSignTimestampMs(): number
-⋮----
-protected get(endpoint: string, params?: object)
-⋮----
-// GET only supports params in the query string
-⋮----
-protected post(endpoint: string, params?: ParamsInQueryBodyOrHeader)
-⋮----
-protected getPrivate(endpoint: string, params?: object)
-⋮----
-// GET only supports params in the query string
-⋮----
-protected postPrivate(endpoint: string, params?: ParamsInQueryBodyOrHeader)
-⋮----
-/** POST private endpoint with multipart/form-data (empty body hash for signing) */
-protected postPrivateMultipart(
-    endpoint: string,
-    formData: FormData,
-    query?: object,
-)
-⋮----
-protected deletePrivate(
-    endpoint: string,
-    params?: ParamsInQueryBodyOrHeader,
-)
-⋮----
-protected putPrivate(endpoint: string, params?: ParamsInQueryBodyOrHeader)
-⋮----
-// protected patchPrivate(endpoint: string, params?: any) {
-protected patchPrivate(endpoint: string, params?: ParamsInQueryBodyOrHeader)
-⋮----
-/**
-   * @private Make a HTTP request to a specific endpoint. Private endpoint API calls are automatically signed.
-   */
-private async _call(
-    method: Method,
-    endpoint: string,
-    params?: ParamsInQueryBodyOrHeader,
-    isPublicApi?: boolean,
-): Promise<any>
-⋮----
-// Sanity check to make sure it's only ever prefixed by one forward slash
-⋮----
-// Build a request and handle signature process
-⋮----
-// Dispatch request
-⋮----
-// See: https://www.gate.io/docs/developers/apiv4/en/#return-format
-⋮----
-// Throw API rejections by parsing the response code from the body
-⋮----
-/**
-   * @private generic handler to parse request exceptions
-   */
-parseException(e: any, request: AxiosRequestConfig<any>): unknown
-⋮----
-// Something happened in setting up the request that triggered an error
-⋮----
-// request made but no response received
-⋮----
-// The request was made and the server responded with a status code
-// that falls out of the range of 2xx
-⋮----
-// console.error('err: ', response?.data);
-⋮----
-// Prevent credentials from leaking into error messages
-⋮----
-/**
-   * @private sign request and set recv window
-   */
-private async signRequest<
-    T extends ParamsInQueryBodyOrHeader | undefined = {},
-  >(
-    data: T,
-    endpoint: string,
-    method: Method,
-    signMethod: SignMethod,
-): Promise<SignedRequest<T>>
-⋮----
-const timestamp = +(this.getSignTimestampMs() / 1000).toFixed(0); // in seconds
-⋮----
-// recvWindow: this.options.recvWindow,
-⋮----
-// It's possible to override the recv window on a per rquest level
-⋮----
-// console.log('sign params: ', {
-//   requestBodyToHash,
-//   paramsStr: toSign,
-//   url: this.baseUrl,
-//   urlPath: this.baseUrlPath,
-// });
-⋮----
-private async signMessage(
-    paramsStr: string,
-    secret: string,
-    method: 'hex' | 'base64',
-    algorithm: SignAlgorithm,
-): Promise<string>
-⋮----
-private async prepareSignParams<
-    TParams extends ParamsInQueryBodyOrHeader | undefined,
-  >(
-    method: Method,
-    endpoint: string,
-    signMethod: SignMethod,
-    params?: TParams,
-    isPublicApi?: true,
-  ): Promise<UnsignedRequest<TParams>>;
-⋮----
-private async prepareSignParams<
-    TParams extends ParamsInQueryBodyOrHeader | undefined,
-  >(
-    method: Method,
-    endpoint: string,
-    signMethod: SignMethod,
-    params?: TParams,
-    isPublicApi?: false | undefined,
-  ): Promise<SignedRequest<TParams>>;
-⋮----
-private async prepareSignParams<
-    TParams extends ParamsInQueryBodyOrHeader | undefined,
-  >(
-    method: Method,
-    endpoint: string,
-    signMethod: SignMethod,
-    params?: TParams,
-    isPublicApi?: boolean,
-)
-⋮----
-/** Returns an axios request object. Handles signing process automatically if this is a private API call */
-private async buildRequest(
-    method: Method,
-    endpoint: string,
-    url: string,
-    params?: ParamsInQueryBodyOrHeader,
-    isPublicApi?: boolean,
-): Promise<AxiosRequestConfig>
 
 ================
 File: README.md
@@ -15454,6 +15444,14 @@ getDepositRecords(
    */
 submitTransfer(params: SubmitTransferReq): Promise<
 ⋮----
+/**
+   * Get trading account transfer details
+   *
+   * Retrieve the current user's trading account transfer details by tx_id. Response includes transfer status, currency, amount, source and destination account types, and applicable settlement currency or margin currency pair.
+   *
+   * @param params Parameters containing the transfer transaction ID
+   * @returns Promise<AccountTransferDetail>
+   */
 getTransfer(params: GetTransferReq): Promise<AccountTransferDetail>
 ⋮----
 /**
@@ -15918,6 +15916,14 @@ portfolioMarginCalculate(
     params: PortfolioMarginCalculatorReq,
 ): Promise<PortfolioMarginCalculation>
 ⋮----
+/**
+   * Set leverage for all borrowed currencies
+   *
+   * Set leverage for all of a user's borrowed currencies. Currencies with outstanding loans cannot be changed. Values above a currency's leverage limit are capped. The response lists currencies whose updates failed together with the failure reason.
+   *
+   * @param params Parameters containing the leverage value
+   * @returns Promise<LeverageFailedCurrency[]>
+   */
 setUserLeverage(
     params: SetUserLeverageReq,
 ): Promise<LeverageFailedCurrency[]>
@@ -16404,16 +16410,56 @@ cancelSpotTriggeredOrder(params: {
     order_id: string;
 }): Promise<SpotPriceTriggeredOrder>
 ⋮----
+/**
+   * List Spot POV orders
+   *
+   * List percentage-of-volume strategy orders. Status defaults to open when listing active orders.
+   *
+   * @param params Parameters for listing Spot POV orders
+   * @returns Promise<SpotPovOrder[]>
+   */
 listSpotPovOrders(params: GetSpotPovOrdersReq): Promise<SpotPovOrder[]>
 ⋮----
+/**
+   * Create a Spot POV order
+   *
+   * Create a percentage-of-volume strategy order with a target participation rate, validity period, and optional limit/trigger prices.
+   *
+   * @param params Parameters for creating a Spot POV order
+   * @returns Promise<SpotPovOrder>
+   */
 createSpotPovOrder(params: CreateSpotPovOrderReq): Promise<SpotPovOrder>
 ⋮----
+/**
+   * Cancel Spot POV orders
+   *
+   * Cancel Spot POV orders in bulk. Optionally filter by currency pair.
+   *
+   * @param params Optional parameters for cancelling Spot POV orders
+   * @returns Promise<SpotPovOrder[]>
+   */
 cancelSpotPovOrders(
     params?: CancelSpotPovOrdersReq,
 ): Promise<SpotPovOrder[]>
 ⋮----
+/**
+   * Query Spot POV order details
+   *
+   * Supports the order ID returned after creation, or the custom ID specified in the text field.
+   *
+   * @param params Parameters containing the order ID
+   * @returns Promise<SpotPovOrder>
+   */
 getSpotPovOrder(params:
 ⋮----
+/**
+   * Cancel a Spot POV order
+   *
+   * Supports the order ID returned after creation, or the custom ID specified in the text field.
+   *
+   * @param params Parameters containing the order ID
+   * @returns Promise<SpotPovOrder>
+   */
 cancelSpotPovOrder(params:
 ⋮----
 /**
@@ -19233,6 +19279,14 @@ createCrossExOrder(
     params: CreateCrossExOrderReq,
 ): Promise<CreateCrossExOrderResp>
 ⋮----
+/**
+   * Batch cancel CrossEx orders
+   *
+   * Cancel multiple CrossEx orders by order_id or custom text. When both are provided, order_id takes precedence. Each result reports whether the request was accepted plus any error label and message. Rate Limit: 100 requests per 10 seconds
+   *
+   * @param params Array of cancel requests (order_id and/or text)
+   * @returns Promise with array of batch cancel results
+   */
 cancelBatchCrossExOrders(
     params: CancelBatchCrossExOrdersReq[],
 ): Promise<CancelBatchCrossExOrdersResp[]>
@@ -19528,10 +19582,26 @@ getCrossExCoinDiscountRate(
     params?: GetCrossExCoinDiscountRateReq,
 ): Promise<CrossExCoinDiscountRate[]>
 ⋮----
+/**
+   * Query CrossEx market tickers
+   *
+   * Query exchange market tickers, optionally filtered by a comma-separated list of symbols.
+   *
+   * @param params Optional parameters to filter symbols
+   * @returns Promise with array of market tickers
+   */
 listCrossExMarketTickers(
     params?: GetCrossExMarketTickersReq,
 ): Promise<CrossExMarketTicker[]>
 ⋮----
+/**
+   * Query CrossEx market funding info
+   *
+   * Query futures funding rates, funding intervals, and next funding timestamps across exchanges.
+   *
+   * @param params Optional parameters to filter symbols
+   * @returns Promise with array of funding info records
+   */
 listCrossExMarketFundingInfo(
     params?: GetCrossExMarketFundingInfoReq,
 ): Promise<CrossExMarketFundingInfo[]>
@@ -19633,6 +19703,14 @@ getTradFiSymbolCategories(): Promise<
 ⋮----
 getTradFiSymbols(): Promise<TradFiApiResp<TradFiListData<TradFiSymbolItem>>>
 ⋮----
+/**
+   * Query CFD symbol commission rates
+   *
+   * At least one of symbols or category_code is required. When both are provided, symbols are filtered by category.
+   *
+   * @param params Optional filters for symbols and/or category codes
+   * @returns Promise with list of symbol commission rates
+   */
 getTradFiSymbolCommissions(
     params?: TradFiGetSymbolCommissionsParams,
 ): Promise<TradFiApiResp<TradFiListData<TradFiSymbolCommissionItem>>>
@@ -19705,61 +19783,161 @@ getTradFiOrderLog(params: {
 ⋮----
 // ============ Stock ============
 ⋮----
+/**
+   * Query user stock assets
+   *
+   * @param params Optional PnL calculation parameters
+   * @returns Promise with user asset details
+   */
 getStockUserAssets(
     params?: GetStockUserAssetsReq,
 ): Promise<StockApiResp<StockUserAssets>>
 ⋮----
+/**
+   * Query stock symbol list
+   *
+   * @param params Optional filters for symbols, exchange, and pagination
+   * @returns Promise with paginated symbol list
+   */
 getStockSymbols(
     params?: GetStockSymbolsReq,
 ): Promise<StockApiResp<StockListData<StockSymbolItem>>>
 ⋮----
+/**
+   * Query stock symbol details
+   *
+   * @param params Optional filters for symbols, exchange, and pagination
+   * @returns Promise with paginated symbol detail list
+   */
 getStockSymbolDetail(
     params?: GetStockSymbolDetailReq,
 ): Promise<StockApiResp<StockListData<StockSymbolDetailItem>>>
 ⋮----
+/**
+   * Query stock market order book
+   *
+   * @param symbol Symbol
+   * @returns Promise with order book data
+   */
 getStockOrderBook(symbol: string): Promise<StockApiResp<StockOrderBook>>
 ⋮----
+/**
+   * Query open stock orders
+   *
+   * @param params Optional symbol filter
+   * @returns Promise with open order list
+   */
 getStockOrders(
     params?: GetStockOrdersReq,
 ): Promise<StockApiResp<StockListData<StockOrderItem>>>
 ⋮----
+/**
+   * Create a stock order
+   *
+   * Limit orders support only the all trading session; market orders support only regular. time_in_force supports day only.
+   *
+   * @param params Order parameters
+   * @returns Promise with created order ID
+   */
 createStockOrder(
     params: CreateStockOrderReq,
 ): Promise<StockApiResp<StockCreateOrderResult>>
 ⋮----
+/**
+   * Cancel all open stock orders
+   *
+   * @returns Promise with empty data on success
+   */
 cancelAllStockOrders(): Promise<StockApiResp<Record<string, never>>>
 ⋮----
+/**
+   * Query stock order history
+   *
+   * @param params Optional filters for symbol, order IDs, time range, side, and pagination
+   * @returns Promise with paginated historical order list
+   */
 getStockOrderHistory(
     params?: GetStockOrderHistoryReq,
 ): Promise<StockApiResp<StockListData<StockOrderHistoryItem>>>
 ⋮----
+/**
+   * Modify a stock order
+   *
+   * @param orderId Order ID
+   * @param params Modified volume and price
+   * @returns Promise with updated order ID
+   */
 updateStockOrder(
     orderId: number,
     params: UpdateStockOrderReq,
 ): Promise<StockApiResp<StockUpdateOrderResult>>
 ⋮----
+/**
+   * Cancel a stock order
+   *
+   * @param orderId Order ID
+   * @returns Promise with empty data on success
+   */
 cancelStockOrder(
     orderId: number,
 ): Promise<StockApiResp<Record<string, never>>>
 ⋮----
+/**
+   * Query current stock positions
+   *
+   * @param params Optional filters for PnL calc, symbol, and exchange
+   * @returns Promise with position list
+   */
 getStockPositions(
     params?: GetStockPositionsReq,
 ): Promise<StockApiResp<StockListData<StockPositionItem>>>
 ⋮----
+/**
+   * Close a stock position
+   *
+   * @param params Close parameters (partial or full)
+   * @returns Promise with close order ID
+   */
 closeStockPosition(
     params: CloseStockPositionReq,
 ): Promise<StockApiResp<StockClosePositionResult>>
 ⋮----
+/**
+   * Query stock transaction records
+   *
+   * @param params Optional filters for time range, ref_id, type, and pagination
+   * @returns Promise with paginated transaction list
+   */
 getStockTransactions(
     params?: GetStockTransactionsReq,
 ): Promise<StockApiResp<StockListData<StockTransactionItem>>>
 ⋮----
+/**
+   * Fund transfer for stock account
+   *
+   * Transfer funds in or out of the stock account (USDT only).
+   *
+   * @param params Transfer parameters including ref_id for idempotency
+   * @returns Promise with empty data on success
+   */
 createStockTransaction(
     params: CreateStockTransactionReq,
 ): Promise<StockApiResp<Record<string, never>>>
 ⋮----
+/**
+   * Query supported stock exchanges
+   *
+   * @returns Promise with exchange list
+   */
 getStockExchanges(): Promise<StockApiResp<StockListData<StockExchangeItem>>>
 ⋮----
+/**
+   * Query stock fee rates
+   *
+   * Maker/taker fee fields apply to Japanese and Korean stocks.
+   *
+   * @returns Promise with fee rate list by VIP level
+   */
 getStockFeeRate(): Promise<StockApiResp<StockListData<StockFeeRateItem>>>
 
 ================
