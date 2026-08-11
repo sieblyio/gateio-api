@@ -241,3 +241,27 @@ export interface PushOrder {
     | 'RECEIVED';
   message: string;
 }
+
+/** GET /wallet/transfers — AccountTransferDetail */
+export interface AccountTransferDetail {
+  tx_id: string;
+  status: 'pending' | 'success' | 'fail';
+  currency: string;
+  amount: string;
+  from_account:
+    | 'spot'
+    | 'margin'
+    | 'futures'
+    | 'delivery'
+    | 'options'
+    | 'unknown';
+  to_account:
+    | 'spot'
+    | 'margin'
+    | 'futures'
+    | 'delivery'
+    | 'options'
+    | 'unknown';
+  settle?: string | null;
+  currency_pair?: string | null;
+}

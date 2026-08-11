@@ -31,19 +31,19 @@ export interface CreateOTCFiatOrderReq {
 }
 
 export interface CreateOTCStablecoinOrderReq {
-  pay_coin?: string; // Currency paid by the user
-  get_coin?: string; // Currency to be received by the user
-  pay_amount?: string; // User payment currency amount
-  get_amount?: string; // Amount of currency received by the user
-  side?: string; // Quote direction returned by the quote API (used for order validation)
-  promotion_code?: string; // Promotion code
-  quote_token?: string; // Parameter returned by the quote API
+  pay_coin: string; // Currency paid by the user
+  get_coin: string; // Currency to be received by the user
+  pay_amount: string; // User payment currency amount
+  get_amount: string; // Amount of currency received by the user
+  side: string; // Quote direction returned by the quote API (used for order validation)
+  quote_token: string; // Parameter returned by the quote API
+  promotion_code?: string; // Promotion code (optional)
 }
 
 export interface MarkOTCOrderAsPaidReq {
   order_id: string; // Order ID
   client_order_id?: string; // Client order ID (gateway/Inner Pay paths)
-  payment_receipt_file_key: string; // Required. Stored as file_key; jpg/jpeg/png/pdf; ≤4MB
+  payment_receipt_file_key: string; // Required. Stored as file_key; jpg/jpeg/png/pdf; ≤10MB
   payment_receipt?: string; // Alias compatible with payment_receipt_file_key
 }
 

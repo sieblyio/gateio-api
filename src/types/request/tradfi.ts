@@ -66,3 +66,9 @@ export interface TradFiGetPositionHistoryParams {
   page?: number;
   page_size?: number;
 }
+
+/** GET /tradfi/symbols/commissions */
+export interface TradFiGetSymbolCommissionsParams {
+  symbols?: string;
+  category_code?: string;
+}

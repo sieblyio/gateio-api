@@ -225,3 +225,9 @@ export interface QuickRepaymentResp {
 export interface DeltaNeutralEnabled {
   enabled: boolean;
 }
+
+/** POST /unified/leverage/user_setting failed currency entry */
+export interface LeverageFailedCurrency {
+  currency: string;
+  reason: string;
+}

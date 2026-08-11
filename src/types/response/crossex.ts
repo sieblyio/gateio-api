@@ -18,6 +18,7 @@ export interface CrossExSymbol {
   contract_size: string;
   liquidation_fee: string;
   delist_time: string;
+  support_rpi?: string; // true/false whether RPI orders are supported
 }
 
 export interface CrossExRiskLimitTier {
@@ -196,15 +197,48 @@ export interface CrossExSpecialFee {
   symbol: string; // Currency pair
   taker_fee_rate: string; // Taker fee rate
   maker_fee_rate: string; // Maker fee rate
+  rpi_fee_rate?: string; // RPI order maker fee rate
 }
 
 export interface CrossExFeeRate {
   exchange_type: string; // Exchange (e.g. BINANCE, OKX, GATE, BYBIT)
   spot_maker_fee: string; // spot Maker fee rate
   spot_taker_fee: string; // spot Taker fee rate
+  spot_rpi_maker_fee?: string; // Spot RPI order maker fee rate
   future_maker_fee: string; // contract Maker fee rate
   future_taker_fee: string; // contract Taker fee rate
+  future_rpi_maker_fee?: string; // Futures RPI order maker fee rate
   special_fee_list: CrossExSpecialFee[];
+}
+
+export interface CrossExMarketTicker {
+  symbol: string;
+  last_price: string;
+  open_24h: string;
+  low_24h: string;
+  high_24h: string;
+  volume_24h_base: string;
+  volume_24h_quote: string;
+  mark_price: string;
+  index_price: string;
+  open_interest: string;
+  open_interest_quote: string;
+  timestamp: string;
+}
+
+export interface CrossExMarketFundingInfo {
+  symbol: string;
+  funding_rate: string;
+  funding_interval: string;
+  funding_time: string; // Next funding time
+}
+
+export interface CancelBatchCrossExOrdersResp {
+  order_id: string;
+  text: string;
+  accepted: string; // "true" | "false"
+  label: string;
+  message: string;
 }
 
 export interface CrossExPosition {

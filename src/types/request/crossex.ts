@@ -37,12 +37,26 @@ export interface CreateCrossExOrderReq {
   symbol: string; // Unique identifier Exchange_Business_Base_Counter
   side: 'BUY' | 'SELL';
   type?: 'LIMIT' | 'MARKET'; // Order type (default: LIMIT)
-  time_in_force?: 'GTC' | 'IOC' | 'FOK' | 'POC'; // Default GTC
+  time_in_force?: 'GTC' | 'IOC' | 'FOK' | 'POC' | 'RPI'; // Default GTC; RPI = Retail Price Improvement
   qty?: string; // Order quantity (required unless spot market buy)
   price?: string; // Limit Order Price (Required for Limit Orders)
   quote_qty?: string; // Order quote quantity; required for spot and margin market buy orders
   reduce_only?: 'true' | 'false'; // Reduce-only
   position_side?: 'LONG' | 'SHORT' | 'NONE'; // Position side, defaults to NONE (single position mode) if not specified
+}
+
+export interface GetCrossExMarketTickersReq {
+  symbols?: string;
+}
+
+export interface GetCrossExMarketFundingInfoReq {
+  symbols?: string;
+}
+
+/** Either order_id or text required; order_id wins if both set */
+export interface CancelBatchCrossExOrdersReq {
+  order_id?: string;
+  text?: string;
 }
 
 export interface ModifyCrossExOrderReq {

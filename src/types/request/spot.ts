@@ -172,3 +172,29 @@ export interface UpdateSpotOrderReq {
   stop_loss?: PatchSpotOrderTPSL;
   stop_profit?: PatchSpotOrderTPSL;
 }
+
+/** GET /spot/pov_orders */
+export interface GetSpotPovOrdersReq {
+  status: 'open' | 'finished';
+  currency_pair?: string;
+  side?: 'buy' | 'sell';
+  page?: number;
+  limit?: number;
+}
+
+/** POST /spot/pov_orders */
+export interface CreateSpotPovOrderReq {
+  currency_pair: string;
+  side: 'buy' | 'sell';
+  amount: string;
+  participation_rate: 5 | 10 | 20 | 40;
+  ttl: '1h' | '6h' | '12h' | '1d' | '2d' | '3d' | '4d' | '5d' | '6d' | '7d';
+  limit_price?: string;
+  trigger_price?: string;
+  text?: string;
+}
+
+/** POST /spot/pov_orders/cancel */
+export interface CancelSpotPovOrdersReq {
+  currency_pair?: string;
+}

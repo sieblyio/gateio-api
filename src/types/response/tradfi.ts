@@ -233,3 +233,9 @@ export interface TradFiOrderLog {
   price?: string;
   [key: string]: unknown;
 }
+
+export interface TradFiSymbolCommissionItem {
+  category_code?: string;
+  symbol?: string;
+  fee_per_lot?: string;
+}
