@@ -44,6 +44,7 @@ export type CreateOTCFiatOrderResp = OTCActionResp;
 export interface CreateOTCStablecoinOrderResp {
   code: number;
   message: string;
+  timestamp: number;
 }
 
 export interface OTCBankListItem {
@@ -90,10 +91,11 @@ export interface CreateOTCBankResp {
 }
 
 export interface OTCBankSupplementChecklistItem {
-  code: string;
+  description: string;
+  code?: string;
   zh?: string;
   en?: string;
-  required: boolean;
+  required?: boolean;
 }
 
 export interface GetOTCBankSupplementChecklistResp {
@@ -116,7 +118,7 @@ export interface OTCFiatOrderListItem {
   order_id: string;
   trade_no: string; // Trade number
   type: string; // Quote direction buy/sell/all
-  status: string; // Order Status
+  status: string; // Order Status (includes DISBURSED)
   db_status: string;
   fiat_currency: string; // Fiat type
   fiat_currency_info: {

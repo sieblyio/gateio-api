@@ -278,3 +278,30 @@ export interface SpotHistoricTradeRecord {
   text: string;
   deal?: string; // v4.105.29: Total Executed Value
 }
+
+export type SpotPovOrderStatus =
+  | 'CREATED'
+  | 'CANCELING'
+  | 'RUNNING'
+  | 'COMPLETED'
+  | 'EXPIRED'
+  | 'TERMINATED';
+
+export interface SpotPovOrder {
+  id?: string;
+  currency_pair?: string;
+  side?: string;
+  amount?: string;
+  participation_rate?: number;
+  ttl?: string;
+  limit_price?: string;
+  trigger_price?: string;
+  status?: SpotPovOrderStatus | string;
+  terminated_as?: string;
+  start_time_ms?: number;
+  end_time_ms?: number;
+  expire_time_ms?: number;
+  create_time_ms?: number;
+  update_time_ms?: number;
+  text?: string;
+}

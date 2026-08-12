@@ -33,6 +33,7 @@ import {
   UpdateAutoInvestPlanReq,
 } from './types/request/autoinvest.js';
 import {
+  CancelBatchCrossExOrdersReq,
   CloseCrossExPositionReq,
   CreateCrossExConvertOrderReq,
   CreateCrossExConvertQuoteReq,
@@ -50,6 +51,8 @@ import {
   GetCrossExInterestRateReq,
   GetCrossExMarginPositionLeverageReq,
   GetCrossExMarginPositionsReq,
+  GetCrossExMarketFundingInfoReq,
+  GetCrossExMarketTickersReq,
   GetCrossExOpenOrdersReq,
   GetCrossExPositionLeverageReq,
   GetCrossExPositionsReq,
@@ -225,6 +228,8 @@ import {
 } from './types/request/rebate.js';
 import {
   CancelSpotBatchOrdersReq,
+  CancelSpotPovOrdersReq,
+  CreateSpotPovOrderReq,
   DeleteSpotOrderReq,
   GetSpotAccountBookReq,
   GetSpotAutoOrdersReq,
@@ -233,6 +238,7 @@ import {
   GetSpotOrderBookReq,
   GetSpotOrderReq,
   GetSpotOrdersReq,
+  GetSpotPovOrdersReq,
   GetSpotTradesReq,
   GetSpotTradingHistoryReq,
   SubmitSpotClosePosCrossDisabledReq,
@@ -240,6 +246,19 @@ import {
   UpdateSpotBatchOrdersReq,
   UpdateSpotOrderReq,
 } from './types/request/spot.js';
+import {
+  CloseStockPositionReq,
+  CreateStockOrderReq,
+  CreateStockTransactionReq,
+  GetStockOrderHistoryReq,
+  GetStockOrdersReq,
+  GetStockPositionsReq,
+  GetStockSymbolDetailReq,
+  GetStockSymbolsReq,
+  GetStockTransactionsReq,
+  GetStockUserAssetsReq,
+  UpdateStockOrderReq,
+} from './types/request/stock.js';
 import {
   CreateSubAccountApiKeyReq,
   CreateSubAccountReq,
@@ -252,6 +271,7 @@ import {
   TradFiGetKlinesParams,
   TradFiGetOrderHistoryParams,
   TradFiGetPositionHistoryParams,
+  TradFiGetSymbolCommissionsParams,
   TradFiGetSymbolDetailParams,
   TradFiGetTransactionsParams,
   TradFiModifyOrderReq,
@@ -266,6 +286,7 @@ import {
   PortfolioMarginCalculatorReq,
   SetUnifiedAccountModeReq,
   SetUnifiedDeltaNeutralReq,
+  SetUserLeverageReq,
   SubmitUnifiedBorrowOrRepayReq,
   SubmitUnifiedLoanRepayReq,
 } from './types/request/unified.js';
@@ -274,6 +295,7 @@ import {
   GetSavedAddressReq,
   GetSmallBalanceHistoryReq,
   GetSubAccountBalancesReq,
+  GetTransferReq,
   GetWithdrawalDepositRecordsReq,
   ListPushOrdersReq,
   SubmitMainSubTransferReq,
@@ -308,6 +330,7 @@ import {
   CreateAutoInvestPlanResp,
 } from './types/response/autoinvest.js';
 import {
+  CancelBatchCrossExOrdersResp,
   CancelCrossExOrderResp,
   CloseCrossExPositionResp,
   CreateCrossExConvertOrderResp,
@@ -326,6 +349,8 @@ import {
   CrossExInterestRate,
   CrossExMarginPosition,
   CrossExMarginPositionLeverage,
+  CrossExMarketFundingInfo,
+  CrossExMarketTicker,
   CrossExOrder,
   CrossExPosition,
   CrossExPositionLeverage,
@@ -502,11 +527,29 @@ import {
   SpotInsuranceHistory,
   SpotOrder,
   SpotOrderBook,
+  SpotPovOrder,
   SpotPriceTriggeredOrder,
   SpotTicker,
   SpotTrade,
   SubmitSpotBatchOrdersResp,
 } from './types/response/spot.js';
+import {
+  StockApiResp,
+  StockClosePositionResult,
+  StockCreateOrderResult,
+  StockExchangeItem,
+  StockFeeRateItem,
+  StockListData,
+  StockOrderBook,
+  StockOrderHistoryItem,
+  StockOrderItem,
+  StockPositionItem,
+  StockSymbolDetailItem,
+  StockSymbolItem,
+  StockTransactionItem,
+  StockUpdateOrderResult,
+  StockUserAssets,
+} from './types/response/stock.js';
 import {
   CreatedSubAccountAPIKey,
   SubAccount,
@@ -528,6 +571,7 @@ import {
   TradFiOrderLog,
   TradFiPositionHistoryItem,
   TradFiPositionItem,
+  TradFiSymbolCommissionItem,
   TradFiSymbolDetailItem,
   TradFiSymbolItem,
   TradFiTicker,
@@ -535,6 +579,7 @@ import {
 } from './types/response/tradfi.js';
 import {
   DeltaNeutralEnabled,
+  LeverageFailedCurrency,
   MarginTier,
   PortfolioMarginCalculation,
   QuickEstimatedRepayment,
@@ -550,6 +595,7 @@ import {
   UserCurrencyLeverageConfig,
 } from './types/response/unified.js';
 import {
+  AccountTransferDetail,
   CreateDepositAddressResp,
   CurrencyChain,
   DepositRecord,
@@ -777,6 +823,18 @@ export class RestClient extends BaseRestClient {
    */
   submitTransfer(params: SubmitTransferReq): Promise<{ tx_id: number }> {
     return this.postPrivate('/wallet/transfers', { body: params });
+  }
+
+  /**
+   * Get trading account transfer details
+   *
+   * Retrieve the current user's trading account transfer details by tx_id. Response includes transfer status, currency, amount, source and destination account types, and applicable settlement currency or margin currency pair.
+   *
+   * @param params Parameters containing the transfer transaction ID
+   * @returns Promise<AccountTransferDetail>
+   */
+  getTransfer(params: GetTransferReq): Promise<AccountTransferDetail> {
+    return this.getPrivate('/wallet/transfers', params);
   }
 
   /**
@@ -1344,6 +1402,20 @@ export class RestClient extends BaseRestClient {
     params: PortfolioMarginCalculatorReq,
   ): Promise<PortfolioMarginCalculation> {
     return this.post('/unified/portfolio_calculator', { body: params });
+  }
+
+  /**
+   * Set leverage for all borrowed currencies
+   *
+   * Set leverage for all of a user's borrowed currencies. Currencies with outstanding loans cannot be changed. Values above a currency's leverage limit are capped. The response lists currencies whose updates failed together with the failure reason.
+   *
+   * @param params Parameters containing the leverage value
+   * @returns Promise<LeverageFailedCurrency[]>
+   */
+  setUserLeverage(
+    params: SetUserLeverageReq,
+  ): Promise<LeverageFailedCurrency[]> {
+    return this.postPrivate('/unified/leverage/user_setting', { body: params });
   }
 
   /**
@@ -1977,6 +2049,68 @@ export class RestClient extends BaseRestClient {
     order_id: string;
   }): Promise<SpotPriceTriggeredOrder> {
     return this.deletePrivate(`/spot/price_orders/${params.order_id}`);
+  }
+
+  /**
+   * List Spot POV orders
+   *
+   * List percentage-of-volume strategy orders. Status defaults to open when listing active orders.
+   *
+   * @param params Parameters for listing Spot POV orders
+   * @returns Promise<SpotPovOrder[]>
+   */
+  getSpotPovOrders(params: GetSpotPovOrdersReq): Promise<SpotPovOrder[]> {
+    return this.getPrivate('/spot/pov_orders', params);
+  }
+
+  /**
+   * Create a Spot POV order
+   *
+   * Create a percentage-of-volume strategy order with a target participation rate, validity period, and optional limit/trigger prices.
+   *
+   * @param params Parameters for creating a Spot POV order
+   * @returns Promise<SpotPovOrder>
+   */
+  createSpotPovOrder(params: CreateSpotPovOrderReq): Promise<SpotPovOrder> {
+    return this.postPrivate('/spot/pov_orders', { body: params });
+  }
+
+  /**
+   * Cancel Spot POV orders
+   *
+   * Cancel Spot POV orders in bulk. Optionally filter by currency pair.
+   *
+   * @param params Optional parameters for cancelling Spot POV orders
+   * @returns Promise<SpotPovOrder[]>
+   */
+  cancelSpotPovOrders(
+    params?: CancelSpotPovOrdersReq,
+  ): Promise<SpotPovOrder[]> {
+    return this.postPrivate('/spot/pov_orders/cancel', { query: params });
+  }
+
+  /**
+   * Query Spot POV order details
+   *
+   * Supports the order ID returned after creation, or the custom ID specified in the text field.
+   *
+   * @param params Parameters containing the order ID
+   * @returns Promise<SpotPovOrder>
+   */
+  getSpotPovOrder(params: { order_id: string }): Promise<SpotPovOrder> {
+    return this.getPrivate(`/spot/pov_orders/${params.order_id}`);
+  }
+
+  /**
+   * Cancel a Spot POV order
+   *
+   * Supports the order ID returned after creation, or the custom ID specified in the text field.
+   *
+   * @param params Parameters containing the order ID
+   * @returns Promise<SpotPovOrder>
+   */
+  cancelSpotPovOrder(params: { order_id: string }): Promise<SpotPovOrder> {
+    return this.postPrivate(`/spot/pov_orders/${params.order_id}/cancel`);
   }
 
   /**
@@ -5685,6 +5819,20 @@ export class RestClient extends BaseRestClient {
   }
 
   /**
+   * Batch cancel CrossEx orders
+   *
+   * Cancel multiple CrossEx orders by order_id or custom text. When both are provided, order_id takes precedence. Each result reports whether the request was accepted plus any error label and message. Rate Limit: 100 requests per 10 seconds
+   *
+   * @param params Array of cancel requests (order_id and/or text)
+   * @returns Promise with array of batch cancel results
+   */
+  cancelBatchCrossExOrders(
+    params: CancelBatchCrossExOrdersReq[],
+  ): Promise<CancelBatchCrossExOrdersResp[]> {
+    return this.postPrivate('/crossex/batch_cancel_orders', { body: params });
+  }
+
+  /**
    * Cancel Order
    *
    * Cancel an order. Rate Limit: 100 requests per 10 seconds
@@ -6027,6 +6175,34 @@ export class RestClient extends BaseRestClient {
     return this.getPrivate('/crossex/coin_discount_rate', params);
   }
 
+  /**
+   * Query CrossEx market tickers
+   *
+   * Query exchange market tickers, optionally filtered by a comma-separated list of symbols.
+   *
+   * @param params Optional parameters to filter symbols
+   * @returns Promise with array of market tickers
+   */
+  getCrossExMarketTickers(
+    params?: GetCrossExMarketTickersReq,
+  ): Promise<CrossExMarketTicker[]> {
+    return this.get('/crossex/market/tickers', params);
+  }
+
+  /**
+   * Query CrossEx market funding info
+   *
+   * Query futures funding rates, funding intervals, and next funding timestamps across exchanges.
+   *
+   * @param params Optional parameters to filter symbols
+   * @returns Promise with array of funding info records
+   */
+  getCrossExMarketFundingInfo(
+    params?: GetCrossExMarketFundingInfoReq,
+  ): Promise<CrossExMarketFundingInfo[]> {
+    return this.get('/crossex/market/funding_info', params);
+  }
+
   /**==========================================================================================================================
    * ALPHA
    * ==========================================================================================================================
@@ -6145,6 +6321,20 @@ export class RestClient extends BaseRestClient {
     return this.get('/tradfi/symbols');
   }
 
+  /**
+   * Query CFD symbol commission rates
+   *
+   * At least one of symbols or category_code is required. When both are provided, symbols are filtered by category.
+   *
+   * @param params Optional filters for symbols and/or category codes
+   * @returns Promise with list of symbol commission rates
+   */
+  getTradFiSymbolCommissions(
+    params?: TradFiGetSymbolCommissionsParams,
+  ): Promise<TradFiApiResp<TradFiListData<TradFiSymbolCommissionItem>>> {
+    return this.get('/tradfi/symbols/commissions', params);
+  }
+
   getTradFiSymbolDetail(
     params: TradFiGetSymbolDetailParams,
   ): Promise<TradFiApiResp<TradFiListData<TradFiSymbolDetailItem>>> {
@@ -6246,5 +6436,196 @@ export class RestClient extends BaseRestClient {
     log_id: number | string;
   }): Promise<TradFiApiResp<TradFiOrderLog>> {
     return this.getPrivate(`/tradfi/orders/log/${params.log_id}`);
+  }
+
+  // ============ Stock ============
+
+  /**
+   * Query user stock assets
+   *
+   * @param params Optional PnL calculation parameters
+   * @returns Promise with user asset details
+   */
+  getStockUserAssets(
+    params?: GetStockUserAssetsReq,
+  ): Promise<StockApiResp<StockUserAssets>> {
+    return this.getPrivate('/stock/users/assets', params);
+  }
+
+  /**
+   * Query stock symbol list
+   *
+   * @param params Optional filters for symbols, exchange, and pagination
+   * @returns Promise with paginated symbol list
+   */
+  getStockSymbols(
+    params?: GetStockSymbolsReq,
+  ): Promise<StockApiResp<StockListData<StockSymbolItem>>> {
+    return this.get('/stock/symbols', params);
+  }
+
+  /**
+   * Query stock symbol details
+   *
+   * @param params Optional filters for symbols, exchange, and pagination
+   * @returns Promise with paginated symbol detail list
+   */
+  getStockSymbolDetail(
+    params?: GetStockSymbolDetailReq,
+  ): Promise<StockApiResp<StockListData<StockSymbolDetailItem>>> {
+    return this.getPrivate('/stock/symbols/detail', params);
+  }
+
+  /**
+   * Query stock market order book
+   *
+   * @param symbol Symbol
+   * @returns Promise with order book data
+   */
+  getStockOrderBook(symbol: string): Promise<StockApiResp<StockOrderBook>> {
+    return this.get(`/stock/market/${symbol}/orderbook`);
+  }
+
+  /**
+   * Query open stock orders
+   *
+   * @param params Optional symbol filter
+   * @returns Promise with open order list
+   */
+  getStockOrders(
+    params?: GetStockOrdersReq,
+  ): Promise<StockApiResp<StockListData<StockOrderItem>>> {
+    return this.getPrivate('/stock/orders', params);
+  }
+
+  /**
+   * Create a stock order
+   *
+   * Limit orders support only the all trading session; market orders support only regular. time_in_force supports day only.
+   *
+   * @param params Order parameters
+   * @returns Promise with created order ID
+   */
+  createStockOrder(
+    params: CreateStockOrderReq,
+  ): Promise<StockApiResp<StockCreateOrderResult>> {
+    return this.postPrivate('/stock/orders', { body: params });
+  }
+
+  /**
+   * Cancel all open stock orders
+   *
+   * @returns Promise with empty data on success
+   */
+  cancelAllStockOrders(): Promise<StockApiResp<Record<string, never>>> {
+    return this.deletePrivate('/stock/orders');
+  }
+
+  /**
+   * Query stock order history
+   *
+   * @param params Optional filters for symbol, order IDs, time range, side, and pagination
+   * @returns Promise with paginated historical order list
+   */
+  getStockOrderHistory(
+    params?: GetStockOrderHistoryReq,
+  ): Promise<StockApiResp<StockListData<StockOrderHistoryItem>>> {
+    return this.getPrivate('/stock/orders/history', params);
+  }
+
+  /**
+   * Modify a stock order
+   *
+   * @param orderId Order ID
+   * @param params Modified volume and price
+   * @returns Promise with updated order ID
+   */
+  updateStockOrder(
+    orderId: number,
+    params: UpdateStockOrderReq,
+  ): Promise<StockApiResp<StockUpdateOrderResult>> {
+    return this.putPrivate(`/stock/orders/${orderId}`, { body: params });
+  }
+
+  /**
+   * Cancel a stock order
+   *
+   * @param orderId Order ID
+   * @returns Promise with empty data on success
+   */
+  cancelStockOrder(
+    orderId: number,
+  ): Promise<StockApiResp<Record<string, never>>> {
+    return this.deletePrivate(`/stock/orders/${orderId}`);
+  }
+
+  /**
+   * Query current stock positions
+   *
+   * @param params Optional filters for PnL calc, symbol, and exchange
+   * @returns Promise with position list
+   */
+  getStockPositions(
+    params?: GetStockPositionsReq,
+  ): Promise<StockApiResp<StockListData<StockPositionItem>>> {
+    return this.getPrivate('/stock/positions', params);
+  }
+
+  /**
+   * Close a stock position
+   *
+   * @param params Close parameters (partial or full)
+   * @returns Promise with close order ID
+   */
+  closeStockPosition(
+    params: CloseStockPositionReq,
+  ): Promise<StockApiResp<StockClosePositionResult>> {
+    return this.postPrivate('/stock/positions/close', { body: params });
+  }
+
+  /**
+   * Query stock transaction records
+   *
+   * @param params Optional filters for time range, ref_id, type, and pagination
+   * @returns Promise with paginated transaction list
+   */
+  getStockTransactions(
+    params?: GetStockTransactionsReq,
+  ): Promise<StockApiResp<StockListData<StockTransactionItem>>> {
+    return this.getPrivate('/stock/transactions', params);
+  }
+
+  /**
+   * Fund transfer for stock account
+   *
+   * Transfer funds in or out of the stock account (USDT only).
+   *
+   * @param params Transfer parameters including ref_id for idempotency
+   * @returns Promise with empty data on success
+   */
+  createStockTransaction(
+    params: CreateStockTransactionReq,
+  ): Promise<StockApiResp<Record<string, never>>> {
+    return this.postPrivate('/stock/transactions', { body: params });
+  }
+
+  /**
+   * Query supported stock exchanges
+   *
+   * @returns Promise with exchange list
+   */
+  getStockExchanges(): Promise<StockApiResp<StockListData<StockExchangeItem>>> {
+    return this.get('/stock/exchanges');
+  }
+
+  /**
+   * Query stock fee rates
+   *
+   * Maker/taker fee fields apply to Japanese and Korean stocks.
+   *
+   * @returns Promise with fee rate list by VIP level
+   */
+  getStockFeeRate(): Promise<StockApiResp<StockListData<StockFeeRateItem>>> {
+    return this.get('/stock/fee-rate');
   }
 }

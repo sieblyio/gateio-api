@@ -99,3 +99,8 @@ export interface CreateQuickRepaymentReq {
 export interface SetUnifiedDeltaNeutralReq {
   enabled: boolean;
 }
+
+/** POST /unified/leverage/user_setting — set leverage for all borrowed currencies */
+export interface SetUserLeverageReq {
+  leverage?: string;
+}

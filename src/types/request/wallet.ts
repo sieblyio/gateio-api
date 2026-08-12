@@ -72,3 +72,8 @@ export interface SubmitMainSubTransferReq {
   client_order_id?: string;
   sub_account_type?: 'spot' | 'futures' | 'cross_margin' | 'delivery';
 }
+
+/** GET /wallet/transfers */
+export interface GetTransferReq {
+  tx_id: string;
+}
