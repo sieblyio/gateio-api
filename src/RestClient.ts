@@ -2059,7 +2059,7 @@ export class RestClient extends BaseRestClient {
    * @param params Parameters for listing Spot POV orders
    * @returns Promise<SpotPovOrder[]>
    */
-  listSpotPovOrders(params: GetSpotPovOrdersReq): Promise<SpotPovOrder[]> {
+  getSpotPovOrders(params: GetSpotPovOrdersReq): Promise<SpotPovOrder[]> {
     return this.getPrivate('/spot/pov_orders', params);
   }
 
@@ -6183,7 +6183,7 @@ export class RestClient extends BaseRestClient {
    * @param params Optional parameters to filter symbols
    * @returns Promise with array of market tickers
    */
-  listCrossExMarketTickers(
+  getCrossExMarketTickers(
     params?: GetCrossExMarketTickersReq,
   ): Promise<CrossExMarketTicker[]> {
     return this.get('/crossex/market/tickers', params);
@@ -6197,7 +6197,7 @@ export class RestClient extends BaseRestClient {
    * @param params Optional parameters to filter symbols
    * @returns Promise with array of funding info records
    */
-  listCrossExMarketFundingInfo(
+  getCrossExMarketFundingInfo(
     params?: GetCrossExMarketFundingInfoReq,
   ): Promise<CrossExMarketFundingInfo[]> {
     return this.get('/crossex/market/funding_info', params);

@@ -16418,7 +16418,7 @@ cancelSpotTriggeredOrder(params: {
    * @param params Parameters for listing Spot POV orders
    * @returns Promise<SpotPovOrder[]>
    */
-listSpotPovOrders(params: GetSpotPovOrdersReq): Promise<SpotPovOrder[]>
+getSpotPovOrders(params: GetSpotPovOrdersReq): Promise<SpotPovOrder[]>
 ⋮----
 /**
    * Create a Spot POV order
@@ -19590,7 +19590,7 @@ getCrossExCoinDiscountRate(
    * @param params Optional parameters to filter symbols
    * @returns Promise with array of market tickers
    */
-listCrossExMarketTickers(
+getCrossExMarketTickers(
     params?: GetCrossExMarketTickersReq,
 ): Promise<CrossExMarketTicker[]>
 ⋮----
@@ -19602,7 +19602,7 @@ listCrossExMarketTickers(
    * @param params Optional parameters to filter symbols
    * @returns Promise with array of funding info records
    */
-listCrossExMarketFundingInfo(
+getCrossExMarketFundingInfo(
     params?: GetCrossExMarketFundingInfoReq,
 ): Promise<CrossExMarketFundingInfo[]>
 ⋮----

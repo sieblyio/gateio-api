@@ -13,7 +13,7 @@ const client = new RestClient({
   apiSecret: 'insert_api_secret_here',
 });
 
-client.listCrossExMarketFundingInfo(params)
+client.getCrossExMarketFundingInfo(params)
   .then((response) => {
     console.log(response);
   })
