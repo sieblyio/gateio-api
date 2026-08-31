@@ -209,10 +209,10 @@ siebly:
         href: /examples/Gate
       - heading: Endpoint map
         summary: Find the SDK method for each supported Gate endpoint.
-        href: https://github.com/tiagosiebler/gateio-api/blob/master/docs/endpointFunctionList.md
+        href: https://github.com/sieblyio/gateio-api/blob/master/docs/endpointFunctionList.md
       - heading: Source repository
         summary: Browse SDK source, releases, issues, and endpoint coverage on GitHub.
-        href: https://github.com/tiagosiebler/gateio-api
+        href: https://github.com/sieblyio/gateio-api
 -->
 
 # Gate API JavaScript Tutorial for Node.js
@@ -232,7 +232,7 @@ The SDK handles REST API request signing, private WebSocket authentication, prod
 
 - Gate JavaScript SDK by Siebly: [`gateio-api`](https://siebly.io/sdk/gate/javascript)
 - npm package: [`gateio-api`](https://www.npmjs.com/package/gateio-api)
-- GitHub repository: [`tiagosiebler/gateio-api`](https://github.com/tiagosiebler/gateio-api)
+- GitHub repository: [`sieblyio/gateio-api`](https://github.com/sieblyio/gateio-api)
 - SDK examples: [Gate SDK examples](https://siebly.io/examples/Gate)
 - SDK endpoint map: [Gate JavaScript endpoint reference](./endpointFunctionList.md)
 - Gate REST API documentation: [Gate API v4](https://www.gate.com/docs/developers/apiv4/en/)
@@ -2224,11 +2224,11 @@ Common causes are a drifting system clock, the wrong API secret, credentials fro
 - Find methods in the [complete endpoint map](./endpointFunctionList.md).
 - Review the [Gate SDK page](https://siebly.io/sdk/gate/javascript).
 - Install or update [`gateio-api` from npm](https://www.npmjs.com/package/gateio-api).
-- Browse the [`gateio-api` source repository](https://github.com/tiagosiebler/gateio-api).
+- Browse the [`gateio-api` source repository](https://github.com/sieblyio/gateio-api).
 - Read the official [Gate REST API documentation](https://www.gate.com/docs/developers/apiv4/en/).
 - Read the official [Gate Spot WebSocket documentation](https://www.gate.com/docs/developers/apiv4/ws/).
 - Read the official [Gate Futures WebSocket documentation](https://www.gate.com/docs/developers/futures/ws/).
 - Review [Exchange State](https://siebly.io/reference/exchange-state) before building private state management.
 - Use [Runtime Workflows](https://siebly.io/reference/runtime-workflows) when designing startup, reconnect, and reconciliation behavior.
 - Open the [Siebly glossary](https://siebly.io/reference/glossary) for order, stream, and recovery terms.
-- Report SDK issues in the [`gateio-api` GitHub repository](https://github.com/tiagosiebler/gateio-api/issues).
+- Report SDK issues in the [`gateio-api` GitHub repository](https://github.com/sieblyio/gateio-api/issues).
