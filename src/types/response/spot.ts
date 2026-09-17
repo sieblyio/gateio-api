@@ -79,6 +79,7 @@ export interface SpotTrade {
   amend_text: string;
   sequence_id: string;
   text: string;
+  trade_quote?: string;
 }
 
 export type SpotCandle = [
@@ -210,6 +211,7 @@ export interface SpotOrder {
   action_mode?: 'ACK' | 'RESULT' | 'FULL';
   stop_loss?: PatchSpotOrderTPSL;
   stop_profit?: PatchSpotOrderTPSL;
+  trade_quote?: string;
 }
 
 export interface SpotInsuranceHistory {
@@ -277,6 +279,7 @@ export interface SpotHistoricTradeRecord {
   sequence_id: string;
   text: string;
   deal?: string; // v4.105.29: Total Executed Value
+  trade_quote?: string;
 }
 
 export type SpotPovOrderStatus =

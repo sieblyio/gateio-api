@@ -28,6 +28,7 @@ export interface CreateOTCFiatOrderReq {
   quote_token: string; // Parameter returned by the quote API
   /** From GET /otc/bank/list; default card has is_default=1 */
   bank_id: string;
+  receive_type?: string;
 }
 
 export interface CreateOTCStablecoinOrderReq {
@@ -93,7 +94,9 @@ export interface CreateOTCBankReq {
   remittance_line_number?: string;
   agent_bank_name?: string;
   agent_bank_swift?: string;
-  documentation_file: GateMultipartFile;
+  documentation_file?: GateMultipartFile;
+  documentation_file_key?: string;
+  file_type?: string;
 }
 
 export interface SubmitOTCBankPersonalSupplementReq {
@@ -112,4 +115,9 @@ export interface SubmitOTCBankEnterpriseSupplementReq {
   uid?: string;
   funds_statement?: GateMultipartFile;
   additional?: GateMultipartFile;
+}
+
+export interface CreateOTCUploadPreUploadReq {
+  content_type: string;
+  scene: 'general' | 'bank' | 'assessment' | 'credit';
 }

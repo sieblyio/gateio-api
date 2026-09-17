@@ -19,6 +19,7 @@ export interface CurrencyPair {
   base_name?: string;
   quote?: string;
   quote_name?: string;
+  trade_quotes?: string[] | null;
   fee?: string;
   min_base_amount?: string;
   min_quote_amount?: string;
@@ -34,4 +35,6 @@ export interface CurrencyPair {
   trade_url?: string;
   up_rate?: string; // v4.106.4: Maximum price increase percentage
   down_rate?: string; // v4.106.4: Maximum price decrease percentage
+  market_order_max_stock?: string | null;
+  market_order_max_money?: string | null;
 }

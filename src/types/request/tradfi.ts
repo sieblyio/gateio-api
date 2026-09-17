@@ -33,6 +33,7 @@ export interface TradFiCreateOrderReq {
   volume: string;
   price_tp?: string;
   price_sl?: string;
+  leverage?: number;
 }
 
 export interface TradFiModifyOrderReq {

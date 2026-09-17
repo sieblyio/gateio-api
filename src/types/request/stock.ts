@@ -7,7 +7,7 @@ export interface GetStockUserAssetsReq {
 
 export interface GetStockSymbolsReq {
   symbols?: string;
-  exchange?: string;
+  exchange?: string; // us | hk | jp
   with_desc_i18n?: boolean;
   page?: number;
   page_size?: number;
@@ -15,7 +15,7 @@ export interface GetStockSymbolsReq {
 
 export interface GetStockSymbolDetailReq {
   symbols?: string;
-  exchange?: string;
+  exchange?: string; // us | hk | jp
   page?: number;
   page_size?: number;
 }
@@ -55,7 +55,7 @@ export interface GetStockPositionsReq {
   pnl_calc_type?: number;
   pnl_calc_price?: number;
   symbol?: string;
-  exchange?: string;
+  exchange?: string; // us | hk | jp
 }
 
 export interface CloseStockPositionReq {

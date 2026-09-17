@@ -158,6 +158,7 @@ export interface SubmitSpotOrderReq {
   stop_loss?: PatchSpotOrderTPSL;
   stop_profit?: PatchSpotOrderTPSL;
   post_only?: boolean;
+  trade_quote?: string;
 }
 
 export interface UpdateSpotOrderReq {
@@ -194,7 +195,7 @@ export interface CreateSpotPovOrderReq {
   text?: string;
 }
 
-/** POST /spot/pov_orders/cancel */
+/** DELETE /spot/pov_orders */
 export interface CancelSpotPovOrdersReq {
   currency_pair?: string;
 }

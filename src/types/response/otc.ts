@@ -204,3 +204,27 @@ export interface GetOTCFiatOrderDetailResp {
   code: number;
   data: OTCFiatOrderDetail;
 }
+
+export interface CreateOTCUploadPreUploadFields {
+  key?: string;
+  content_type?: string;
+  x_amz_credential?: string;
+  x_amz_algorithm?: string;
+  x_amz_date?: string;
+  policy?: string;
+  x_amz_signature?: string;
+}
+
+export interface CreateOTCUploadPreUploadData {
+  file_key?: string;
+  url?: string;
+  fields?: CreateOTCUploadPreUploadFields;
+  expires_in?: number;
+}
+
+export interface CreateOTCUploadPreUploadResp {
+  code?: number;
+  message?: string;
+  timestamp?: number;
+  data?: CreateOTCUploadPreUploadData;
+}

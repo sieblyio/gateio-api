@@ -1,4 +1,15 @@
-/** Stock / TradFi Spot API response types */
+export type StockCategory =
+  | 'CS'
+  | 'ETF'
+  | 'ADRC'
+  | 'ADR'
+  | 'ETV'
+  | 'PFD'
+  | 'ETS'
+  | 'ETN'
+  | 'FUND';
+
+export type StockAssetType = 'STOCK' | 'ETF';
 
 export interface StockApiResp<T> {
   timestamp?: number;
@@ -22,6 +33,9 @@ export interface StockUserAssets {
   position_pnl?: string;
   today_pnl?: string;
   user_exists?: boolean;
+  option_position_market_value?: string;
+  option_position_pnl?: string;
+  option_today_pnl?: string;
 }
 
 export interface StockSymbolDescI18n {
@@ -37,7 +51,8 @@ export interface StockSymbolItem {
   quote_currency_precision?: number;
   fx_rate?: string;
   symbol_desc?: string;
-  category?: string;
+  category?: StockCategory | string;
+  asset_type?: StockAssetType;
   trade_status?: string;
   trade_mode?: number;
   order_fill_timing?: number;
@@ -61,7 +76,8 @@ export interface StockSymbolDetailItem {
   quote_currency_precision?: number;
   fx_rate?: string;
   symbol_desc?: string;
-  category?: string;
+  category?: StockCategory | string;
+  asset_type?: StockAssetType;
   settlement_currency?: string;
   max_order_volume?: string;
   step_order_volume?: string;

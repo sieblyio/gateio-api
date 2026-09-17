@@ -19,6 +19,7 @@ export interface CrossExSymbol {
   liquidation_fee: string;
   delist_time: string;
   support_rpi?: string; // true/false whether RPI orders are supported
+  support_cross?: string; // "true"/"false" whether the symbol supports cross-margin orders
 }
 
 export interface CrossExRiskLimitTier {
@@ -314,6 +315,7 @@ export interface CrossExHistoryPosition {
   position_side: string; // Position Direction Before Close
   position_mode: string; // Position Mode at Close
   leverage: string; // Leverage at Close
+  margin_mode?: 'CROSS' | 'ISOLATED';
   business_type: string; // Business Type
   create_time: string; // Created time
   update_time: string; // Update time
@@ -394,4 +396,10 @@ export interface CrossExCoinDiscountRate {
   min_value: string; // Minimum value
   max_value: string; // Maximum value
   discount_rate: string; // Discount rate
+}
+
+export interface UpdateCrossExPositionsMarginResp {
+  symbol?: string;
+  margin?: string;
+  position_side?: 'NONE' | 'LONG' | 'SHORT';
 }
