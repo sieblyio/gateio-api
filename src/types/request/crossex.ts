@@ -18,7 +18,7 @@ export interface GetCrossExTransferCoinsReq {
 export interface CreateCrossExTransferReq {
   coin: string; // Currency
   amount: string; // Transfer amount
-  from: string; // CROSSEX_BINANCE, CROSSEX_OKX, CROSSEX_GATE, CROSSEX_BYBIT, CROSSEX_KRAKEN, CROSSEX, SPOT, etc.
+  from: string; // CROSSEX_BINANCE, CROSSEX_OKX, CROSSEX_GATE, CROSSEX_BYBIT, CROSSEX_KRAKEN, CROSSEX_LIGHTER, CROSSEX, SPOT, etc.
   to: string;
   text?: string; // User-defined ID
 }
@@ -66,8 +66,8 @@ export interface ModifyCrossExOrderReq {
 
 export interface CreateCrossExConvertQuoteReq {
   exchange_type: string; // Exchange Type
-  from_coin: string; // Asset Sold
-  to_coin: string; // Asset name to buy (OKX and GATE only allow BTC, ETH, USDT; BN only allows USDT)
+  from_coin: string; // Asset Sold (OKX and GATE only allow BTC, ETH, USDT; BN only allows USDT; LIGHTER_USDC <-> CROSSEX_USDT in cross-exchange mode)
+  to_coin: string; // Asset name to buy (OKX and GATE only allow BTC, ETH, USDT; BN only allows USDT; LIGHTER_USDC <-> CROSSEX_USDT in cross-exchange mode)
   from_amount: string; // Amount to sell
 }
 
@@ -187,4 +187,10 @@ export interface GetCrossExAccountBookReq {
 export interface GetCrossExCoinDiscountRateReq {
   coin?: string;
   exchange_type?: string; // OKX/GATE/BINANCE/BYBIT
+}
+
+export interface UpdateCrossExPositionsMarginReq {
+  symbol: string;
+  margin: string;
+  position_side?: 'NONE' | 'LONG' | 'SHORT';
 }

@@ -420,6 +420,17 @@ export interface FuturesContract {
   market_order_size_max?: string;
 }
 
+/** GET /futures/{settle}/adl_risk_states */
+export interface FuturesADLRiskState {
+  state: 'normal' | 'warning' | 'adl_risk';
+  calculated_at_ms: number;
+}
+
+export interface FuturesADLRiskStates {
+  settle: string;
+  states: Record<string, FuturesADLRiskState>;
+}
+
 /** GET /futures/{settle}/get_leverage/{contract} — API field name is `Lever` */
 export interface FuturesContractLeverageInfo {
   Lever: string;

@@ -4,7 +4,7 @@ import { RestClient } from 'gateio-api';
 
 // This example shows how to call this Gate.io API endpoint with either node.js, javascript (js) or typescript (ts) with the npm module "gateio-api" for Gate.io exchange
 // This Gate.io API SDK is available on npm via "npm install gateio-api"
-// ENDPOINT: /otc/bank/delete
+// ENDPOINT: /otc/bank/create
 // METHOD: POST
 // PUBLIC: NO
 

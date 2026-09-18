@@ -8,6 +8,8 @@ export interface LendingMarket {
   base_min_borrow_amount: string;
   quote_min_borrow_amount: string;
   leverage: string;
+  status?: string | number;
+  delisted_time?: number;
 }
 
 export interface MarginUNILoan {

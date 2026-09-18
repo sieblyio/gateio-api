@@ -99,6 +99,7 @@ src/
     request/
       account.ts
       alpha.ts
+      announcement.ts
       autoinvest.ts
       collateralLoan.ts
       crossex.ts
@@ -124,6 +125,7 @@ src/
     response/
       account.ts
       alpha.ts
+      announcement.ts
       autoinvest.ts
       collateralloan.ts
       crossex.ts
@@ -160,6 +162,7 @@ webpack/
   webpack.config.cjs
 .eslintrc.cjs
 .gitignore
+.npmrc
 .nvmrc
 .prettierrc
 jest.config.ts
@@ -594,6 +597,26 @@ export interface CreateStpGroupReq {
   id?: number;
   creator_id?: number;
   create_time?: number;
+}
+
+================
+File: src/types/request/announcement.ts
+================
+/** POST /ann/list_article */
+⋮----
+export interface ListAnnouncementArticlesReq {
+  title_query?: string;
+  page?: string;
+  size?: string;
+  tags?: string;
+  timer?: string;
+  cate_name?: string;
+  cate_level?: string;
+  sub_website_id?: string;
+  pinned?: number;
+  update_after?: number;
+  lang?: string;
+  filter_empty_content?: number;
 }
 
 ================
@@ -1061,6 +1084,104 @@ export interface SubmitWithdrawalReq {
   withdraw_order_id?: string;
   address?: string;
   memo?: string;
+}
+
+================
+File: src/types/response/account.ts
+================
+/**==========================================================================================================================
+ * ACCOUNT
+ * ==========================================================================================================================
+ */
+⋮----
+export interface AccountDetail {
+  user_id: number;
+  ip_whitelist: string[];
+  currency_pairs: string[];
+  key: {
+    mode: number;
+  };
+  tier: number;
+  copy_trading_role: number;
+}
+⋮----
+export interface AccountRateLimit {
+  type: string;
+  tier: string;
+  ratio: string;
+  main_ratio: string;
+  updated_at: string;
+}
+⋮----
+export interface StpGroup {
+  id: number;
+  name: string;
+  creator_id: number;
+  create_time: number;
+}
+⋮----
+export interface StpGroupUser {
+  user_id: number;
+  stp_id: number;
+  create_time: number;
+}
+⋮----
+export interface AccountMainKey {
+  state: number; // 1 - Normal, 2 - Locked, 3 - Frozen
+  mode: number; // 1 - Classic, 2 - Legacy Unified
+  name: string;
+  currency_pairs: string[];
+  user_id: number;
+  ip_whitelist: string[];
+  perms: {
+    name: string;
+    read_only: boolean;
+  }[];
+  key: string;
+  created_at: string;
+  updated_at: string;
+  last_access: string;
+}
+⋮----
+state: number; // 1 - Normal, 2 - Locked, 3 - Frozen
+mode: number; // 1 - Classic, 2 - Legacy Unified
+
+================
+File: src/types/response/announcement.ts
+================
+export interface AnnouncementArticleLanguage {
+  code?: string;
+  name?: string;
+}
+⋮----
+export interface AnnouncementArticle {
+  id?: number;
+  title?: string;
+  brief?: string;
+  created?: string;
+  updated?: string;
+  release_time?: string;
+  views?: number;
+  author?: string;
+  author_id?: number;
+  tags?: string;
+  cate?: string;
+  is_top?: number;
+  cate_id?: number;
+  source?: string;
+  content_lang_list?: AnnouncementArticleLanguage[];
+}
+⋮----
+export interface AnnouncementArticleListData {
+  list?: AnnouncementArticle[];
+  total?: number;
+}
+⋮----
+export interface AnnouncementArticleListResponse {
+  code?: number;
+  data?: AnnouncementArticleListData;
+  message?: string;
+  version?: string;
 }
 
 ================
@@ -1735,6 +1856,266 @@ export interface WsAPITopicResponseMap {
 //   'futures.login': WSAPIResponse<WSAPILoginResponse, TChannel>;
 //   string: object;
 // }
+
+================
+File: src/WebsocketAPIClient.ts
+================
+import { DefaultLogger } from './lib/logger.js';
+import { WS_KEY_MAP } from './lib/websocket/websocket-util.js';
+import { WSClientConfigurableOptions } from './types/websockets/client.js';
+import {
+  WSAPIFuturesOrder,
+  WSAPIFuturesOrderAmendReq,
+  WSAPIFuturesOrderBatchPlaceRespItem,
+  WSAPIFuturesOrderCancelCPReq,
+  WSAPIFuturesOrderCancelIdsRespItem,
+  WSAPIFuturesOrderCancelReq,
+  WSAPIFuturesOrderListReq,
+  WSAPIFuturesOrderPlaceReq,
+  WSAPIFuturesOrderStatusReq,
+  WSAPIResponse,
+  WSAPISpotOrder,
+  WSAPISpotOrderAmendReq,
+  WSAPISpotOrderCancelCPReq,
+  WSAPISpotOrderCancelIdsReq,
+  WSAPISpotOrderCancelIdsRespItem,
+  WSAPISpotOrderCancelReq,
+  WSAPISpotOrderListReq,
+  WSAPISpotOrderPlaceReq,
+  WSAPISpotOrderStatusReq,
+  WSAPIWsKey,
+} from './types/websockets/wsAPI.js';
+import { WebsocketClient } from './WebsocketClient.js';
+⋮----
+/**
+ * Configurable options specific to only the REST-like WebsocketAPIClient
+ */
+export interface WSAPIClientConfigurableOptions {
+  /**
+   * Default: true
+   *
+   * Attach default event listeners, which will console log any high level
+   * events (opened/reconnecting/reconnected/etc).
+   *
+   * If you disable this, you should set your own event listeners
+   * on the embedded WS Client `wsApiClient.getWSClient().on(....)`.
+   */
+  attachEventListeners: boolean;
+}
+⋮----
+/**
+   * Default: true
+   *
+   * Attach default event listeners, which will console log any high level
+   * events (opened/reconnecting/reconnected/etc).
+   *
+   * If you disable this, you should set your own event listeners
+   * on the embedded WS Client `wsApiClient.getWSClient().on(....)`.
+   */
+⋮----
+/**
+ * This is a minimal Websocket API wrapper around the WebsocketClient.
+ *
+ * Some methods support passing in a custom "wsKey". This is a reference to which WS connection should
+ * be used to transmit that message. This is only useful if you wish to use an alternative wss
+ * domain that is supported by the SDK.
+ *
+ * Note: To use testnet, don't set the wsKey - use `testnet: true` in
+ * the constructor instead.
+ *
+ * Note: You can also directly use the sendWSAPIRequest() method to make WS API calls, but some
+ * may find the below methods slightly more intuitive.
+ *
+ * Refer to the WS API promises example for a more detailed example on using sendWSAPIRequest() directly:
+ * https://github.com/tiagosiebler/gateio-api/blob/master/examples/ws-private-spot-wsapi.ts#L119
+ */
+export class WebsocketAPIClient
+⋮----
+constructor(
+    options?: WSClientConfigurableOptions &
+      Partial<WSAPIClientConfigurableOptions>,
+    logger?: DefaultLogger,
+)
+⋮----
+public getWSClient(): WebsocketClient
+⋮----
+public setTimeOffsetMs(newOffset: number): void
+⋮----
+/*
+   *
+   * SPOT - Trading requests
+   *
+   */
+⋮----
+/**
+   * Submit a spot order
+   */
+submitNewSpotOrder(
+    params: WSAPISpotOrderPlaceReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPISpotOrder>>
+⋮----
+/**
+   * Cancel a spot order
+   */
+cancelSpotOrder(
+    params: WSAPISpotOrderCancelReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPISpotOrder>>
+⋮----
+/**
+   * Cancel all spot orders with the given id list
+   */
+cancelSpotOrderById(
+    params: WSAPISpotOrderCancelIdsReq[],
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPISpotOrderCancelIdsRespItem[]>>
+⋮----
+/**
+   * Cancel a spot order for a given symbol
+   */
+cancelSpotOrderForSymbol(
+    params: WSAPISpotOrderCancelCPReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPISpotOrder[]>>
+⋮----
+/**
+   * Update a spot order
+   */
+updateSpotOrder(
+    params: WSAPISpotOrderAmendReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPISpotOrder>>
+⋮----
+/**
+   * Get the status of a spot order
+   */
+getSpotOrderStatus(
+    params: WSAPISpotOrderStatusReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPISpotOrder>>
+⋮----
+/**
+   * Get all spot orders
+   */
+getSpotOrders(
+    params: WSAPISpotOrderListReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPISpotOrder[]>>
+⋮----
+/*
+   *
+   * Futures - Trading requests
+   *
+   */
+⋮----
+/**
+   * Submit a futures order.
+   *
+   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
+   */
+submitNewFuturesOrder(
+    params: WSAPIFuturesOrderPlaceReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPIFuturesOrder>>
+⋮----
+/**
+   * Submit a batch of futures orders
+   *
+   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
+   */
+submitNewFuturesBatchOrder(
+    params: WSAPIFuturesOrderPlaceReq[],
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPIFuturesOrderBatchPlaceRespItem[]>>
+⋮----
+/**
+   * Cancel a futures order
+   *
+   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
+   */
+cancelFuturesOrder(
+    params: WSAPIFuturesOrderCancelReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPIFuturesOrder>>
+⋮----
+/**
+   * Cancel futures orders by id list
+   *
+   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
+   */
+cancelFuturesOrderById(
+    params: string[],
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPIFuturesOrderCancelIdsRespItem[]>>
+⋮----
+/**
+   * Cancel all open futures orders
+   *
+   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
+   */
+cancelFuturesAllOpenOrders(
+    params: WSAPIFuturesOrderCancelCPReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPIFuturesOrder[]>>
+⋮----
+/**
+   * Update a futures order
+   *
+   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
+   */
+updateFuturesOrder(
+    params: WSAPIFuturesOrderAmendReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPIFuturesOrder>>
+⋮----
+/**
+   * Get all futures orders
+   *
+   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
+   */
+getFuturesOrders(
+    params: WSAPIFuturesOrderListReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPIFuturesOrder[]>>
+⋮----
+/**
+   * Get futures order status
+   *
+   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
+   */
+getFuturesOrderStatus(
+    params: WSAPIFuturesOrderStatusReq,
+    wsKey?: WSAPIWsKey,
+): Promise<WSAPIResponse<WSAPIFuturesOrder>>
+⋮----
+/**
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   * Private methods for handling some of the convenience/automation provided by the WS API Client
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   */
+⋮----
+private setupDefaultEventListeners()
+⋮----
+/**
+       * General event handlers for monitoring the WebsocketClient
+       */
+⋮----
+// Blind JSON.stringify can fail on circular references
+⋮----
+// JSON.stringify({ ...data, target: 'WebSocket' }),
 
 ================
 File: src/WebsocketClient.ts
@@ -4165,18 +4546,22 @@ export interface GetStockUserAssetsReq {
 ⋮----
 export interface GetStockSymbolsReq {
   symbols?: string;
-  exchange?: string;
+  exchange?: string; // us | hk | jp
   with_desc_i18n?: boolean;
   page?: number;
   page_size?: number;
 }
 ⋮----
+exchange?: string; // us | hk | jp
+⋮----
 export interface GetStockSymbolDetailReq {
   symbols?: string;
-  exchange?: string;
+  exchange?: string; // us | hk | jp
   page?: number;
   page_size?: number;
 }
+⋮----
+exchange?: string; // us | hk | jp
 ⋮----
 export interface GetStockOrdersReq {
   symbol?: string;
@@ -4215,8 +4600,10 @@ export interface GetStockPositionsReq {
   pnl_calc_type?: number;
   pnl_calc_price?: number;
   symbol?: string;
-  exchange?: string;
+  exchange?: string; // us | hk | jp
 }
+⋮----
+exchange?: string; // us | hk | jp
 ⋮----
 export interface CloseStockPositionReq {
   symbol: string;
@@ -4239,66 +4626,6 @@ export interface CreateStockTransactionReq {
   type: 'deposit' | 'withdraw';
   ref_id: string;
 }
-
-================
-File: src/types/response/account.ts
-================
-/**==========================================================================================================================
- * ACCOUNT
- * ==========================================================================================================================
- */
-⋮----
-export interface AccountDetail {
-  user_id: number;
-  ip_whitelist: string[];
-  currency_pairs: string[];
-  key: {
-    mode: number;
-  };
-  tier: number;
-  copy_trading_role: number;
-}
-⋮----
-export interface AccountRateLimit {
-  type: string;
-  tier: string;
-  ratio: string;
-  main_ratio: string;
-  updated_at: string;
-}
-⋮----
-export interface StpGroup {
-  id: number;
-  name: string;
-  creator_id: number;
-  create_time: number;
-}
-⋮----
-export interface StpGroupUser {
-  user_id: number;
-  stp_id: number;
-  create_time: number;
-}
-⋮----
-export interface AccountMainKey {
-  state: number; // 1 - Normal, 2 - Locked, 3 - Frozen
-  mode: number; // 1 - Classic, 2 - Legacy Unified
-  name: string;
-  currency_pairs: string[];
-  user_id: number;
-  ip_whitelist: string[];
-  perms: {
-    name: string;
-    read_only: boolean;
-  }[];
-  key: string;
-  created_at: string;
-  updated_at: string;
-  last_access: string;
-}
-⋮----
-state: number; // 1 - Normal, 2 - Locked, 3 - Frozen
-mode: number; // 1 - Classic, 2 - Legacy Unified
 
 ================
 File: src/types/response/alpha.ts
@@ -4899,6 +5226,8 @@ export interface LendingMarket {
   base_min_borrow_amount: string;
   quote_min_borrow_amount: string;
   leverage: string;
+  status?: string | number;
+  delisted_time?: number;
 }
 ⋮----
 export interface MarginUNILoan {
@@ -5494,7 +5823,18 @@ export interface PartnerDataAggregatedResponse {
 ================
 File: src/types/response/stock.ts
 ================
-/** Stock / TradFi Spot API response types */
+export type StockCategory =
+  | 'CS'
+  | 'ETF'
+  | 'ADRC'
+  | 'ADR'
+  | 'ETV'
+  | 'PFD'
+  | 'ETS'
+  | 'ETN'
+  | 'FUND';
+⋮----
+export type StockAssetType = 'STOCK' | 'ETF';
 ⋮----
 export interface StockApiResp<T> {
   timestamp?: number;
@@ -5518,6 +5858,9 @@ export interface StockUserAssets {
   position_pnl?: string;
   today_pnl?: string;
   user_exists?: boolean;
+  option_position_market_value?: string;
+  option_position_pnl?: string;
+  option_today_pnl?: string;
 }
 ⋮----
 export interface StockSymbolDescI18n {
@@ -5533,7 +5876,8 @@ export interface StockSymbolItem {
   quote_currency_precision?: number;
   fx_rate?: string;
   symbol_desc?: string;
-  category?: string;
+  category?: StockCategory | string;
+  asset_type?: StockAssetType;
   trade_status?: string;
   trade_mode?: number;
   order_fill_timing?: number;
@@ -5557,7 +5901,8 @@ export interface StockSymbolDetailItem {
   quote_currency_precision?: number;
   fx_rate?: string;
   symbol_desc?: string;
-  category?: string;
+  category?: StockCategory | string;
+  asset_type?: StockAssetType;
   settlement_currency?: string;
   max_order_volume?: string;
   step_order_volume?: string;
@@ -5715,6 +6060,63 @@ export interface StockFeeRateItem {
 }
 
 ================
+File: src/types/response/withdrawal.ts
+================
+export interface WithdrawalRecord {
+  id: string;
+  txid: string;
+  block_number: string;
+  withdraw_order_id: string;
+  /** When `status` is DONE, withdrawal success time (not conditioned on `block_number`). */
+  timestamp: string;
+  amount: string;
+  currency: string;
+  address: string;
+  memo?: string;
+  status:
+    | 'BCODE' // Deposit Code Operation
+    | 'CANCEL' // Cancelled
+    | 'CANCELPEND' // Withdrawal Cancellation Pending
+    | 'DMOVE' // Pending Manual Review
+    | 'DONE' // Completed
+    | 'EXTPEND' // Sent and Waiting for Confirmation
+    | 'FAIL' // On-Chain Failure Pending Confirmation
+    | 'FVERIFY' // Facial Verification in Progress
+    | 'INVALID' // Invalid Transaction
+    | 'LOCKED' // Wallet-Side Order Locked
+    | 'MANUAL' // Pending Manual Review
+    | 'PEND' // Processing
+    | 'PROCES' // Processing
+    | 'REJECT' // Rejected
+    | 'REQUEST' // Request in Progress
+    | 'REVIEW' // Under Review
+    | 'SPLITPEND' // Split Pending
+    | 'VERIFY'; // Verification in Progress
+  chain: string;
+}
+⋮----
+/** When `status` is DONE, withdrawal success time (not conditioned on `block_number`). */
+⋮----
+| 'BCODE' // Deposit Code Operation
+| 'CANCEL' // Cancelled
+| 'CANCELPEND' // Withdrawal Cancellation Pending
+| 'DMOVE' // Pending Manual Review
+| 'DONE' // Completed
+| 'EXTPEND' // Sent and Waiting for Confirmation
+| 'FAIL' // On-Chain Failure Pending Confirmation
+| 'FVERIFY' // Facial Verification in Progress
+| 'INVALID' // Invalid Transaction
+| 'LOCKED' // Wallet-Side Order Locked
+| 'MANUAL' // Pending Manual Review
+| 'PEND' // Processing
+| 'PROCES' // Processing
+| 'REJECT' // Rejected
+| 'REQUEST' // Request in Progress
+| 'REVIEW' // Under Review
+| 'SPLITPEND' // Split Pending
+| 'VERIFY'; // Verification in Progress
+
+================
 File: src/types/shared.ts
 ================
 export type GateBaseUrlKey =
@@ -5738,6 +6140,7 @@ export interface CurrencyPair {
   base_name?: string;
   quote?: string;
   quote_name?: string;
+  trade_quotes?: string[] | null;
   fee?: string;
   min_base_amount?: string;
   min_quote_amount?: string;
@@ -5753,275 +6156,683 @@ export interface CurrencyPair {
   trade_url?: string;
   up_rate?: string; // v4.106.4: Maximum price increase percentage
   down_rate?: string; // v4.106.4: Maximum price decrease percentage
+  market_order_max_stock?: string | null;
+  market_order_max_money?: string | null;
 }
 ⋮----
 up_rate?: string; // v4.106.4: Maximum price increase percentage
 down_rate?: string; // v4.106.4: Maximum price decrease percentage
 
 ================
-File: src/WebsocketAPIClient.ts
+File: .npmrc
 ================
-import { DefaultLogger } from './lib/logger.js';
-import { WS_KEY_MAP } from './lib/websocket/websocket-util.js';
-import { WSClientConfigurableOptions } from './types/websockets/client.js';
-import {
-  WSAPIFuturesOrder,
-  WSAPIFuturesOrderAmendReq,
-  WSAPIFuturesOrderBatchPlaceRespItem,
-  WSAPIFuturesOrderCancelCPReq,
-  WSAPIFuturesOrderCancelIdsRespItem,
-  WSAPIFuturesOrderCancelReq,
-  WSAPIFuturesOrderListReq,
-  WSAPIFuturesOrderPlaceReq,
-  WSAPIFuturesOrderStatusReq,
-  WSAPIResponse,
-  WSAPISpotOrder,
-  WSAPISpotOrderAmendReq,
-  WSAPISpotOrderCancelCPReq,
-  WSAPISpotOrderCancelIdsReq,
-  WSAPISpotOrderCancelIdsRespItem,
-  WSAPISpotOrderCancelReq,
-  WSAPISpotOrderListReq,
-  WSAPISpotOrderPlaceReq,
-  WSAPISpotOrderStatusReq,
-  WSAPIWsKey,
-} from './types/websockets/wsAPI.js';
-import { WebsocketClient } from './WebsocketClient.js';
-⋮----
-/**
- * Configurable options specific to only the REST-like WebsocketAPIClient
- */
-export interface WSAPIClientConfigurableOptions {
-  /**
-   * Default: true
-   *
-   * Attach default event listeners, which will console log any high level
-   * events (opened/reconnecting/reconnected/etc).
-   *
-   * If you disable this, you should set your own event listeners
-   * on the embedded WS Client `wsApiClient.getWSClient().on(....)`.
-   */
-  attachEventListeners: boolean;
-}
-⋮----
-/**
-   * Default: true
-   *
-   * Attach default event listeners, which will console log any high level
-   * events (opened/reconnecting/reconnected/etc).
-   *
-   * If you disable this, you should set your own event listeners
-   * on the embedded WS Client `wsApiClient.getWSClient().on(....)`.
-   */
-⋮----
-/**
- * This is a minimal Websocket API wrapper around the WebsocketClient.
- *
- * Some methods support passing in a custom "wsKey". This is a reference to which WS connection should
- * be used to transmit that message. This is only useful if you wish to use an alternative wss
- * domain that is supported by the SDK.
- *
- * Note: To use testnet, don't set the wsKey - use `testnet: true` in
- * the constructor instead.
- *
- * Note: You can also directly use the sendWSAPIRequest() method to make WS API calls, but some
- * may find the below methods slightly more intuitive.
- *
- * Refer to the WS API promises example for a more detailed example on using sendWSAPIRequest() directly:
- * https://github.com/tiagosiebler/gateio-api/blob/master/examples/ws-private-spot-wsapi.ts#L119
- */
-export class WebsocketAPIClient
-⋮----
-constructor(
-    options?: WSClientConfigurableOptions &
-      Partial<WSAPIClientConfigurableOptions>,
-    logger?: DefaultLogger,
-)
-⋮----
-public getWSClient(): WebsocketClient
-⋮----
-public setTimeOffsetMs(newOffset: number): void
-⋮----
-/*
-   *
-   * SPOT - Trading requests
-   *
-   */
-⋮----
-/**
-   * Submit a spot order
-   */
-submitNewSpotOrder(
-    params: WSAPISpotOrderPlaceReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPISpotOrder>>
-⋮----
-/**
-   * Cancel a spot order
-   */
-cancelSpotOrder(
-    params: WSAPISpotOrderCancelReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPISpotOrder>>
-⋮----
-/**
-   * Cancel all spot orders with the given id list
-   */
-cancelSpotOrderById(
-    params: WSAPISpotOrderCancelIdsReq[],
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPISpotOrderCancelIdsRespItem[]>>
-⋮----
-/**
-   * Cancel a spot order for a given symbol
-   */
-cancelSpotOrderForSymbol(
-    params: WSAPISpotOrderCancelCPReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPISpotOrder[]>>
-⋮----
-/**
-   * Update a spot order
-   */
-updateSpotOrder(
-    params: WSAPISpotOrderAmendReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPISpotOrder>>
-⋮----
-/**
-   * Get the status of a spot order
-   */
-getSpotOrderStatus(
-    params: WSAPISpotOrderStatusReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPISpotOrder>>
-⋮----
-/**
-   * Get all spot orders
-   */
-getSpotOrders(
-    params: WSAPISpotOrderListReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPISpotOrder[]>>
-⋮----
-/*
-   *
-   * Futures - Trading requests
-   *
-   */
-⋮----
-/**
-   * Submit a futures order.
-   *
-   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
-   */
-submitNewFuturesOrder(
-    params: WSAPIFuturesOrderPlaceReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPIFuturesOrder>>
-⋮----
-/**
-   * Submit a batch of futures orders
-   *
-   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
-   */
-submitNewFuturesBatchOrder(
-    params: WSAPIFuturesOrderPlaceReq[],
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPIFuturesOrderBatchPlaceRespItem[]>>
-⋮----
-/**
-   * Cancel a futures order
-   *
-   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
-   */
-cancelFuturesOrder(
-    params: WSAPIFuturesOrderCancelReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPIFuturesOrder>>
-⋮----
-/**
-   * Cancel futures orders by id list
-   *
-   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
-   */
-cancelFuturesOrderById(
-    params: string[],
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPIFuturesOrderCancelIdsRespItem[]>>
-⋮----
-/**
-   * Cancel all open futures orders
-   *
-   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
-   */
-cancelFuturesAllOpenOrders(
-    params: WSAPIFuturesOrderCancelCPReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPIFuturesOrder[]>>
-⋮----
-/**
-   * Update a futures order
-   *
-   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
-   */
-updateFuturesOrder(
-    params: WSAPIFuturesOrderAmendReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPIFuturesOrder>>
-⋮----
-/**
-   * Get all futures orders
-   *
-   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
-   */
-getFuturesOrders(
-    params: WSAPIFuturesOrderListReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPIFuturesOrder[]>>
-⋮----
-/**
-   * Get futures order status
-   *
-   * Note: without a wsKey, this defaults to the perpFuturesUSDTV4 connection
-   */
-getFuturesOrderStatus(
-    params: WSAPIFuturesOrderStatusReq,
-    wsKey?: WSAPIWsKey,
-): Promise<WSAPIResponse<WSAPIFuturesOrder>>
-⋮----
-/**
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   * Private methods for handling some of the convenience/automation provided by the WS API Client
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   */
-⋮----
-private setupDefaultEventListeners()
-⋮----
-/**
-       * General event handlers for monitoring the WebsocketClient
-       */
-⋮----
-// Blind JSON.stringify can fail on circular references
-⋮----
-// JSON.stringify({ ...data, target: 'WebSocket' }),
+min-release-age=30
+save-exact=true
 
 ================
 File: .nvmrc
 ================
 v24.18.0
+
+================
+File: examples/Rest/otc/submitOTCBankPersonalSupplement.ts
+================
+import { readFileSync } from 'fs';
+⋮----
+import { RestClient } from '../../../src/index.js';
+// import { RestClient } from 'gateio-api';
+⋮----
+async function submitOTCBankPersonalSupplementExample()
+
+================
+File: src/types/request/alpha.ts
+================
+/**==========================================================================================================================
+ * ALPHA
+ * ==========================================================================================================================
+ */
+⋮----
+export interface GetAlphaAccountBookReq {
+  from: number; // Start timestamp for the query
+  to?: number; // End timestamp for the query, defaults to current time if not specified
+  page?: number; // Page number
+  limit?: number; // Maximum 100 items per page
+}
+⋮----
+from: number; // Start timestamp for the query
+to?: number; // End timestamp for the query, defaults to current time if not specified
+page?: number; // Page number
+limit?: number; // Maximum 100 items per page
+⋮----
+export interface CreateAlphaQuoteReq {
+  currency: string; // Trading symbol
+  side: 'buy' | 'sell'; // Buy or sell orders
+  amount: string; // Trade Quantity (side: buy refers to quote currency USDT, side: sell refers to base currency)
+  gas_mode: 'speed' | 'custom'; // Trading mode (speed: Smart mode, custom: Custom mode uses slippage parameter)
+  slippage?: string; // Slippage tolerance (10 means 10% tolerance) - required when gas_mode is custom
+}
+⋮----
+currency: string; // Trading symbol
+side: 'buy' | 'sell'; // Buy or sell orders
+amount: string; // Trade Quantity (side: buy refers to quote currency USDT, side: sell refers to base currency)
+gas_mode: 'speed' | 'custom'; // Trading mode (speed: Smart mode, custom: Custom mode uses slippage parameter)
+slippage?: string; // Slippage tolerance (10 means 10% tolerance) - required when gas_mode is custom
+⋮----
+export interface CreateAlphaOrderReq {
+  currency: string; // Trading symbol
+  side: 'buy' | 'sell'; // Buy or sell orders
+  amount: string; // Trade Quantity (side: buy refers to quote currency USDT, side: sell refers to base currency)
+  gas_mode: 'speed' | 'custom'; // Trading mode (speed: Smart mode, custom: Custom mode uses slippage parameter)
+  slippage?: string; // Slippage tolerance (10 means 10% tolerance) - required when gas_mode is custom
+  quote_id: string; // Quote ID returned from quotation API
+}
+⋮----
+currency: string; // Trading symbol
+side: 'buy' | 'sell'; // Buy or sell orders
+amount: string; // Trade Quantity (side: buy refers to quote currency USDT, side: sell refers to base currency)
+gas_mode: 'speed' | 'custom'; // Trading mode (speed: Smart mode, custom: Custom mode uses slippage parameter)
+slippage?: string; // Slippage tolerance (10 means 10% tolerance) - required when gas_mode is custom
+quote_id: string; // Quote ID returned from quotation API
+⋮----
+export interface GetAlphaOrdersReq {
+  currency?: string; // Trading symbol
+  side?: 'buy' | 'sell'; // Buy or sell orders
+  status?: number; // Order Status (0: All, 1: Processing, 2: Successful, 3: Failed, 4: Cancelled, 5: Buy order placed but transfer not completed, 6: Order cancelled but transfer not completed)
+  from?: number; // Start time for order query
+  to?: number; // End time for order query, defaults to current time if not specified
+  limit?: number; // Maximum number of items returned. Default: 100, minimum: 1, maximum: 100
+  page?: number; // Page number
+}
+⋮----
+currency?: string; // Trading symbol
+side?: 'buy' | 'sell'; // Buy or sell orders
+status?: number; // Order Status (0: All, 1: Processing, 2: Successful, 3: Failed, 4: Cancelled, 5: Buy order placed but transfer not completed, 6: Order cancelled but transfer not completed)
+from?: number; // Start time for order query
+to?: number; // End time for order query, defaults to current time if not specified
+limit?: number; // Maximum number of items returned. Default: 100, minimum: 1, maximum: 100
+page?: number; // Page number
+⋮----
+export interface GetAlphaOrderReq {
+  order_id: string; // Order ID
+}
+⋮----
+order_id: string; // Order ID
+⋮----
+export interface GetAlphaCurrenciesReq {
+  currency?: string; // Query currency information by currency symbol
+  limit?: number; // Maximum number of records returned in a single list
+  page?: number; // Page number
+}
+⋮----
+currency?: string; // Query currency information by currency symbol
+limit?: number; // Maximum number of records returned in a single list
+page?: number; // Page number
+⋮----
+export interface GetAlphaTickersReq {
+  currency?: string; // Query by specified currency name
+  limit?: number; // Maximum number of records returned in a single list
+  page?: number; // Page number
+}
+⋮----
+currency?: string; // Query by specified currency name
+limit?: number; // Maximum number of records returned in a single list
+page?: number; // Page number
+
+================
+File: src/types/request/autoinvest.ts
+================
+/**==========================================================================================================================
+ * EARN AUTO INVEST
+ * ==========================================================================================================================
+ */
+⋮----
+export interface AutoInvestPlanPortfolioItemInput {
+  asset: string;
+  ratio: string;
+}
+⋮----
+/** POST /earn/autoinvest/plans/create */
+export interface CreateAutoInvestPlanReq {
+  plan_name?: string;
+  plan_des?: string;
+  plan_money: string;
+  plan_amount: string;
+  plan_period_type:
+    | 'daily'
+    | 'weekly'
+    | 'biweekly'
+    | 'monthly'
+    | 'hourly'
+    | '4-hourly';
+  plan_period_day: number;
+  plan_period_hour: number;
+  items: AutoInvestPlanPortfolioItemInput[];
+  /** Fund source: `spot` or `earn`; default spot */
+  fund_source?: string;
+  /** Fund flow: `auto_invest` or `earn`; default auto_invest */
+  fund_flow?: string;
+  /** 0 normal creation, 1 quick investment */
+  type?: number;
+}
+⋮----
+/** Fund source: `spot` or `earn`; default spot */
+⋮----
+/** Fund flow: `auto_invest` or `earn`; default auto_invest */
+⋮----
+/** 0 normal creation, 1 quick investment */
+⋮----
+/** POST /earn/autoinvest/plans/update */
+export interface UpdateAutoInvestPlanReq {
+  plan_id: number;
+  fund_source?: string;
+  fund_flow?: string;
+}
+⋮----
+/** POST /earn/autoinvest/plans/stop */
+export interface StopAutoInvestPlanReq {
+  plan_id: number;
+}
+⋮----
+/** POST /earn/autoinvest/plans/add_position */
+export interface AddAutoInvestPlanPositionReq {
+  plan_id: number;
+  amount: string;
+}
+⋮----
+/** POST /earn/autoinvest/min_invest_amount */
+export interface GetAutoInvestMinAmountReq {
+  money: string;
+  items: AutoInvestPlanPortfolioItemInput[];
+}
+⋮----
+/** GET /earn/autoinvest/coins */
+export interface GetAutoInvestCoinsReq {
+  /** Pricing currency: USDT or BTC; default USDT */
+  plan_money?: string;
+}
+⋮----
+/** Pricing currency: USDT or BTC; default USDT */
+⋮----
+/** GET /earn/autoinvest/plans/records */
+export interface GetAutoInvestPlanRecordsReq {
+  plan_id: number;
+  page?: number;
+  page_size?: number;
+}
+⋮----
+/** GET /earn/autoinvest/orders */
+export interface GetAutoInvestOrdersReq {
+  plan_id: number;
+  record_id: number;
+}
+⋮----
+/** GET /earn/autoinvest/plans/detail */
+export interface GetAutoInvestPlanDetailReq {
+  plan_id: number;
+}
+⋮----
+/** GET /earn/autoinvest/plans/list_info */
+export interface GetAutoInvestPlansReq {
+  /** Plan status: e.g. History (history) or Active (active) */
+  status: string;
+  page?: number;
+  page_size?: number;
+}
+⋮----
+/** Plan status: e.g. History (history) or Active (active) */
+
+================
+File: src/types/request/p2pMerchant.ts
+================
+/** P2P Merchant API request types */
+⋮----
+export interface P2PMerchantGetCounterpartyUserInfoReq {
+  biz_uid: string;
+}
+⋮----
+export interface P2PMerchantGetMyselfPaymentReq {
+  fiat?: string;
+}
+⋮----
+export interface P2PMerchantGetPendingTransactionListReq {
+  crypto_currency: string;
+  fiat_currency: string;
+  order_tab?: string;
+  select_type?: string;
+  status?: string;
+  txid?: number;
+  start_time?: number;
+  end_time?: number;
+}
+⋮----
+export interface P2PMerchantGetCompletedTransactionListReq {
+  crypto_currency: string;
+  fiat_currency: string;
+  select_type?: string;
+  status?: string;
+  txid?: number;
+  start_time?: number;
+  end_time?: number;
+  query_dispute?: number;
+  page?: number;
+  per_page?: number;
+}
+⋮----
+export interface P2PMerchantGetTransactionDetailsReq {
+  txid: number;
+  channel?: string;
+}
+⋮----
+export interface P2PMerchantConfirmPaymentReq {
+  trade_id: string;
+  payment_method: string;
+}
+⋮----
+export interface P2PMerchantConfirmReceiptReq {
+  trade_id: string;
+}
+⋮----
+export interface P2PMerchantCancelTransactionReq {
+  trade_id: string;
+  reason_id?: string;
+  reason_memo?: string;
+}
+⋮----
+export interface P2PMerchantPlaceBizPushOrderReq {
+  currencyType: string;
+  exchangeType: string;
+  type: string;
+  unitPrice: string;
+  number: string;
+  payType: string;
+  minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+  maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+  pay_type_json?: string;
+  rateFixed?: string;
+  oid?: string;
+  tierLimit?: string;
+  verifiedLimit?: string;
+  regTimeLimit?: string;
+  advertisersLimit?: string;
+  hide_payment?: string;
+  expire_min?: string;
+  trade_tips?: string;
+  auto_reply?: string;
+  min_completed_limit?: string;
+  max_completed_limit?: string;
+  completed_rate_limit?: string;
+  user_country_limit?: string;
+  user_order_limit?: string;
+  rateReferenceId?: string;
+  rateOffset?: string;
+  float_trend?: string;
+  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
+  fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
+  fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
+  polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
+}
+⋮----
+minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+⋮----
+limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
+fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
+fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
+polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
+⋮----
+/** POST /p2p/merchant/account/set_merchant_work_hours — v4.106.96 */
+export interface P2PMerchantSetMerchantWorkHoursReq {
+  work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
+  cycle_type?: string;
+  day_of_week?: string;
+  time_zone?: string; // UTC offset -12 to +14
+  start_time?: string;
+  end_time?: string;
+}
+⋮----
+work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
+⋮----
+time_zone?: string; // UTC offset -12 to +14
+⋮----
+export interface P2PMerchantAdsUpdateStatusReq {
+  adv_no: number;
+  adv_status: 1 | 3 | 4;
+  /** Optional query param */
+  trade_type?: string;
+}
+⋮----
+/** Optional query param */
+⋮----
+export interface P2PMerchantAdsDetailReq {
+  adv_no: string;
+}
+⋮----
+export interface P2PMerchantMyAdsListReq {
+  asset?: string;
+  fiat_unit?: string;
+  trade_type?: string;
+}
+⋮----
+export interface P2PMerchantGetAdsListReq {
+  asset: string;
+  fiat_unit: string;
+  trade_type: string;
+}
+⋮----
+export interface P2PMerchantGetChatsListReq {
+  txid: number;
+  lastreceived?: number;
+  firstreceived?: number;
+}
+⋮----
+export interface P2PMerchantSendChatMessageReq {
+  txid: number;
+  message: string;
+  /** 0=Text, 1=File (video or image). Default 0 */
+  type?: 0 | 1;
+}
+⋮----
+/** 0=Text, 1=File (video or image). Default 0 */
+⋮----
+export interface P2PMerchantUploadChatFileReq {
+  image_content_type: string;
+  base64_img: string;
+}
+
+================
+File: src/types/response/p2pMerchant.ts
+================
+/** P2P Merchant API response types */
+⋮----
+export interface P2PMerchantApiResp<T> {
+  timestamp: number;
+  method: string;
+  code: number;
+  message: string;
+  data: T;
+  version: string;
+}
+⋮----
+export interface P2PMerchantUserInfo {
+  is_self?: boolean;
+  user_timest?: string;
+  counterparties_num?: number;
+  email_verified?: string;
+  verified?: string;
+  has_phone?: string;
+  user_name?: string;
+  user_note?: string;
+  complete_transactions?: string;
+  paid_transactions?: string;
+  accepted_transactions?: string;
+  transactions_used_time?: string;
+  cancelled_used_time_month?: string;
+  complete_transactions_month?: string;
+  complete_rate_month?: number;
+  orders_buy_rate_month?: number;
+  is_black?: number;
+  is_follow?: number;
+  have_traded?: number;
+  biz_uid?: string;
+  blue_vip?: number;
+  work_status?: number;
+  registration_days?: number;
+  first_trade_days?: number;
+  need_replenish?: number;
+  merchant_info?: { type?: string; market?: string };
+  online_status?: number;
+  work_hours?: Record<string, unknown> | null;
+  transactions_month?: number;
+  transactions_all?: number;
+  trade_versatile?: boolean;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantCounterpartyUserInfo {
+  user_timest?: string;
+  email_verified?: string;
+  verified?: string;
+  has_phone?: string;
+  user_name?: string;
+  user_note?: string;
+  complete_transactions?: string;
+  paid_transactions?: string;
+  accepted_transactions?: string;
+  transactions_used_time?: string;
+  cancelled_used_time_month?: string;
+  complete_transactions_month?: string;
+  complete_rate_month?: number;
+  is_follow?: number;
+  have_traded?: number;
+  biz_uid?: string;
+  registration_days?: number;
+  first_trade_days?: number;
+  trade_versatile?: boolean;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantPaymentMethod {
+  pay_type: string;
+  pay_name: string;
+  ids: number[];
+  list: Record<string, unknown>[];
+}
+⋮----
+export interface P2PMerchantTransactionListItem {
+  type_buy?: number;
+  timest?: string;
+  timest_expire?: string;
+  type?: string;
+  trade_type?: string;
+  timestamp?: number;
+  rate?: string;
+  amount?: string;
+  total?: string;
+  txid?: number;
+  status?: string;
+  order_status?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantTransactionListData {
+  list: P2PMerchantTransactionListItem[];
+  trans_time?: { od_time?: number }[];
+  count: number;
+  exported_num: number;
+}
+⋮----
+export interface P2PMerchantTransactionDetails {
+  is_sell?: number;
+  txid?: number;
+  orderid?: number;
+  timest?: number;
+  last_pay_time?: number;
+  remain_pay_time?: number;
+  currencyType?: string;
+  want_type?: string;
+  rate?: string;
+  amount?: string;
+  total?: string;
+  status?: string;
+  state?: string;
+  its_uid?: string;
+  its_nickname?: string;
+  its_realname?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantAdsDetail {
+  rate?: string;
+  type?: string;
+  amount?: string;
+  min_amount?: string;
+  max_amount?: string;
+  fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
+  fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
+  minFiatAmount?: string; // v4.106.102
+  maxFiatAmount?: string; // v4.106.102
+  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
+  limitBasisText?: string; // v4.106.102
+  polymarket_limit?: string; // v4.106.102
+  total?: string;
+  orderid?: number;
+  timestamp?: number;
+  currencyType?: string;
+  want_type?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+⋮----
+fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
+fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
+minFiatAmount?: string; // v4.106.102
+maxFiatAmount?: string; // v4.106.102
+limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
+limitBasisText?: string; // v4.106.102
+polymarket_limit?: string; // v4.106.102
+⋮----
+export interface P2PMerchantMyAdsListItem {
+  type?: string;
+  rate?: string;
+  amount?: string;
+  total?: string;
+  id?: string;
+  status?: string;
+  currencyType?: string;
+  want_type?: string;
+  fiat_min_amount?: string; // v4.106.102
+  fiat_max_amount?: string; // v4.106.102
+  limit_basis?: string; // v4.106.103
+  limit_basis_text?: string; // v4.106.103
+  [key: string]: unknown;
+}
+⋮----
+fiat_min_amount?: string; // v4.106.102
+fiat_max_amount?: string; // v4.106.102
+limit_basis?: string; // v4.106.103
+limit_basis_text?: string; // v4.106.103
+⋮----
+export interface P2PMerchantMyAdsListData {
+  lists: P2PMerchantMyAdsListItem[];
+}
+⋮----
+export interface P2PMerchantAdsListItem {
+  index?: number;
+  asset?: string;
+  fiat_unit?: string;
+  adv_no?: number;
+  price?: string;
+  max_single_trans_amount?: string;
+  min_single_trans_amount?: string;
+  nick_name?: string;
+  surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
+  trade_methods?: string[]; // v4.106.103: Supported payment methods list
+  fiat_min_amount?: string; // v4.106.103
+  fiat_max_amount?: string; // v4.106.103
+  limit_basis?: string; // v4.106.103
+  limit_basis_text?: string; // v4.106.103
+}
+⋮----
+surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
+trade_methods?: string[]; // v4.106.103: Supported payment methods list
+fiat_min_amount?: string; // v4.106.103
+fiat_max_amount?: string; // v4.106.103
+limit_basis?: string; // v4.106.103
+limit_basis_text?: string; // v4.106.103
+⋮----
+export interface P2PMerchantChatMessage {
+  is_sell?: number;
+  msg_type?: number;
+  msg?: string;
+  username?: string;
+  uid?: string;
+  timest?: number;
+  type?: number;
+  pic?: string;
+  file_key?: string;
+  file_type?: string;
+  width?: string;
+  height?: string;
+  msg_obj?: Record<string, unknown>;
+  risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
+  toast_msg?: string; // v4.106.96
+  [key: string]: unknown;
+}
+⋮----
+risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
+toast_msg?: string; // v4.106.96
+⋮----
+/** v4.106.96: Risk control response when place_biz_push_order hits off-platform diversion check */
+export interface P2PMerchantPlaceOrderRiskData {
+  risk_code?: string;
+  risk_event?: {
+    type?: string;
+    title?: string;
+    msg?: string;
+    action?: string;
+    content_risk_type?: string;
+    trade_tips?: string;
+    auto_reply?: string;
+  };
+}
+⋮----
+/** v4.106.96: send_chat_message risk fields in data */
+export interface P2PMerchantSendChatMessageData {
+  risk_type?: number;
+  toast_msg?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantChatsListData {
+  messages: P2PMerchantChatMessage[];
+  has_history?: boolean;
+  txid?: number;
+  SRVTM?: number;
+  order_status?: string;
+  memo?: string;
+}
+
+================
+File: .gitignore
+================
+!.gitkeep
+.DS_STORE
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+pids
+*.pid
+*.seed
+*.pid.lock
+node_modules/
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.env
+.env.test
+.cache
+bundleReport.html
+.history/
+dist
+coverage
+localtest.sh
+repomix.sh
+doc
+examples/ignored/
+
+ws-private-spot-wsapi-performance.ts
+ws-private-perp-futures-wsapi-readonly.ts
+privatetest.ts
+
+privaterepotracker
+restClientRegex.ts
+
+testfile.ts
 
 ================
 File: docs/GATE_SDK_QUICKSTART_GUIDE.md
@@ -6237,10 +7048,10 @@ siebly:
         href: /examples/Gate
       - heading: Endpoint map
         summary: Find the SDK method for each supported Gate endpoint.
-        href: https://github.com/tiagosiebler/gateio-api/blob/master/docs/endpointFunctionList.md
+        href: https://github.com/sieblyio/gateio-api/blob/master/docs/endpointFunctionList.md
       - heading: Source repository
         summary: Browse SDK source, releases, issues, and endpoint coverage on GitHub.
-        href: https://github.com/tiagosiebler/gateio-api
+        href: https://github.com/sieblyio/gateio-api
 -->
 
 # Gate API JavaScript Tutorial for Node.js
@@ -6260,7 +7071,7 @@ The SDK handles REST API request signing, private WebSocket authentication, prod
 
 - Gate JavaScript SDK by Siebly: [`gateio-api`](https://siebly.io/sdk/gate/javascript)
 - npm package: [`gateio-api`](https://www.npmjs.com/package/gateio-api)
-- GitHub repository: [`tiagosiebler/gateio-api`](https://github.com/tiagosiebler/gateio-api)
+- GitHub repository: [`sieblyio/gateio-api`](https://github.com/sieblyio/gateio-api)
 - SDK examples: [Gate SDK examples](https://siebly.io/examples/Gate)
 - SDK endpoint map: [Gate JavaScript endpoint reference](./endpointFunctionList.md)
 - Gate REST API documentation: [Gate API v4](https://www.gate.com/docs/developers/apiv4/en/)
@@ -8252,731 +9063,14 @@ Common causes are a drifting system clock, the wrong API secret, credentials fro
 - Find methods in the [complete endpoint map](./endpointFunctionList.md).
 - Review the [Gate SDK page](https://siebly.io/sdk/gate/javascript).
 - Install or update [`gateio-api` from npm](https://www.npmjs.com/package/gateio-api).
-- Browse the [`gateio-api` source repository](https://github.com/tiagosiebler/gateio-api).
+- Browse the [`gateio-api` source repository](https://github.com/sieblyio/gateio-api).
 - Read the official [Gate REST API documentation](https://www.gate.com/docs/developers/apiv4/en/).
 - Read the official [Gate Spot WebSocket documentation](https://www.gate.com/docs/developers/apiv4/ws/).
 - Read the official [Gate Futures WebSocket documentation](https://www.gate.com/docs/developers/futures/ws/).
 - Review [Exchange State](https://siebly.io/reference/exchange-state) before building private state management.
 - Use [Runtime Workflows](https://siebly.io/reference/runtime-workflows) when designing startup, reconnect, and reconciliation behavior.
 - Open the [Siebly glossary](https://siebly.io/reference/glossary) for order, stream, and recovery terms.
-- Report SDK issues in the [`gateio-api` GitHub repository](https://github.com/tiagosiebler/gateio-api/issues).
-
-================
-File: examples/Rest/otc/submitOTCBankPersonalSupplement.ts
-================
-import { readFileSync } from 'fs';
-⋮----
-import { RestClient } from '../../../src/index.js';
-// import { RestClient } from 'gateio-api';
-⋮----
-async function submitOTCBankPersonalSupplementExample()
-
-================
-File: src/types/request/alpha.ts
-================
-/**==========================================================================================================================
- * ALPHA
- * ==========================================================================================================================
- */
-⋮----
-export interface GetAlphaAccountBookReq {
-  from: number; // Start timestamp for the query
-  to?: number; // End timestamp for the query, defaults to current time if not specified
-  page?: number; // Page number
-  limit?: number; // Maximum 100 items per page
-}
-⋮----
-from: number; // Start timestamp for the query
-to?: number; // End timestamp for the query, defaults to current time if not specified
-page?: number; // Page number
-limit?: number; // Maximum 100 items per page
-⋮----
-export interface CreateAlphaQuoteReq {
-  currency: string; // Trading symbol
-  side: 'buy' | 'sell'; // Buy or sell orders
-  amount: string; // Trade Quantity (side: buy refers to quote currency USDT, side: sell refers to base currency)
-  gas_mode: 'speed' | 'custom'; // Trading mode (speed: Smart mode, custom: Custom mode uses slippage parameter)
-  slippage?: string; // Slippage tolerance (10 means 10% tolerance) - required when gas_mode is custom
-}
-⋮----
-currency: string; // Trading symbol
-side: 'buy' | 'sell'; // Buy or sell orders
-amount: string; // Trade Quantity (side: buy refers to quote currency USDT, side: sell refers to base currency)
-gas_mode: 'speed' | 'custom'; // Trading mode (speed: Smart mode, custom: Custom mode uses slippage parameter)
-slippage?: string; // Slippage tolerance (10 means 10% tolerance) - required when gas_mode is custom
-⋮----
-export interface CreateAlphaOrderReq {
-  currency: string; // Trading symbol
-  side: 'buy' | 'sell'; // Buy or sell orders
-  amount: string; // Trade Quantity (side: buy refers to quote currency USDT, side: sell refers to base currency)
-  gas_mode: 'speed' | 'custom'; // Trading mode (speed: Smart mode, custom: Custom mode uses slippage parameter)
-  slippage?: string; // Slippage tolerance (10 means 10% tolerance) - required when gas_mode is custom
-  quote_id: string; // Quote ID returned from quotation API
-}
-⋮----
-currency: string; // Trading symbol
-side: 'buy' | 'sell'; // Buy or sell orders
-amount: string; // Trade Quantity (side: buy refers to quote currency USDT, side: sell refers to base currency)
-gas_mode: 'speed' | 'custom'; // Trading mode (speed: Smart mode, custom: Custom mode uses slippage parameter)
-slippage?: string; // Slippage tolerance (10 means 10% tolerance) - required when gas_mode is custom
-quote_id: string; // Quote ID returned from quotation API
-⋮----
-export interface GetAlphaOrdersReq {
-  currency?: string; // Trading symbol
-  side?: 'buy' | 'sell'; // Buy or sell orders
-  status?: number; // Order Status (0: All, 1: Processing, 2: Successful, 3: Failed, 4: Cancelled, 5: Buy order placed but transfer not completed, 6: Order cancelled but transfer not completed)
-  from?: number; // Start time for order query
-  to?: number; // End time for order query, defaults to current time if not specified
-  limit?: number; // Maximum number of items returned. Default: 100, minimum: 1, maximum: 100
-  page?: number; // Page number
-}
-⋮----
-currency?: string; // Trading symbol
-side?: 'buy' | 'sell'; // Buy or sell orders
-status?: number; // Order Status (0: All, 1: Processing, 2: Successful, 3: Failed, 4: Cancelled, 5: Buy order placed but transfer not completed, 6: Order cancelled but transfer not completed)
-from?: number; // Start time for order query
-to?: number; // End time for order query, defaults to current time if not specified
-limit?: number; // Maximum number of items returned. Default: 100, minimum: 1, maximum: 100
-page?: number; // Page number
-⋮----
-export interface GetAlphaOrderReq {
-  order_id: string; // Order ID
-}
-⋮----
-order_id: string; // Order ID
-⋮----
-export interface GetAlphaCurrenciesReq {
-  currency?: string; // Query currency information by currency symbol
-  limit?: number; // Maximum number of records returned in a single list
-  page?: number; // Page number
-}
-⋮----
-currency?: string; // Query currency information by currency symbol
-limit?: number; // Maximum number of records returned in a single list
-page?: number; // Page number
-⋮----
-export interface GetAlphaTickersReq {
-  currency?: string; // Query by specified currency name
-  limit?: number; // Maximum number of records returned in a single list
-  page?: number; // Page number
-}
-⋮----
-currency?: string; // Query by specified currency name
-limit?: number; // Maximum number of records returned in a single list
-page?: number; // Page number
-
-================
-File: src/types/request/autoinvest.ts
-================
-/**==========================================================================================================================
- * EARN AUTO INVEST
- * ==========================================================================================================================
- */
-⋮----
-export interface AutoInvestPlanPortfolioItemInput {
-  asset: string;
-  ratio: string;
-}
-⋮----
-/** POST /earn/autoinvest/plans/create */
-export interface CreateAutoInvestPlanReq {
-  plan_name?: string;
-  plan_des?: string;
-  plan_money: string;
-  plan_amount: string;
-  plan_period_type:
-    | 'daily'
-    | 'weekly'
-    | 'biweekly'
-    | 'monthly'
-    | 'hourly'
-    | '4-hourly';
-  plan_period_day: number;
-  plan_period_hour: number;
-  items: AutoInvestPlanPortfolioItemInput[];
-  /** Fund source: `spot` or `earn`; default spot */
-  fund_source?: string;
-  /** Fund flow: `auto_invest` or `earn`; default auto_invest */
-  fund_flow?: string;
-  /** 0 normal creation, 1 quick investment */
-  type?: number;
-}
-⋮----
-/** Fund source: `spot` or `earn`; default spot */
-⋮----
-/** Fund flow: `auto_invest` or `earn`; default auto_invest */
-⋮----
-/** 0 normal creation, 1 quick investment */
-⋮----
-/** POST /earn/autoinvest/plans/update */
-export interface UpdateAutoInvestPlanReq {
-  plan_id: number;
-  fund_source?: string;
-  fund_flow?: string;
-}
-⋮----
-/** POST /earn/autoinvest/plans/stop */
-export interface StopAutoInvestPlanReq {
-  plan_id: number;
-}
-⋮----
-/** POST /earn/autoinvest/plans/add_position */
-export interface AddAutoInvestPlanPositionReq {
-  plan_id: number;
-  amount: string;
-}
-⋮----
-/** POST /earn/autoinvest/min_invest_amount */
-export interface GetAutoInvestMinAmountReq {
-  money: string;
-  items: AutoInvestPlanPortfolioItemInput[];
-}
-⋮----
-/** GET /earn/autoinvest/coins */
-export interface GetAutoInvestCoinsReq {
-  /** Pricing currency: USDT or BTC; default USDT */
-  plan_money?: string;
-}
-⋮----
-/** Pricing currency: USDT or BTC; default USDT */
-⋮----
-/** GET /earn/autoinvest/plans/records */
-export interface GetAutoInvestPlanRecordsReq {
-  plan_id: number;
-  page?: number;
-  page_size?: number;
-}
-⋮----
-/** GET /earn/autoinvest/orders */
-export interface GetAutoInvestOrdersReq {
-  plan_id: number;
-  record_id: number;
-}
-⋮----
-/** GET /earn/autoinvest/plans/detail */
-export interface GetAutoInvestPlanDetailReq {
-  plan_id: number;
-}
-⋮----
-/** GET /earn/autoinvest/plans/list_info */
-export interface GetAutoInvestPlansReq {
-  /** Plan status: e.g. History (history) or Active (active) */
-  status: string;
-  page?: number;
-  page_size?: number;
-}
-⋮----
-/** Plan status: e.g. History (history) or Active (active) */
-
-================
-File: src/types/request/p2pMerchant.ts
-================
-/** P2P Merchant API request types */
-⋮----
-export interface P2PMerchantGetCounterpartyUserInfoReq {
-  biz_uid: string;
-}
-⋮----
-export interface P2PMerchantGetMyselfPaymentReq {
-  fiat?: string;
-}
-⋮----
-export interface P2PMerchantGetPendingTransactionListReq {
-  crypto_currency: string;
-  fiat_currency: string;
-  order_tab?: string;
-  select_type?: string;
-  status?: string;
-  txid?: number;
-  start_time?: number;
-  end_time?: number;
-}
-⋮----
-export interface P2PMerchantGetCompletedTransactionListReq {
-  crypto_currency: string;
-  fiat_currency: string;
-  select_type?: string;
-  status?: string;
-  txid?: number;
-  start_time?: number;
-  end_time?: number;
-  query_dispute?: number;
-  page?: number;
-  per_page?: number;
-}
-⋮----
-export interface P2PMerchantGetTransactionDetailsReq {
-  txid: number;
-  channel?: string;
-}
-⋮----
-export interface P2PMerchantConfirmPaymentReq {
-  trade_id: string;
-  payment_method: string;
-}
-⋮----
-export interface P2PMerchantConfirmReceiptReq {
-  trade_id: string;
-}
-⋮----
-export interface P2PMerchantCancelTransactionReq {
-  trade_id: string;
-  reason_id?: string;
-  reason_memo?: string;
-}
-⋮----
-export interface P2PMerchantPlaceBizPushOrderReq {
-  currencyType: string;
-  exchangeType: string;
-  type: string;
-  unitPrice: string;
-  number: string;
-  payType: string;
-  minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-  maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-  pay_type_json?: string;
-  rateFixed?: string;
-  oid?: string;
-  tierLimit?: string;
-  verifiedLimit?: string;
-  regTimeLimit?: string;
-  advertisersLimit?: string;
-  hide_payment?: string;
-  expire_min?: string;
-  trade_tips?: string;
-  auto_reply?: string;
-  min_completed_limit?: string;
-  max_completed_limit?: string;
-  completed_rate_limit?: string;
-  user_country_limit?: string;
-  user_order_limit?: string;
-  rateReferenceId?: string;
-  rateOffset?: string;
-  float_trend?: string;
-  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
-  fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
-  fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
-  polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
-}
-⋮----
-minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-⋮----
-limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
-fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
-fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
-polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
-⋮----
-/** POST /p2p/merchant/account/set_merchant_work_hours — v4.106.96 */
-export interface P2PMerchantSetMerchantWorkHoursReq {
-  work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
-  cycle_type?: string;
-  day_of_week?: string;
-  time_zone?: string; // UTC offset -12 to +14
-  start_time?: string;
-  end_time?: string;
-}
-⋮----
-work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
-⋮----
-time_zone?: string; // UTC offset -12 to +14
-⋮----
-export interface P2PMerchantAdsUpdateStatusReq {
-  adv_no: number;
-  adv_status: 1 | 3 | 4;
-  /** Optional query param */
-  trade_type?: string;
-}
-⋮----
-/** Optional query param */
-⋮----
-export interface P2PMerchantAdsDetailReq {
-  adv_no: string;
-}
-⋮----
-export interface P2PMerchantMyAdsListReq {
-  asset?: string;
-  fiat_unit?: string;
-  trade_type?: string;
-}
-⋮----
-export interface P2PMerchantGetAdsListReq {
-  asset: string;
-  fiat_unit: string;
-  trade_type: string;
-}
-⋮----
-export interface P2PMerchantGetChatsListReq {
-  txid: number;
-  lastreceived?: number;
-  firstreceived?: number;
-}
-⋮----
-export interface P2PMerchantSendChatMessageReq {
-  txid: number;
-  message: string;
-  /** 0=Text, 1=File (video or image). Default 0 */
-  type?: 0 | 1;
-}
-⋮----
-/** 0=Text, 1=File (video or image). Default 0 */
-⋮----
-export interface P2PMerchantUploadChatFileReq {
-  image_content_type: string;
-  base64_img: string;
-}
-
-================
-File: src/types/response/p2pMerchant.ts
-================
-/** P2P Merchant API response types */
-⋮----
-export interface P2PMerchantApiResp<T> {
-  timestamp: number;
-  method: string;
-  code: number;
-  message: string;
-  data: T;
-  version: string;
-}
-⋮----
-export interface P2PMerchantUserInfo {
-  is_self?: boolean;
-  user_timest?: string;
-  counterparties_num?: number;
-  email_verified?: string;
-  verified?: string;
-  has_phone?: string;
-  user_name?: string;
-  user_note?: string;
-  complete_transactions?: string;
-  paid_transactions?: string;
-  accepted_transactions?: string;
-  transactions_used_time?: string;
-  cancelled_used_time_month?: string;
-  complete_transactions_month?: string;
-  complete_rate_month?: number;
-  orders_buy_rate_month?: number;
-  is_black?: number;
-  is_follow?: number;
-  have_traded?: number;
-  biz_uid?: string;
-  blue_vip?: number;
-  work_status?: number;
-  registration_days?: number;
-  first_trade_days?: number;
-  need_replenish?: number;
-  merchant_info?: { type?: string; market?: string };
-  online_status?: number;
-  work_hours?: Record<string, unknown> | null;
-  transactions_month?: number;
-  transactions_all?: number;
-  trade_versatile?: boolean;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantCounterpartyUserInfo {
-  user_timest?: string;
-  email_verified?: string;
-  verified?: string;
-  has_phone?: string;
-  user_name?: string;
-  user_note?: string;
-  complete_transactions?: string;
-  paid_transactions?: string;
-  accepted_transactions?: string;
-  transactions_used_time?: string;
-  cancelled_used_time_month?: string;
-  complete_transactions_month?: string;
-  complete_rate_month?: number;
-  is_follow?: number;
-  have_traded?: number;
-  biz_uid?: string;
-  registration_days?: number;
-  first_trade_days?: number;
-  trade_versatile?: boolean;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantPaymentMethod {
-  pay_type: string;
-  pay_name: string;
-  ids: number[];
-  list: Record<string, unknown>[];
-}
-⋮----
-export interface P2PMerchantTransactionListItem {
-  type_buy?: number;
-  timest?: string;
-  timest_expire?: string;
-  type?: string;
-  trade_type?: string;
-  timestamp?: number;
-  rate?: string;
-  amount?: string;
-  total?: string;
-  txid?: number;
-  status?: string;
-  order_status?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantTransactionListData {
-  list: P2PMerchantTransactionListItem[];
-  trans_time?: { od_time?: number }[];
-  count: number;
-  exported_num: number;
-}
-⋮----
-export interface P2PMerchantTransactionDetails {
-  is_sell?: number;
-  txid?: number;
-  orderid?: number;
-  timest?: number;
-  last_pay_time?: number;
-  remain_pay_time?: number;
-  currencyType?: string;
-  want_type?: string;
-  rate?: string;
-  amount?: string;
-  total?: string;
-  status?: string;
-  state?: string;
-  its_uid?: string;
-  its_nickname?: string;
-  its_realname?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantAdsDetail {
-  rate?: string;
-  type?: string;
-  amount?: string;
-  min_amount?: string;
-  max_amount?: string;
-  fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
-  fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
-  minFiatAmount?: string; // v4.106.102
-  maxFiatAmount?: string; // v4.106.102
-  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
-  limitBasisText?: string; // v4.106.102
-  polymarket_limit?: string; // v4.106.102
-  total?: string;
-  orderid?: number;
-  timestamp?: number;
-  currencyType?: string;
-  want_type?: string;
-  status?: string;
-  [key: string]: unknown;
-}
-⋮----
-fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
-fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
-minFiatAmount?: string; // v4.106.102
-maxFiatAmount?: string; // v4.106.102
-limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
-limitBasisText?: string; // v4.106.102
-polymarket_limit?: string; // v4.106.102
-⋮----
-export interface P2PMerchantMyAdsListItem {
-  type?: string;
-  rate?: string;
-  amount?: string;
-  total?: string;
-  id?: string;
-  status?: string;
-  currencyType?: string;
-  want_type?: string;
-  fiat_min_amount?: string; // v4.106.102
-  fiat_max_amount?: string; // v4.106.102
-  limit_basis?: string; // v4.106.103
-  limit_basis_text?: string; // v4.106.103
-  [key: string]: unknown;
-}
-⋮----
-fiat_min_amount?: string; // v4.106.102
-fiat_max_amount?: string; // v4.106.102
-limit_basis?: string; // v4.106.103
-limit_basis_text?: string; // v4.106.103
-⋮----
-export interface P2PMerchantMyAdsListData {
-  lists: P2PMerchantMyAdsListItem[];
-}
-⋮----
-export interface P2PMerchantAdsListItem {
-  index?: number;
-  asset?: string;
-  fiat_unit?: string;
-  adv_no?: number;
-  price?: string;
-  max_single_trans_amount?: string;
-  min_single_trans_amount?: string;
-  nick_name?: string;
-  surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
-  trade_methods?: string[]; // v4.106.103: Supported payment methods list
-  fiat_min_amount?: string; // v4.106.103
-  fiat_max_amount?: string; // v4.106.103
-  limit_basis?: string; // v4.106.103
-  limit_basis_text?: string; // v4.106.103
-}
-⋮----
-surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
-trade_methods?: string[]; // v4.106.103: Supported payment methods list
-fiat_min_amount?: string; // v4.106.103
-fiat_max_amount?: string; // v4.106.103
-limit_basis?: string; // v4.106.103
-limit_basis_text?: string; // v4.106.103
-⋮----
-export interface P2PMerchantChatMessage {
-  is_sell?: number;
-  msg_type?: number;
-  msg?: string;
-  username?: string;
-  uid?: string;
-  timest?: number;
-  type?: number;
-  pic?: string;
-  file_key?: string;
-  file_type?: string;
-  width?: string;
-  height?: string;
-  msg_obj?: Record<string, unknown>;
-  risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
-  toast_msg?: string; // v4.106.96
-  [key: string]: unknown;
-}
-⋮----
-risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
-toast_msg?: string; // v4.106.96
-⋮----
-/** v4.106.96: Risk control response when place_biz_push_order hits off-platform diversion check */
-export interface P2PMerchantPlaceOrderRiskData {
-  risk_code?: string;
-  risk_event?: {
-    type?: string;
-    title?: string;
-    msg?: string;
-    action?: string;
-    content_risk_type?: string;
-    trade_tips?: string;
-    auto_reply?: string;
-  };
-}
-⋮----
-/** v4.106.96: send_chat_message risk fields in data */
-export interface P2PMerchantSendChatMessageData {
-  risk_type?: number;
-  toast_msg?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantChatsListData {
-  messages: P2PMerchantChatMessage[];
-  has_history?: boolean;
-  txid?: number;
-  SRVTM?: number;
-  order_status?: string;
-  memo?: string;
-}
-
-================
-File: src/types/response/withdrawal.ts
-================
-export interface WithdrawalRecord {
-  id: string;
-  txid: string;
-  block_number: string;
-  withdraw_order_id: string;
-  /** When `status` is DONE, withdrawal success time (not conditioned on `block_number`). */
-  timestamp: string;
-  amount: string;
-  currency: string;
-  address: string;
-  memo?: string;
-  status:
-    | 'BCODE' // Deposit Code Operation
-    | 'CANCEL' // Cancelled
-    | 'CANCELPEND' // Withdrawal Cancellation Pending
-    | 'DMOVE' // Pending Manual Review
-    | 'DONE' // Completed
-    | 'EXTPEND' // Sent and Waiting for Confirmation
-    | 'FAIL' // On-Chain Failure Pending Confirmation
-    | 'FVERIFY' // Facial Verification in Progress
-    | 'INVALID' // Invalid Transaction
-    | 'LOCKED' // Wallet-Side Order Locked
-    | 'MANUAL' // Pending Manual Review
-    | 'PEND' // Processing
-    | 'PROCES' // Processing
-    | 'REJECT' // Rejected
-    | 'REQUEST' // Request in Progress
-    | 'REVIEW' // Under Review
-    | 'SPLITPEND' // Split Pending
-    | 'VERIFY'; // Verification in Progress
-  chain: string;
-}
-⋮----
-/** When `status` is DONE, withdrawal success time (not conditioned on `block_number`). */
-⋮----
-| 'BCODE' // Deposit Code Operation
-| 'CANCEL' // Cancelled
-| 'CANCELPEND' // Withdrawal Cancellation Pending
-| 'DMOVE' // Pending Manual Review
-| 'DONE' // Completed
-| 'EXTPEND' // Sent and Waiting for Confirmation
-| 'FAIL' // On-Chain Failure Pending Confirmation
-| 'FVERIFY' // Facial Verification in Progress
-| 'INVALID' // Invalid Transaction
-| 'LOCKED' // Wallet-Side Order Locked
-| 'MANUAL' // Pending Manual Review
-| 'PEND' // Processing
-| 'PROCES' // Processing
-| 'REJECT' // Rejected
-| 'REQUEST' // Request in Progress
-| 'REVIEW' // Under Review
-| 'SPLITPEND' // Split Pending
-| 'VERIFY'; // Verification in Progress
-
-================
-File: .gitignore
-================
-!.gitkeep
-.DS_STORE
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-pids
-*.pid
-*.seed
-*.pid.lock
-node_modules/
-.npm
-.eslintcache
-.node_repl_history
-*.tgz
-.yarn-integrity
-.env
-.env.test
-.cache
-bundleReport.html
-.history/
-dist
-coverage
-localtest.sh
-repomix.sh
-doc
-examples/ignored/
-
-ws-private-spot-wsapi-performance.ts
-ws-private-perp-futures-wsapi-readonly.ts
-privatetest.ts
-
-privaterepotracker
-restClientRegex.ts
-
-testfile.ts
+- Report SDK issues in the [`gateio-api` GitHub repository](https://github.com/sieblyio/gateio-api/issues).
 
 ================
 File: src/types/request/earn.ts
@@ -9172,6 +9266,7 @@ export interface CreateOTCFiatOrderReq {
   quote_token: string; // Parameter returned by the quote API
   /** From GET /otc/bank/list; default card has is_default=1 */
   bank_id: string;
+  receive_type?: string;
 }
 ⋮----
 type: 'BUY' | 'SELL'; // BUY (on-ramp) or SELL (off-ramp)
@@ -9280,7 +9375,9 @@ export interface CreateOTCBankReq {
   remittance_line_number?: string;
   agent_bank_name?: string;
   agent_bank_swift?: string;
-  documentation_file: GateMultipartFile;
+  documentation_file?: GateMultipartFile;
+  documentation_file_key?: string;
+  file_type?: string;
 }
 ⋮----
 export interface SubmitOTCBankPersonalSupplementReq {
@@ -9299,6 +9396,11 @@ export interface SubmitOTCBankEnterpriseSupplementReq {
   uid?: string;
   funds_statement?: GateMultipartFile;
   additional?: GateMultipartFile;
+}
+⋮----
+export interface CreateOTCUploadPreUploadReq {
+  content_type: string;
+  scene: 'general' | 'bank' | 'assessment' | 'credit';
 }
 
 ================
@@ -9469,6 +9571,7 @@ export interface SubmitSpotOrderReq {
   stop_loss?: PatchSpotOrderTPSL;
   stop_profit?: PatchSpotOrderTPSL;
   post_only?: boolean;
+  trade_quote?: string;
 }
 ⋮----
 export interface UpdateSpotOrderReq {
@@ -9505,7 +9608,7 @@ export interface CreateSpotPovOrderReq {
   text?: string;
 }
 ⋮----
-/** POST /spot/pov_orders/cancel */
+/** DELETE /spot/pov_orders */
 export interface CancelSpotPovOrdersReq {
   currency_pair?: string;
 }
@@ -9548,6 +9651,7 @@ export interface TradFiCreateOrderReq {
   volume: string;
   price_tp?: string;
   price_sl?: string;
+  leverage?: number;
 }
 ⋮----
 export interface TradFiModifyOrderReq {
@@ -9786,6 +9890,290 @@ export interface GetTransferReq {
 }
 
 ================
+File: src/types/response/wallet.ts
+================
+export interface CurrencyChain {
+  chain: string;
+  name_cn: string;
+  name_en: string;
+  contract_address: string;
+  is_disabled: number;
+  is_deposit_disabled: number;
+  is_withdraw_disabled: number;
+  decimal: string;
+}
+⋮----
+/** GET /wallet/sub_account_balances item */
+export interface SubAccountBalance {
+  uid: string;
+  available: { [key: string]: string };
+  /** Locked amount per currency */
+  locking?: { [key: string]: string };
+}
+⋮----
+/** Locked amount per currency */
+⋮----
+export interface DepositRecord {
+  id: string;
+  txid: string;
+  timestamp: string;
+  amount: string;
+  currency: string;
+  address: string;
+  memo?: string;
+  status:
+    | 'BLOCKED' // Deposit Blocked
+    | 'DEP_CREDITED' // Deposit Credited, Withdrawal Pending Unlock
+    | 'DONE' // Funds Credited to Spot Account
+    | 'INVALID' // Invalid Transaction
+    | 'MANUAL' // Manual Review Required
+    | 'PEND' // Processing
+    | 'REVIEW' // Under Compliance Review
+    | 'TRACK'; // Tracking Block Confirmations, Pending Spot Account Credit
+  chain: string;
+  refund_status?: // v4.106.95: Blocked deposit refund status
+  'REFUNDING' | 'REFUNDED' | 'REFUND_FAILED' | 'REJECTED';
+}
+⋮----
+| 'BLOCKED' // Deposit Blocked
+| 'DEP_CREDITED' // Deposit Credited, Withdrawal Pending Unlock
+| 'DONE' // Funds Credited to Spot Account
+| 'INVALID' // Invalid Transaction
+| 'MANUAL' // Manual Review Required
+| 'PEND' // Processing
+| 'REVIEW' // Under Compliance Review
+| 'TRACK'; // Tracking Block Confirmations, Pending Spot Account Credit
+⋮----
+refund_status?: // v4.106.95: Blocked deposit refund status
+⋮----
+export interface CreateDepositAddressResp {
+  currency: string;
+  address: string;
+  multichain_addresses: {
+    chain: string;
+    address: string;
+    payment_id: string;
+    payment_name: string;
+    obtain_failed: number;
+  }[];
+}
+⋮----
+export interface SubAccountTransferRecord {
+  currency: string;
+  sub_account: string;
+  direction: 'to' | 'from';
+  amount: string;
+  uid: string;
+  client_order_id: string;
+  timest: string;
+  source: string;
+  sub_account_type: 'spot' | 'futures' | 'cross_margin' | 'delivery';
+}
+⋮----
+export interface WithdrawalStatus {
+  currency: string;
+  name: string;
+  name_cn: string;
+  deposit: string;
+  withdraw_percent: string;
+  withdraw_fix: string;
+  withdraw_day_limit: string;
+  withdraw_amount_mini: string;
+  withdraw_day_limit_remain: string;
+  withdraw_eachtime_limit: string;
+  withdraw_fix_on_chains: { [key: string]: string };
+  withdraw_percent_on_chains: { [key: string]: string };
+}
+⋮----
+export interface SubAccountMarginBalance {
+  currency_pair: string;
+  locked: boolean;
+  risk: string;
+  base: {
+    currency: string;
+    available: string;
+    locked: string;
+    borrowed: string;
+    interest: string;
+  };
+  quote: {
+    currency: string;
+    available: string;
+    locked: string;
+    borrowed: string;
+    interest: string;
+  };
+}
+⋮----
+export interface SubAccountFuturesBalancesResp {
+  uid: string;
+  available: {
+    [key: string]: {
+      total: string;
+      unrealised_pnl: string;
+      position_margin: string;
+      order_margin: string;
+      available: string;
+      point: string;
+      currency: string;
+      in_dual_mode: boolean;
+      enable_credit: boolean;
+      position_initial_margin: string;
+      maintenance_margin: string;
+      bonus: string;
+      enable_evolved_classic: boolean;
+      cross_order_margin: string;
+      cross_initial_margin: string;
+      cross_maintenance_margin: string;
+      cross_unrealised_pnl: string;
+      cross_available: string;
+      isolated_position_margin: string;
+      history: {
+        dnw: string;
+        pnl: string;
+        fee: string;
+        refr: string;
+        fund: string;
+        point_dnw: string;
+        point_fee: string;
+        point_refr: string;
+        bonus_dnw: string;
+        bonus_offset: string;
+      };
+    };
+  };
+}
+⋮----
+export interface SubAccountCrossMarginBalancesResp {
+  uid: string;
+  available: {
+    user_id: number;
+    locked: boolean;
+    balances: {
+      [key: string]: {
+        available: string;
+        freeze: string;
+        borrowed: string;
+        interest: string;
+      };
+    };
+    total: string;
+    borrowed: string;
+    borrowed_net: string;
+    net: string;
+    leverage: string;
+    interest: string;
+    risk: string;
+    total_initial_margin: string;
+    total_margin_balance: string;
+    total_maintenance_margin: string;
+    total_initial_margin_rate: string;
+    total_maintenance_margin_rate: string;
+    total_available_margin: string;
+  };
+}
+⋮----
+export interface SavedAddress {
+  currency: string;
+  chain: string;
+  address: string;
+  name: string;
+  tag: string;
+  verified: string;
+}
+⋮----
+export interface TradingFees {
+  user_id: number;
+  taker_fee: string;
+  maker_fee: string;
+  gt_discount: boolean;
+  gt_taker_fee: string;
+  gt_maker_fee: string;
+  loan_fee: string;
+  point_type: string;
+  futures_taker_fee: string;
+  futures_maker_fee: string;
+  delivery_taker_fee: string;
+  delivery_maker_fee: string;
+  debit_fee: number;
+}
+⋮----
+export interface GetBalancesResp {
+  total: {
+    amount: string;
+    currency: string;
+    unrealised_pnl?: string;
+    borrowed?: string;
+  };
+  details: {
+    [key: string]: {
+      amount: string;
+      currency: string;
+      unrealised_pnl?: string;
+      borrowed?: string;
+    };
+  };
+}
+⋮----
+export interface SmallBalanceRecord {
+  currency: string;
+  available_balance: string;
+  estimated_as_btc: string;
+  convertible_to_gt: string;
+}
+⋮----
+export interface SmallBalanceHistoryRecord {
+  id: string;
+  currency: string;
+  amount: string;
+  gt_amount: string;
+  create_time: number;
+}
+⋮----
+export interface PushOrder {
+  id: string;
+  push_uid: number;
+  receive_uid: number;
+  currency: string;
+  amount: string;
+  create_time: number;
+  status:
+    | 'CREATING'
+    | 'PENDING'
+    | 'CANCELLING'
+    | 'CANCELLED'
+    | 'REFUSING'
+    | 'REFUSED'
+    | 'RECEIVING'
+    | 'RECEIVED';
+  message: string;
+}
+⋮----
+/** GET /wallet/transfers — AccountTransferDetail */
+export interface AccountTransferDetail {
+  tx_id: string;
+  status: 'pending' | 'success' | 'fail';
+  currency: string;
+  amount: string;
+  from_account:
+    | 'spot'
+    | 'margin'
+    | 'futures'
+    | 'delivery'
+    | 'options'
+    | 'unknown';
+  to_account:
+    | 'spot'
+    | 'margin'
+    | 'futures'
+    | 'delivery'
+    | 'options'
+    | 'unknown';
+  settle?: string | null;
+  currency_pair?: string | null;
+}
+
+================
 File: src/types/websockets/client.ts
 ================
 import type { ClientRequestArgs } from 'http';
@@ -9927,14 +10315,14 @@ coin?: string; // Currency
 export interface CreateCrossExTransferReq {
   coin: string; // Currency
   amount: string; // Transfer amount
-  from: string; // CROSSEX_BINANCE, CROSSEX_OKX, CROSSEX_GATE, CROSSEX_BYBIT, CROSSEX_KRAKEN, CROSSEX, SPOT, etc.
+  from: string; // CROSSEX_BINANCE, CROSSEX_OKX, CROSSEX_GATE, CROSSEX_BYBIT, CROSSEX_KRAKEN, CROSSEX_LIGHTER, CROSSEX, SPOT, etc.
   to: string;
   text?: string; // User-defined ID
 }
 ⋮----
 coin: string; // Currency
 amount: string; // Transfer amount
-from: string; // CROSSEX_BINANCE, CROSSEX_OKX, CROSSEX_GATE, CROSSEX_BYBIT, CROSSEX_KRAKEN, CROSSEX, SPOT, etc.
+from: string; // CROSSEX_BINANCE, CROSSEX_OKX, CROSSEX_GATE, CROSSEX_BYBIT, CROSSEX_KRAKEN, CROSSEX_LIGHTER, CROSSEX, SPOT, etc.
 ⋮----
 text?: string; // User-defined ID
 ⋮----
@@ -10002,14 +10390,14 @@ price?: string; // modify price
 ⋮----
 export interface CreateCrossExConvertQuoteReq {
   exchange_type: string; // Exchange Type
-  from_coin: string; // Asset Sold
-  to_coin: string; // Asset name to buy (OKX and GATE only allow BTC, ETH, USDT; BN only allows USDT)
+  from_coin: string; // Asset Sold (OKX and GATE only allow BTC, ETH, USDT; BN only allows USDT; LIGHTER_USDC <-> CROSSEX_USDT in cross-exchange mode)
+  to_coin: string; // Asset name to buy (OKX and GATE only allow BTC, ETH, USDT; BN only allows USDT; LIGHTER_USDC <-> CROSSEX_USDT in cross-exchange mode)
   from_amount: string; // Amount to sell
 }
 ⋮----
 exchange_type: string; // Exchange Type
-from_coin: string; // Asset Sold
-to_coin: string; // Asset name to buy (OKX and GATE only allow BTC, ETH, USDT; BN only allows USDT)
+from_coin: string; // Asset Sold (OKX and GATE only allow BTC, ETH, USDT; BN only allows USDT; LIGHTER_USDC <-> CROSSEX_USDT in cross-exchange mode)
+to_coin: string; // Asset name to buy (OKX and GATE only allow BTC, ETH, USDT; BN only allows USDT; LIGHTER_USDC <-> CROSSEX_USDT in cross-exchange mode)
 from_amount: string; // Amount to sell
 ⋮----
 export interface CreateCrossExConvertOrderReq {
@@ -10198,6 +10586,12 @@ export interface GetCrossExCoinDiscountRateReq {
 }
 ⋮----
 exchange_type?: string; // OKX/GATE/BINANCE/BYBIT
+⋮----
+export interface UpdateCrossExPositionsMarginReq {
+  symbol: string;
+  margin: string;
+  position_side?: 'NONE' | 'LONG' | 'SHORT';
+}
 
 ================
 File: src/types/response/crossex.ts
@@ -10223,9 +10617,11 @@ export interface CrossExSymbol {
   liquidation_fee: string;
   delist_time: string;
   support_rpi?: string; // true/false whether RPI orders are supported
+  support_cross?: string; // "true"/"false" whether the symbol supports cross-margin orders
 }
 ⋮----
 support_rpi?: string; // true/false whether RPI orders are supported
+support_cross?: string; // "true"/"false" whether the symbol supports cross-margin orders
 ⋮----
 export interface CrossExRiskLimitTier {
   min_risk_limit_value: string; // Minimum risk limit value
@@ -10705,6 +11101,7 @@ export interface CrossExHistoryPosition {
   position_side: string; // Position Direction Before Close
   position_mode: string; // Position Mode at Close
   leverage: string; // Leverage at Close
+  margin_mode?: 'CROSS' | 'ISOLATED';
   business_type: string; // Business Type
   create_time: string; // Created time
   update_time: string; // Update time
@@ -10727,6 +11124,7 @@ funding_fee: string; // Funding Fee
 position_side: string; // Position Direction Before Close
 position_mode: string; // Position Mode at Close
 leverage: string; // Leverage at Close
+⋮----
 business_type: string; // Business Type
 create_time: string; // Created time
 update_time: string; // Update time
@@ -10874,6 +11272,12 @@ tier: string; // Tier
 min_value: string; // Minimum value
 max_value: string; // Maximum value
 discount_rate: string; // Discount rate
+⋮----
+export interface UpdateCrossExPositionsMarginResp {
+  symbol?: string;
+  margin?: string;
+  position_side?: 'NONE' | 'LONG' | 'SHORT';
+}
 
 ================
 File: src/types/response/earn.ts
@@ -11438,6 +11842,30 @@ export interface GetOTCFiatOrderDetailResp {
   code: number;
   data: OTCFiatOrderDetail;
 }
+⋮----
+export interface CreateOTCUploadPreUploadFields {
+  key?: string;
+  content_type?: string;
+  x_amz_credential?: string;
+  x_amz_algorithm?: string;
+  x_amz_date?: string;
+  policy?: string;
+  x_amz_signature?: string;
+}
+⋮----
+export interface CreateOTCUploadPreUploadData {
+  file_key?: string;
+  url?: string;
+  fields?: CreateOTCUploadPreUploadFields;
+  expires_in?: number;
+}
+⋮----
+export interface CreateOTCUploadPreUploadResp {
+  code?: number;
+  message?: string;
+  timestamp?: number;
+  data?: CreateOTCUploadPreUploadData;
+}
 
 ================
 File: src/types/response/tradfi.ts
@@ -11459,11 +11887,13 @@ export interface TradFiListData<T> {
 }
 ⋮----
 export interface TradFiMT5Account {
-  mt5_uid?: number;
+  mt5_uid?: number; // Removed from API in v4.106.132; kept optional for compatibility
   leverage?: number;
   stop_out_level?: string;
   status?: number;
 }
+⋮----
+mt5_uid?: number; // Removed from API in v4.106.132; kept optional for compatibility
 ⋮----
 export interface TradFiCategoryItem {
   category_id?: number;
@@ -11537,8 +11967,10 @@ export interface TradFiTicker {
 export interface TradFiCreateUserResult {
   status?: number;
   leverage?: number;
-  mt5_uid?: string;
+  mt5_uid?: string; // Removed from API in v4.106.132; kept optional for compatibility
 }
+⋮----
+mt5_uid?: string; // Removed from API in v4.106.132; kept optional for compatibility
 ⋮----
 export interface TradFiAssets {
   equity?: string;
@@ -11547,8 +11979,10 @@ export interface TradFiAssets {
   margin?: string;
   margin_free?: string;
   unrealized_pnl?: string;
-  mt5_uid?: string;
+  mt5_uid?: string; // Removed from API in v4.106.132; kept optional for compatibility
 }
+⋮----
+mt5_uid?: string; // Removed from API in v4.106.132; kept optional for compatibility
 ⋮----
 export interface TradFiTransactionRecord {
   asset?: string;
@@ -11685,290 +12119,6 @@ export interface TradFiSymbolCommissionItem {
 }
 
 ================
-File: src/types/response/wallet.ts
-================
-export interface CurrencyChain {
-  chain: string;
-  name_cn: string;
-  name_en: string;
-  contract_address: string;
-  is_disabled: number;
-  is_deposit_disabled: number;
-  is_withdraw_disabled: number;
-  decimal: string;
-}
-⋮----
-/** GET /wallet/sub_account_balances item */
-export interface SubAccountBalance {
-  uid: string;
-  available: { [key: string]: string };
-  /** Locked amount per currency */
-  locking?: { [key: string]: string };
-}
-⋮----
-/** Locked amount per currency */
-⋮----
-export interface DepositRecord {
-  id: string;
-  txid: string;
-  timestamp: string;
-  amount: string;
-  currency: string;
-  address: string;
-  memo?: string;
-  status:
-    | 'BLOCKED' // Deposit Blocked
-    | 'DEP_CREDITED' // Deposit Credited, Withdrawal Pending Unlock
-    | 'DONE' // Funds Credited to Spot Account
-    | 'INVALID' // Invalid Transaction
-    | 'MANUAL' // Manual Review Required
-    | 'PEND' // Processing
-    | 'REVIEW' // Under Compliance Review
-    | 'TRACK'; // Tracking Block Confirmations, Pending Spot Account Credit
-  chain: string;
-  refund_status?: // v4.106.95: Blocked deposit refund status
-  'REFUNDING' | 'REFUNDED' | 'REFUND_FAILED' | 'REJECTED';
-}
-⋮----
-| 'BLOCKED' // Deposit Blocked
-| 'DEP_CREDITED' // Deposit Credited, Withdrawal Pending Unlock
-| 'DONE' // Funds Credited to Spot Account
-| 'INVALID' // Invalid Transaction
-| 'MANUAL' // Manual Review Required
-| 'PEND' // Processing
-| 'REVIEW' // Under Compliance Review
-| 'TRACK'; // Tracking Block Confirmations, Pending Spot Account Credit
-⋮----
-refund_status?: // v4.106.95: Blocked deposit refund status
-⋮----
-export interface CreateDepositAddressResp {
-  currency: string;
-  address: string;
-  multichain_addresses: {
-    chain: string;
-    address: string;
-    payment_id: string;
-    payment_name: string;
-    obtain_failed: number;
-  }[];
-}
-⋮----
-export interface SubAccountTransferRecord {
-  currency: string;
-  sub_account: string;
-  direction: 'to' | 'from';
-  amount: string;
-  uid: string;
-  client_order_id: string;
-  timest: string;
-  source: string;
-  sub_account_type: 'spot' | 'futures' | 'cross_margin' | 'delivery';
-}
-⋮----
-export interface WithdrawalStatus {
-  currency: string;
-  name: string;
-  name_cn: string;
-  deposit: string;
-  withdraw_percent: string;
-  withdraw_fix: string;
-  withdraw_day_limit: string;
-  withdraw_amount_mini: string;
-  withdraw_day_limit_remain: string;
-  withdraw_eachtime_limit: string;
-  withdraw_fix_on_chains: { [key: string]: string };
-  withdraw_percent_on_chains: { [key: string]: string };
-}
-⋮----
-export interface SubAccountMarginBalance {
-  currency_pair: string;
-  locked: boolean;
-  risk: string;
-  base: {
-    currency: string;
-    available: string;
-    locked: string;
-    borrowed: string;
-    interest: string;
-  };
-  quote: {
-    currency: string;
-    available: string;
-    locked: string;
-    borrowed: string;
-    interest: string;
-  };
-}
-⋮----
-export interface SubAccountFuturesBalancesResp {
-  uid: string;
-  available: {
-    [key: string]: {
-      total: string;
-      unrealised_pnl: string;
-      position_margin: string;
-      order_margin: string;
-      available: string;
-      point: string;
-      currency: string;
-      in_dual_mode: boolean;
-      enable_credit: boolean;
-      position_initial_margin: string;
-      maintenance_margin: string;
-      bonus: string;
-      enable_evolved_classic: boolean;
-      cross_order_margin: string;
-      cross_initial_margin: string;
-      cross_maintenance_margin: string;
-      cross_unrealised_pnl: string;
-      cross_available: string;
-      isolated_position_margin: string;
-      history: {
-        dnw: string;
-        pnl: string;
-        fee: string;
-        refr: string;
-        fund: string;
-        point_dnw: string;
-        point_fee: string;
-        point_refr: string;
-        bonus_dnw: string;
-        bonus_offset: string;
-      };
-    };
-  };
-}
-⋮----
-export interface SubAccountCrossMarginBalancesResp {
-  uid: string;
-  available: {
-    user_id: number;
-    locked: boolean;
-    balances: {
-      [key: string]: {
-        available: string;
-        freeze: string;
-        borrowed: string;
-        interest: string;
-      };
-    };
-    total: string;
-    borrowed: string;
-    borrowed_net: string;
-    net: string;
-    leverage: string;
-    interest: string;
-    risk: string;
-    total_initial_margin: string;
-    total_margin_balance: string;
-    total_maintenance_margin: string;
-    total_initial_margin_rate: string;
-    total_maintenance_margin_rate: string;
-    total_available_margin: string;
-  };
-}
-⋮----
-export interface SavedAddress {
-  currency: string;
-  chain: string;
-  address: string;
-  name: string;
-  tag: string;
-  verified: string;
-}
-⋮----
-export interface TradingFees {
-  user_id: number;
-  taker_fee: string;
-  maker_fee: string;
-  gt_discount: boolean;
-  gt_taker_fee: string;
-  gt_maker_fee: string;
-  loan_fee: string;
-  point_type: string;
-  futures_taker_fee: string;
-  futures_maker_fee: string;
-  delivery_taker_fee: string;
-  delivery_maker_fee: string;
-  debit_fee: number;
-}
-⋮----
-export interface GetBalancesResp {
-  total: {
-    amount: string;
-    currency: string;
-    unrealised_pnl?: string;
-    borrowed?: string;
-  };
-  details: {
-    [key: string]: {
-      amount: string;
-      currency: string;
-      unrealised_pnl?: string;
-      borrowed?: string;
-    };
-  };
-}
-⋮----
-export interface SmallBalanceRecord {
-  currency: string;
-  available_balance: string;
-  estimated_as_btc: string;
-  convertible_to_gt: string;
-}
-⋮----
-export interface SmallBalanceHistoryRecord {
-  id: string;
-  currency: string;
-  amount: string;
-  gt_amount: string;
-  create_time: number;
-}
-⋮----
-export interface PushOrder {
-  id: string;
-  push_uid: number;
-  receive_uid: number;
-  currency: string;
-  amount: string;
-  create_time: number;
-  status:
-    | 'CREATING'
-    | 'PENDING'
-    | 'CANCELLING'
-    | 'CANCELLED'
-    | 'REFUSING'
-    | 'REFUSED'
-    | 'RECEIVING'
-    | 'RECEIVED';
-  message: string;
-}
-⋮----
-/** GET /wallet/transfers — AccountTransferDetail */
-export interface AccountTransferDetail {
-  tx_id: string;
-  status: 'pending' | 'success' | 'fail';
-  currency: string;
-  amount: string;
-  from_account:
-    | 'spot'
-    | 'margin'
-    | 'futures'
-    | 'delivery'
-    | 'options'
-    | 'unknown';
-  to_account:
-    | 'spot'
-    | 'margin'
-    | 'futures'
-    | 'delivery'
-    | 'options'
-    | 'unknown';
-  settle?: string | null;
-  currency_pair?: string | null;
-}
-
-================
 File: src/index.ts
 ================
 // Request Types
@@ -11978,6 +12128,453 @@ File: src/index.ts
 // Websockets Types
 ⋮----
 // Shared Types
+
+================
+File: src/types/request/futures.ts
+================
+/**==========================================================================================================================
+ * FUTURES
+ * ==========================================================================================================================
+ */
+⋮----
+export type FuturesSettle = 'btc' | 'usdt' | 'usd' | 'usd1';
+⋮----
+export interface GetFuturesOrderBookReq {
+  settle: FuturesSettle;
+  contract: string;
+  interval?: string;
+  limit?: number;
+  with_id?: boolean;
+}
+⋮----
+export interface GetFuturesTradesReq {
+  settle: FuturesSettle;
+  contract: string;
+  limit?: number;
+  offset?: number;
+  last_id?: string;
+  from?: number;
+  to?: number;
+}
+⋮----
+export interface GetFuturesCandlesReq {
+  settle: FuturesSettle;
+  contract: string;
+  from?: number;
+  to?: number;
+  limit?: number;
+  interval?: string;
+}
+⋮----
+export interface GetFuturesStatsReq {
+  settle: FuturesSettle;
+  contract: string;
+  from?: number;
+  interval?: string;
+  limit?: number;
+}
+⋮----
+export interface GetFundingRatesReq {
+  settle: FuturesSettle;
+  contract: string;
+  limit?: number;
+  from?: number;
+  to?: number;
+}
+⋮----
+export interface BatchFundingRatesReq {
+  settle: 'btc' | 'usdt' | 'usd1';
+  contracts: string[];
+}
+⋮----
+export interface GetLiquidationHistoryReq {
+  settle: FuturesSettle;
+  contract?: string;
+  from?: number;
+  to?: number;
+  limit?: number;
+}
+⋮----
+export interface GetRiskLimitTiersReq {
+  settle: FuturesSettle;
+  contract: string;
+  limit?: number;
+  offset?: number;
+}
+⋮----
+export interface GetRiskLimitTableReq {
+  settle: FuturesSettle;
+  table_id: string;
+}
+⋮----
+export interface GetFuturesAccountBookReq {
+  settle: FuturesSettle;
+  contract?: string;
+  limit?: number;
+  offset?: number;
+  from?: number;
+  to?: number;
+  type?:
+    | 'dnw'
+    | 'pnl'
+    | 'fee'
+    | 'refr'
+    | 'fund'
+    | 'point_dnw'
+    | 'point_fee'
+    | 'point_refr'
+    | 'bonus_offset';
+}
+⋮----
+export interface GetFuturesADLRiskStatesReq {
+  settle: 'btc' | 'usdt' | 'usd1';
+}
+⋮----
+export interface GetFuturesPositionsReq {
+  settle: FuturesSettle;
+  holding?: boolean;
+  limit?: number; // deprecated, use positions_limit instead
+  positions_limit?: number; // v4.106.104: Replaces limit; omit to return full list, explicit values capped at 1-100
+  offset?: number;
+  position_side?: string; // v4.105.3: Add position_side parameter for hedge mode support
+  hedge_mode?: boolean; // v4.104.3: Add hedge_mode parameter
+}
+⋮----
+limit?: number; // deprecated, use positions_limit instead
+positions_limit?: number; // v4.106.104: Replaces limit; omit to return full list, explicit values capped at 1-100
+⋮----
+position_side?: string; // v4.105.3: Add position_side parameter for hedge mode support
+hedge_mode?: boolean; // v4.104.3: Add hedge_mode parameter
+⋮----
+export interface UpdateDualModePositionMarginReq {
+  settle: FuturesSettle;
+  contract: string;
+  change: string;
+  dual_side: 'dual_long' | 'dual_short';
+}
+⋮----
+export interface UpdateDualModePositionLeverageReq {
+  settle: FuturesSettle;
+  contract: string;
+  leverage: string;
+  cross_leverage_limit?: string;
+}
+⋮----
+export interface SubmitFuturesOrderReq {
+  xGateExptime?: number;
+  settle: FuturesSettle;
+  contract: string;
+  size: number;
+  iceberg?: number;
+  price?: string;
+  close?: boolean;
+  reduce_only?: boolean;
+  tif?: string;
+  text?: string;
+  auto_size?: string;
+  stp_act?: string;
+  action_mode?: 'ACK' | 'RESULT' | 'FULL';
+  tpsl_tp_trigger_price?: string;
+  tpsl_sl_trigger_price?: string;
+  pos_margin_mode?: 'isolated' | 'cross';
+}
+⋮----
+export interface GetFuturesOrdersReq {
+  settle: FuturesSettle;
+  contract?: string;
+  status: string;
+  limit?: number;
+  offset?: number;
+  last_id?: string;
+}
+⋮----
+export interface DeleteAllFuturesOrdersReq {
+  xGateExptime?: number;
+  settle: FuturesSettle;
+  contract: string;
+  side?: string;
+  action_mode?: 'ACK' | 'RESULT' | 'FULL';
+}
+⋮----
+export interface GetFuturesOrdersByTimeRangeReq {
+  settle: FuturesSettle;
+  contract?: string;
+  from?: number;
+  to?: number;
+  limit?: number;
+  offset?: number;
+}
+⋮----
+export interface UpdateFuturesOrderReq {
+  xGateExptime?: number;
+  settle: FuturesSettle;
+  order_id: string;
+  size?: number;
+  price?: string;
+  amend_text?: string;
+}
+⋮----
+export interface GetFuturesTradingHistoryReq {
+  settle: FuturesSettle;
+  contract?: string;
+  order?: number;
+  limit?: number;
+  offset?: number;
+  last_id?: string;
+}
+⋮----
+export interface GetFuturesTradingHistoryByTimeRangeReq {
+  settle: FuturesSettle;
+  contract?: string;
+  from?: number;
+  to?: number;
+  limit?: number;
+  offset?: number;
+  role?: 'maker' | 'taker';
+}
+⋮----
+export interface GetFuturesPositionHistoryReq {
+  settle: FuturesSettle;
+  contract?: string;
+  limit?: number;
+  offset?: number;
+  from?: number;
+  to?: number;
+  side?: 'long' | 'short';
+  pnl?: string;
+}
+⋮----
+export interface GetFuturesLiquidationHistoryReq {
+  settle: FuturesSettle;
+  contract?: string;
+  limit?: number;
+  at?: number;
+}
+⋮----
+export interface SubmitFuturesTriggeredOrderReq {
+  initial: {
+    contract: string;
+    size?: number;
+    /** Decimal contract size; if both `size` and `amount` are set, `amount` takes precedence */
+    amount?: string;
+    price: string; // Required: Order price. Set to 0 to use market price
+    close?: boolean;
+    tif?: 'gtc' | 'ioc';
+    text?: string;
+    reduce_only?: boolean;
+    auto_size?: string;
+  };
+  trigger: {
+    strategy_type?: 0 | 1;
+    price_type?: 0 | 1 | 2;
+    price: string; // Required: Price value for price trigger
+    rule: 1 | 2; // Required: Price Condition Type (1: >=, 2: <=)
+    expiration?: number;
+  };
+  order_type?:
+    | 'close-long-order'
+    | 'close-short-order'
+    | 'close-long-position'
+    | 'close-short-position'
+    | 'plan-close-long-position'
+    | 'plan-close-short-position';
+  settle: FuturesSettle;
+}
+⋮----
+/** Decimal contract size; if both `size` and `amount` are set, `amount` takes precedence */
+⋮----
+price: string; // Required: Order price. Set to 0 to use market price
+⋮----
+price: string; // Required: Price value for price trigger
+rule: 1 | 2; // Required: Price Condition Type (1: >=, 2: <=)
+⋮----
+export interface GetFuturesAutoOrdersReq {
+  settle: FuturesSettle;
+  status: 'open' | 'finished';
+  contract?: string;
+  limit?: number;
+  offset?: number;
+}
+⋮----
+/**
+ * Modify contract order parameters
+ */
+export interface BatchAmendOrderReq {
+  order_id?: number; // Order id, order_id and text must contain at least one
+  text?: string; // User-defined order text, at least one of order_id and text must be passed
+  size?: number; // The new order size, including the executed order size
+  price?: string; // New order price
+  amend_text?: string; // Custom info during amending order
+}
+⋮----
+order_id?: number; // Order id, order_id and text must contain at least one
+text?: string; // User-defined order text, at least one of order_id and text must be passed
+size?: number; // The new order size, including the executed order size
+price?: string; // New order price
+amend_text?: string; // Custom info during amending order
+⋮----
+// v4.105.8: New GET /futures/{settle}/position_close_history endpoint request
+export interface GetFuturesPositionCloseHistoryReq {
+  settle: FuturesSettle;
+  contract?: string;
+  limit?: number;
+  offset?: number;
+  from?: number;
+  to?: number;
+}
+⋮----
+// v4.104.6: New GET /futures/{settle}/insurance endpoint request
+export interface GetFuturesInsuranceReq {
+  settle: FuturesSettle;
+  limit?: number;
+}
+⋮----
+export interface UpdateFuturesPriceTriggeredOrderReq {
+  settle: FuturesSettle;
+  order_id: number | string;
+  contract?: string;
+  size?: number;
+  /** Same semantics as `size` (decimal contract size) */
+  amount?: string;
+  price?: string;
+  /** When fully closing in single-position mode, set true */
+  close?: boolean;
+  trigger_price?: string;
+  price_type?: 0 | 1 | 2; // 0 - Latest trade price, 1 - Mark price, 2 - Index price
+  auto_size?: string; // Not required in single position mode
+}
+⋮----
+/** Same semantics as `size` (decimal contract size) */
+⋮----
+/** When fully closing in single-position mode, set true */
+⋮----
+price_type?: 0 | 1 | 2; // 0 - Latest trade price, 1 - Mark price, 2 - Index price
+auto_size?: string; // Not required in single position mode
+⋮----
+/** GET /futures/{settle}/get_leverage/{contract} — v4.106.43: pos_margin_mode and dual_side required */
+export interface GetFuturesContractLeverageReq {
+  settle: FuturesSettle;
+  contract: string;
+  pos_margin_mode: 'isolated' | 'cross';
+  dual_side: 'dual_long' | 'dual_short';
+}
+⋮----
+/** Trail order (autoorder/v1/trail) request types */
+export interface CreateTrailOrderReq {
+  settle: 'btc' | 'usdt';
+  contract: string;
+  amount: string;
+  activation_price?: string;
+  is_gte?: boolean;
+  price_type?: 1 | 2 | 3;
+  price_offset?: string;
+  reduce_only?: boolean;
+  position_related?: boolean;
+  text?: string;
+  pos_margin_mode?: string;
+  position_mode?: string;
+}
+⋮----
+export interface TerminateTrailOrderReq {
+  settle: 'btc' | 'usdt';
+  id?: number;
+  text?: string;
+}
+⋮----
+export interface BatchTerminateTrailOrdersReq {
+  settle: 'btc' | 'usdt';
+  contract?: string;
+  related_position?: 1 | 2;
+}
+⋮----
+export interface GetTrailOrderListReq {
+  settle: 'btc' | 'usdt';
+  contract?: string;
+  is_finished?: boolean;
+  start_at?: number;
+  end_at?: number;
+  page_num?: number;
+  page_size?: number;
+  sort_by?: 1 | 2;
+  hide_cancel?: boolean;
+  related_position?: 1 | 2;
+  sort_by_trigger?: boolean;
+  reduce_only?: 1 | 2;
+  side?: 1 | 2;
+}
+⋮----
+export interface GetTrailOrderDetailReq {
+  settle: 'btc' | 'usdt';
+  id: number;
+}
+⋮----
+export interface UpdateTrailOrderReq {
+  settle: 'btc' | 'usdt';
+  id: number;
+  amount?: string;
+  activation_price?: string;
+  is_gte_str?: string;
+  price_type?: 0 | 1 | 2 | 3;
+  price_offset?: string;
+}
+⋮----
+export interface GetTrailOrderChangeLogReq {
+  settle: 'btc' | 'usdt';
+  id: number;
+  page_num?: number;
+  page_size?: number;
+}
+⋮----
+/** Chase limit order (autoorder/v1/chase) request types */
+export interface CreateChaseOrderReq {
+  settle: FuturesSettle;
+  contract: string;
+  amount: string;
+  price_limit: string;
+  offset_limit?: string;
+  reduce_only?: boolean;
+  text?: string;
+  is_dual_mode?: boolean;
+  price_type?: number;
+  price_gap_type?: number;
+  price_gap_value?: string;
+  pos_margin_mode?: 'isolated' | 'cross' | string;
+  position_mode?: string;
+}
+⋮----
+export interface StopChaseOrderReq {
+  settle: FuturesSettle;
+  id?: string;
+  text?: string;
+}
+⋮----
+export interface StopAllChaseOrdersReq {
+  settle: FuturesSettle;
+  contract?: string;
+  pos_margin_mode?: 'isolated' | 'cross' | string;
+}
+⋮----
+export interface GetChaseOrdersReq {
+  settle: FuturesSettle;
+  contract?: string;
+  is_finished?: boolean;
+  start_at?: number;
+  end_at?: number;
+  page_num?: number;
+  page_size?: number;
+  /** 1 ORDER_SORT_CREATED_AT, 2 ORDER_SORT_FINISHED_AT */
+  sort_by: 1 | 2;
+  hide_cancel?: boolean;
+  reduce_only?: 0 | 1 | 2;
+  side?: 0 | 1 | 2;
+}
+⋮----
+/** 1 ORDER_SORT_CREATED_AT, 2 ORDER_SORT_FINISHED_AT */
+⋮----
+export interface GetChaseOrderDetailReq {
+  settle: FuturesSettle;
+  id: string;
+}
 
 ================
 File: src/types/response/spot.ts
@@ -12065,6 +12662,7 @@ export interface SpotTrade {
   amend_text: string;
   sequence_id: string;
   text: string;
+  trade_quote?: string;
 }
 ⋮----
 export type SpotCandle = [
@@ -12212,6 +12810,7 @@ export interface SpotOrder {
   action_mode?: 'ACK' | 'RESULT' | 'FULL';
   stop_loss?: PatchSpotOrderTPSL;
   stop_profit?: PatchSpotOrderTPSL;
+  trade_quote?: string;
 }
 ⋮----
 /**
@@ -12283,6 +12882,7 @@ export interface SpotHistoricTradeRecord {
   sequence_id: string;
   text: string;
   deal?: string; // v4.105.29: Total Executed Value
+  trade_quote?: string;
 }
 ⋮----
 deal?: string; // v4.105.29: Total Executed Value
@@ -12855,447 +13455,6 @@ private async buildRequest(
 ): Promise<AxiosRequestConfig>
 
 ================
-File: src/types/request/futures.ts
-================
-/**==========================================================================================================================
- * FUTURES
- * ==========================================================================================================================
- */
-⋮----
-export interface GetFuturesOrderBookReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  interval?: string;
-  limit?: number;
-  with_id?: boolean;
-}
-⋮----
-export interface GetFuturesTradesReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  limit?: number;
-  offset?: number;
-  last_id?: string;
-  from?: number;
-  to?: number;
-}
-⋮----
-export interface GetFuturesCandlesReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  from?: number;
-  to?: number;
-  limit?: number;
-  interval?: string;
-}
-⋮----
-export interface GetFuturesStatsReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  from?: number;
-  interval?: string;
-  limit?: number;
-}
-⋮----
-export interface GetFundingRatesReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  limit?: number;
-  from?: number;
-  to?: number;
-}
-⋮----
-export interface BatchFundingRatesReq {
-  settle: 'btc' | 'usdt';
-  contracts: string[];
-}
-⋮----
-export interface GetLiquidationHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  from?: number;
-  to?: number;
-  limit?: number;
-}
-⋮----
-export interface GetRiskLimitTiersReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  limit?: number;
-  offset?: number;
-}
-⋮----
-export interface GetRiskLimitTableReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  table_id: string;
-}
-⋮----
-export interface GetFuturesAccountBookReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  limit?: number;
-  offset?: number;
-  from?: number;
-  to?: number;
-  type?:
-    | 'dnw'
-    | 'pnl'
-    | 'fee'
-    | 'refr'
-    | 'fund'
-    | 'point_dnw'
-    | 'point_fee'
-    | 'point_refr'
-    | 'bonus_offset';
-}
-⋮----
-export interface GetFuturesPositionsReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  holding?: boolean;
-  limit?: number; // deprecated, use positions_limit instead
-  positions_limit?: number; // v4.106.104: Replaces limit; omit to return full list, explicit values capped at 1-100
-  offset?: number;
-  position_side?: string; // v4.105.3: Add position_side parameter for hedge mode support
-  hedge_mode?: boolean; // v4.104.3: Add hedge_mode parameter
-}
-⋮----
-limit?: number; // deprecated, use positions_limit instead
-positions_limit?: number; // v4.106.104: Replaces limit; omit to return full list, explicit values capped at 1-100
-⋮----
-position_side?: string; // v4.105.3: Add position_side parameter for hedge mode support
-hedge_mode?: boolean; // v4.104.3: Add hedge_mode parameter
-⋮----
-export interface UpdateDualModePositionMarginReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  change: string;
-  dual_side: 'dual_long' | 'dual_short';
-}
-⋮----
-export interface UpdateDualModePositionLeverageReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  leverage: string;
-  cross_leverage_limit?: string;
-}
-⋮----
-export interface SubmitFuturesOrderReq {
-  xGateExptime?: number;
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  size: number;
-  iceberg?: number;
-  price?: string;
-  close?: boolean;
-  reduce_only?: boolean;
-  tif?: string;
-  text?: string;
-  auto_size?: string;
-  stp_act?: string;
-  action_mode?: 'ACK' | 'RESULT' | 'FULL';
-  tpsl_tp_trigger_price?: string;
-  tpsl_sl_trigger_price?: string;
-  pos_margin_mode?: 'isolated' | 'cross';
-}
-⋮----
-export interface GetFuturesOrdersReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  status: string;
-  limit?: number;
-  offset?: number;
-  last_id?: string;
-}
-⋮----
-export interface DeleteAllFuturesOrdersReq {
-  xGateExptime?: number;
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  side?: string;
-  action_mode?: 'ACK' | 'RESULT' | 'FULL';
-}
-⋮----
-export interface GetFuturesOrdersByTimeRangeReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  from?: number;
-  to?: number;
-  limit?: number;
-  offset?: number;
-}
-⋮----
-export interface UpdateFuturesOrderReq {
-  xGateExptime?: number;
-  settle: 'btc' | 'usdt' | 'usd';
-  order_id: string;
-  size?: number;
-  price?: string;
-  amend_text?: string;
-}
-⋮----
-export interface GetFuturesTradingHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  order?: number;
-  limit?: number;
-  offset?: number;
-  last_id?: string;
-}
-⋮----
-export interface GetFuturesTradingHistoryByTimeRangeReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  from?: number;
-  to?: number;
-  limit?: number;
-  offset?: number;
-  role?: 'maker' | 'taker';
-}
-⋮----
-export interface GetFuturesPositionHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  limit?: number;
-  offset?: number;
-  from?: number;
-  to?: number;
-  side?: 'long' | 'short';
-  pnl?: string;
-}
-⋮----
-export interface GetFuturesLiquidationHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  limit?: number;
-  at?: number;
-}
-⋮----
-export interface SubmitFuturesTriggeredOrderReq {
-  initial: {
-    contract: string;
-    size?: number;
-    /** Decimal contract size; if both `size` and `amount` are set, `amount` takes precedence */
-    amount?: string;
-    price: string; // Required: Order price. Set to 0 to use market price
-    close?: boolean;
-    tif?: 'gtc' | 'ioc';
-    text?: string;
-    reduce_only?: boolean;
-    auto_size?: string;
-  };
-  trigger: {
-    strategy_type?: 0 | 1;
-    price_type?: 0 | 1 | 2;
-    price: string; // Required: Price value for price trigger
-    rule: 1 | 2; // Required: Price Condition Type (1: >=, 2: <=)
-    expiration?: number;
-  };
-  order_type?:
-    | 'close-long-order'
-    | 'close-short-order'
-    | 'close-long-position'
-    | 'close-short-position'
-    | 'plan-close-long-position'
-    | 'plan-close-short-position';
-  settle: 'btc' | 'usdt' | 'usd';
-}
-⋮----
-/** Decimal contract size; if both `size` and `amount` are set, `amount` takes precedence */
-⋮----
-price: string; // Required: Order price. Set to 0 to use market price
-⋮----
-price: string; // Required: Price value for price trigger
-rule: 1 | 2; // Required: Price Condition Type (1: >=, 2: <=)
-⋮----
-export interface GetFuturesAutoOrdersReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  status: 'open' | 'finished';
-  contract?: string;
-  limit?: number;
-  offset?: number;
-}
-⋮----
-/**
- * Modify contract order parameters
- */
-export interface BatchAmendOrderReq {
-  order_id?: number; // Order id, order_id and text must contain at least one
-  text?: string; // User-defined order text, at least one of order_id and text must be passed
-  size?: number; // The new order size, including the executed order size
-  price?: string; // New order price
-  amend_text?: string; // Custom info during amending order
-}
-⋮----
-order_id?: number; // Order id, order_id and text must contain at least one
-text?: string; // User-defined order text, at least one of order_id and text must be passed
-size?: number; // The new order size, including the executed order size
-price?: string; // New order price
-amend_text?: string; // Custom info during amending order
-⋮----
-// v4.105.8: New GET /futures/{settle}/position_close_history endpoint request
-export interface GetFuturesPositionCloseHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  limit?: number;
-  offset?: number;
-  from?: number;
-  to?: number;
-}
-⋮----
-// v4.104.6: New GET /futures/{settle}/insurance endpoint request
-export interface GetFuturesInsuranceReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  limit?: number;
-}
-⋮----
-export interface UpdateFuturesPriceTriggeredOrderReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  order_id: number | string;
-  contract?: string;
-  size?: number;
-  /** Same semantics as `size` (decimal contract size) */
-  amount?: string;
-  price?: string;
-  /** When fully closing in single-position mode, set true */
-  close?: boolean;
-  trigger_price?: string;
-  price_type?: 0 | 1 | 2; // 0 - Latest trade price, 1 - Mark price, 2 - Index price
-  auto_size?: string; // Not required in single position mode
-}
-⋮----
-/** Same semantics as `size` (decimal contract size) */
-⋮----
-/** When fully closing in single-position mode, set true */
-⋮----
-price_type?: 0 | 1 | 2; // 0 - Latest trade price, 1 - Mark price, 2 - Index price
-auto_size?: string; // Not required in single position mode
-⋮----
-/** GET /futures/{settle}/get_leverage/{contract} — v4.106.43: pos_margin_mode and dual_side required */
-export interface GetFuturesContractLeverageReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  pos_margin_mode: 'isolated' | 'cross';
-  dual_side: 'dual_long' | 'dual_short';
-}
-⋮----
-/** Trail order (autoorder/v1/trail) request types */
-export interface CreateTrailOrderReq {
-  settle: 'btc' | 'usdt';
-  contract: string;
-  amount: string;
-  activation_price?: string;
-  is_gte?: boolean;
-  price_type?: 1 | 2 | 3;
-  price_offset?: string;
-  reduce_only?: boolean;
-  position_related?: boolean;
-  text?: string;
-  pos_margin_mode?: string;
-  position_mode?: string;
-}
-⋮----
-export interface TerminateTrailOrderReq {
-  settle: 'btc' | 'usdt';
-  id?: number;
-  text?: string;
-}
-⋮----
-export interface BatchTerminateTrailOrdersReq {
-  settle: 'btc' | 'usdt';
-  contract?: string;
-  related_position?: 1 | 2;
-}
-⋮----
-export interface GetTrailOrderListReq {
-  settle: 'btc' | 'usdt';
-  contract?: string;
-  is_finished?: boolean;
-  start_at?: number;
-  end_at?: number;
-  page_num?: number;
-  page_size?: number;
-  sort_by?: 1 | 2;
-  hide_cancel?: boolean;
-  related_position?: 1 | 2;
-  sort_by_trigger?: boolean;
-  reduce_only?: 1 | 2;
-  side?: 1 | 2;
-}
-⋮----
-export interface GetTrailOrderDetailReq {
-  settle: 'btc' | 'usdt';
-  id: number;
-}
-⋮----
-export interface UpdateTrailOrderReq {
-  settle: 'btc' | 'usdt';
-  id: number;
-  amount?: string;
-  activation_price?: string;
-  is_gte_str?: string;
-  price_type?: 0 | 1 | 2 | 3;
-  price_offset?: string;
-}
-⋮----
-export interface GetTrailOrderChangeLogReq {
-  settle: 'btc' | 'usdt';
-  id: number;
-  page_num?: number;
-  page_size?: number;
-}
-⋮----
-/** Chase limit order (autoorder/v1/chase) request types */
-export interface CreateChaseOrderReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract: string;
-  amount: string;
-  price_limit: string;
-  offset_limit?: string;
-  reduce_only?: boolean;
-  text?: string;
-  is_dual_mode?: boolean;
-  price_type?: number;
-  price_gap_type?: number;
-  price_gap_value?: string;
-  pos_margin_mode?: 'isolated' | 'cross' | string;
-  position_mode?: string;
-}
-⋮----
-export interface StopChaseOrderReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  id?: string;
-  text?: string;
-}
-⋮----
-export interface StopAllChaseOrdersReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  pos_margin_mode?: 'isolated' | 'cross' | string;
-}
-⋮----
-export interface GetChaseOrdersReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  contract?: string;
-  is_finished?: boolean;
-  start_at?: number;
-  end_at?: number;
-  page_num?: number;
-  page_size?: number;
-  /** 1 ORDER_SORT_CREATED_AT, 2 ORDER_SORT_FINISHED_AT */
-  sort_by: 1 | 2;
-  hide_cancel?: boolean;
-  reduce_only?: 0 | 1 | 2;
-  side?: 0 | 1 | 2;
-}
-⋮----
-/** 1 ORDER_SORT_CREATED_AT, 2 ORDER_SORT_FINISHED_AT */
-⋮----
-export interface GetChaseOrderDetailReq {
-  settle: 'btc' | 'usdt' | 'usd';
-  id: string;
-}
-
-================
 File: src/types/response/futures.ts
 ================
 /**==========================================================================================================================
@@ -13803,6 +13962,17 @@ status?: string; // e.g. "trading"
 funding_cap_ratio?: string; // Deprecated
 funding_rate_limit?: string; // v4.106.4: Funding rate cap value
 ⋮----
+/** GET /futures/{settle}/adl_risk_states */
+export interface FuturesADLRiskState {
+  state: 'normal' | 'warning' | 'adl_risk';
+  calculated_at_ms: number;
+}
+⋮----
+export interface FuturesADLRiskStates {
+  settle: string;
+  states: Record<string, FuturesADLRiskState>;
+}
+⋮----
 /** GET /futures/{settle}/get_leverage/{contract} — API field name is `Lever` */
 export interface FuturesContractLeverageInfo {
   Lever: string;
@@ -14151,9 +14321,6 @@ File: README.md
 
 [1]: https://www.npmjs.com/package/gateio-api
 
-> [!TIP]
-> Upcoming change: As part of the [Siebly.io](https://siebly.io/) brand, this SDK is now hosted under our [Siebly.io GitHub organisation](https://github.com/sieblyio). The migration is seamless and requires no user changes.
-
 Updated & performant JavaScript & Node.js SDK for the Gate.com (gate.io) REST APIs and WebSockets:
 
 - Professional, robust & performant Gate.com SDK with extensive production use in live trading environments.
@@ -14186,6 +14353,7 @@ Updated & performant JavaScript & Node.js SDK for the Gate.com (gate.io) REST AP
 - Proxy support via axios integration.
 - Active community support & collaboration in telegram: [Node.js Algo Traders](https://t.me/nodetraders).
 - QuickStart Guide: https://siebly.io/sdk/gate/javascript
+- Gate JavaScript Tutorial: https://siebly.io/sdk/gate/javascript/tutorial
 
 ## Table of Contents
 
@@ -14707,6 +14875,7 @@ import {
   GetAlphaOrdersReq,
   GetAlphaTickersReq,
 } from './types/request/alpha.js';
+import { ListAnnouncementArticlesReq } from './types/request/announcement.js';
 import {
   AddAutoInvestPlanPositionReq,
   CreateAutoInvestPlanReq,
@@ -14751,6 +14920,7 @@ import {
   SetCrossExMarginPositionLeverageReq,
   SetCrossExPositionLeverageReq,
   UpdateCrossExAccountReq,
+  UpdateCrossExPositionsMarginReq,
 } from './types/request/crossex.js';
 import {
   GetDeliveryAutoOrdersReq,
@@ -14802,6 +14972,7 @@ import {
   GetChaseOrdersReq,
   GetFundingRatesReq,
   GetFuturesAccountBookReq,
+  GetFuturesADLRiskStatesReq,
   GetFuturesAutoOrdersReq,
   GetFuturesCandlesReq,
   GetFuturesContractLeverageReq,
@@ -14876,6 +15047,7 @@ import {
   CreateOTCFiatOrderReq,
   CreateOTCQuoteReq,
   CreateOTCStablecoinOrderReq,
+  CreateOTCUploadPreUploadReq,
   GetOTCBankSupplementChecklistReq,
   GetOTCFiatOrderDetailReq,
   GetOTCFiatOrderListReq,
@@ -15006,6 +15178,7 @@ import {
   CreateAlphaOrderResp,
   CreateAlphaQuoteResp,
 } from './types/response/alpha.js';
+import { AnnouncementArticleListResponse } from './types/response/announcement.js';
 import {
   AutoInvestCoinItem,
   AutoInvestConfigItem,
@@ -15049,6 +15222,7 @@ import {
   SetCrossExMarginPositionLeverageResp,
   SetCrossExPositionLeverageResp,
   UpdateCrossExAccountResp,
+  UpdateCrossExPositionsMarginResp,
 } from './types/response/crossex.js';
 import {
   DeliveryAccount,
@@ -15092,6 +15266,7 @@ import {
   DeleteFuturesBatchOrdersResp,
   FuturesAccount,
   FuturesAccountBookRecord,
+  FuturesADLRiskStates,
   FuturesAutoDeleveragingHistoryRecord,
   FuturesCandle,
   FuturesContract,
@@ -15172,6 +15347,7 @@ import {
   CreateOTCFiatOrderResp,
   CreateOTCQuoteResp,
   CreateOTCStablecoinOrderResp,
+  CreateOTCUploadPreUploadResp,
   GetOTCBankListResp,
   GetOTCBankSupplementChecklistResp,
   GetOTCFiatOrderDetailResp,
@@ -15340,6 +15516,10 @@ async fetchLatencySummary(): Promise<any>
 getClientType(): RestClientType
 ⋮----
 getSystemMaintenanceStatus(): Promise<any>
+⋮----
+listAnnouncementArticles(
+    params?: ListAnnouncementArticlesReq,
+): Promise<AnnouncementArticleListResponse>
 ⋮----
 /**================================================================================================================================
    * WITHDRAW
@@ -16227,6 +16407,7 @@ cancelSpotOpenOrders(params: {
     side?: 'buy' | 'sell';
     account?: 'spot' | 'margin' | 'cross_margin' | 'unified';
     action_mode?: 'ACK' | 'RESULT' | 'FULL';
+    trade_quote?: string;
     xGateExptime?: number;
 }): Promise<SpotOrder[]>
 ⋮----
@@ -16917,7 +17098,7 @@ submitFlashSwapOrderPreview(
    * @returns Promise<Contract[]>
    */
 getFuturesContracts(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     limit?: number;
     offset?: number;
 }): Promise<FuturesContract[]>
@@ -16929,9 +17110,13 @@ getFuturesContracts(params: {
    * @returns Promise<Contract>
    */
 getFuturesContract(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract: string;
 }): Promise<FuturesContract>
+⋮----
+listFuturesADLRiskStates(
+    params: GetFuturesADLRiskStatesReq,
+): Promise<FuturesADLRiskStates>
 ⋮----
 /**
    * Futures order book
@@ -16984,7 +17169,7 @@ getPremiumIndexKLines(
    * @returns Promise<GetFuturesTickersResp[]>
    */
 getFuturesTickers(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract?: string;
 }): Promise<FuturesTicker[]>
 ⋮----
@@ -17026,7 +17211,7 @@ getBatchFundingRates(
    * }[]>
    */
 getFuturesInsuranceBalanceHistory(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     limit?: number;
   }): Promise<
     {
@@ -17052,7 +17237,7 @@ getFuturesStats(params: GetFuturesStatsReq): Promise<FuturesStats[]>
    * @returns Promise<GetIndexConstituentsResp>
    */
 getIndexConstituents(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     index: string;
 }): Promise<IndexConstituents>
 ⋮----
@@ -17089,7 +17274,7 @@ getRiskLimitTiers(params: GetRiskLimitTiersReq): Promise<RiskLimitTier[]>
    * @returns Promise<GetFuturesAccountResp>
    */
 getFuturesAccount(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
 }): Promise<FuturesAccount>
 ⋮----
 /**
@@ -17123,7 +17308,7 @@ getFuturesPositions(
    * @returns Promise<Position>
    */
 getFuturesPosition(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract: string;
 }): Promise<FuturesPosition>
 ⋮----
@@ -17136,7 +17321,7 @@ getFuturesPosition(params: {
    * @returns Promise<Position>
    */
 updateFuturesMargin(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract: string;
     change: string;
 }): Promise<FuturesPosition>
@@ -17159,7 +17344,7 @@ updateFuturesMargin(params: {
    * @returns Promise<Position>
    */
 updateFuturesLeverage(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract: string;
     leverage: string;
     cross_leverage_limit?: string;
@@ -17197,7 +17382,7 @@ updateFuturesPositionMode(params: {
    * @returns Promise<Position>
    */
 updatePositionRiskLimit(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract: string;
     risk_limit: string;
 }): Promise<FuturesPosition>
@@ -17211,7 +17396,7 @@ updatePositionRiskLimit(params: {
    * @returns Promise<FuturesAccount>
    */
 updateFuturesDualMode(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     dual_mode: boolean;
 }): Promise<FuturesAccount>
 ⋮----
@@ -17222,7 +17407,7 @@ updateFuturesDualMode(params: {
    * @returns Promise<Position[]>
    */
 getDualModePosition(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract: string;
 }): Promise<FuturesPosition[]>
 ⋮----
@@ -17261,7 +17446,7 @@ updateDualModePositionLeverage(
    * @returns Promise<FuturesPosition[]>
    */
 updateDualModePositionRiskLimit(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract: string;
     risk_limit: string;
 }): Promise<FuturesPosition[]>
@@ -17336,7 +17521,7 @@ getFuturesOrdersByTimeRange(
    */
 submitFuturesBatchOrders(params: {
     xGateExptime?: number;
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     orders: SubmitFuturesOrderReq[];
 }): Promise<FuturesOrder[]>
 ⋮----
@@ -17350,7 +17535,7 @@ submitFuturesBatchOrders(params: {
    * @returns Promise<FuturesOrder>
    */
 getFuturesOrder(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     order_id: string;
 }): Promise<FuturesOrder>
 ⋮----
@@ -17364,7 +17549,7 @@ getFuturesOrder(params: {
    */
 cancelFuturesOrder(params: {
     xGateExptime?: number;
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     order_id: string;
     action_mode?: 'ACK' | 'RESULT' | 'FULL';
 }): Promise<FuturesOrder>
@@ -17444,7 +17629,7 @@ getFuturesAutoDeleveragingHistory(
    * @returns Promise<{ triggerTime: number }>
    */
 setFuturesOrderCancelCountdown(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     timeout: number;
     contract?: string;
 }): Promise<
@@ -17456,7 +17641,7 @@ setFuturesOrderCancelCountdown(params: {
    * @returns Promise<any>
    */
 getFuturesUserTradingFees(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract?: string;
 }): Promise<any>
 ⋮----
@@ -17472,7 +17657,7 @@ getFuturesUserTradingFees(params: {
    */
 batchCancelFuturesOrders(params: {
     xGateExptime?: number;
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     orderIds: string[];
 }): Promise<DeleteFuturesBatchOrdersResp[]>
 ⋮----
@@ -17489,7 +17674,7 @@ batchCancelFuturesOrders(params: {
    */
 batchUpdateFuturesOrders(params: {
     xGateExptime?: number;
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     orders: BatchAmendOrderReq[];
 }): Promise<BatchAmendOrderResp[]>
 ⋮----
@@ -17530,7 +17715,7 @@ getFuturesAutoOrders(
    * @returns Promise<FuturesPriceTriggeredOrder[]>
    */
 cancelAllOpenFuturesOrders(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     contract: string;
 }): Promise<FuturesPriceTriggeredOrder[]>
 ⋮----
@@ -17541,7 +17726,7 @@ cancelAllOpenFuturesOrders(params: {
    * @returns Promise<FuturesPriceTriggeredOrder>
    */
 getFuturesPriceTriggeredOrder(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     order_id: number;
 }): Promise<FuturesPriceTriggeredOrder>
 ⋮----
@@ -17552,7 +17737,7 @@ getFuturesPriceTriggeredOrder(params: {
    * @returns Promise<FuturesPriceTriggeredOrder>
    */
 cancelFuturesPriceTriggeredOrder(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: 'btc' | 'usdt' | 'usd' | 'usd1';
     order_id: number;
 }): Promise<FuturesPriceTriggeredOrder>
 ⋮----
@@ -18972,6 +19157,10 @@ getOTCBankList(): Promise<GetOTCBankListResp>
    */
 getOTCBankListLegacy(): Promise<GetOTCBankListResp>
 ⋮----
+createOTCUploadPreUpload(
+    params: CreateOTCUploadPreUploadReq,
+): Promise<CreateOTCUploadPreUploadResp>
+⋮----
 /**
    * Create / bind a bank card (multipart/form-data)
    */
@@ -19430,6 +19619,10 @@ getCrossExMarginPositionLeverage(
 closeCrossExPosition(
     params: CloseCrossExPositionReq,
 ): Promise<CloseCrossExPositionResp>
+⋮----
+updateCrossExPositionsMargin(
+    params: UpdateCrossExPositionsMarginReq,
+): Promise<UpdateCrossExPositionsMarginResp>
 ⋮----
 /**
    * Query margin asset interest rates
@@ -19945,7 +20138,7 @@ File: package.json
 ================
 {
   "name": "gateio-api",
-  "version": "1.6.2",
+  "version": "1.6.4",
   "description": "Complete & Robust Node.js SDK for Gate.com's REST APIs, WebSockets & WebSocket APIs, with TypeScript declarations.",
   "scripts": {
     "clean": "rm -rf dist/*",
@@ -19974,9 +20167,9 @@ File: package.json
     "Jerko J (https://github.com/JJ-Cro)"
   ],
   "dependencies": {
-    "@types/ws": "^8.18.1",
-    "axios": "^1.13.2",
-    "isomorphic-ws": "^4.0.1",
+    "@types/ws": "8.18.1",
+    "axios": "1.18.1",
+    "isomorphic-ws": "4.0.1",
     "ws": "8.21.1"
   },
   "devDependencies": {
@@ -19995,6 +20188,14 @@ File: package.json
     "typescript": "^5.7.3",
     "webpack": "^5.0.0",
     "webpack-cli": "^4.0.0"
+  },
+  "overrides": {
+    "brace-expansion@<2": "1.1.18",
+    "brace-expansion@>=2 <3": "2.1.4",
+    "brace-expansion@>=5 <6": "5.0.9",
+    "fast-uri@>=3 <4": "3.1.5",
+    "js-yaml@>=3 <4": "3.15.1",
+    "js-yaml@>=4 <5": "4.3.1"
   },
   "keywords": [
     "Gate",
@@ -20038,7 +20239,7 @@ File: package.json
   "bugs": {
     "url": "https://github.com/sieblyio/gateio-api/issues"
   },
-  "homepage": "https://github.com/sieblyio/gateio-api#readme"
+  "homepage": "https://siebly.io/sdk/gate/javascript"
 }
 
 

@@ -15,7 +15,7 @@ export interface TradFiListData<T> {
 }
 
 export interface TradFiMT5Account {
-  mt5_uid?: number;
+  mt5_uid?: number; // Removed from API in v4.106.132; kept optional for compatibility
   leverage?: number;
   stop_out_level?: string;
   status?: number;
@@ -93,7 +93,7 @@ export interface TradFiTicker {
 export interface TradFiCreateUserResult {
   status?: number;
   leverage?: number;
-  mt5_uid?: string;
+  mt5_uid?: string; // Removed from API in v4.106.132; kept optional for compatibility
 }
 
 export interface TradFiAssets {
@@ -103,7 +103,7 @@ export interface TradFiAssets {
   margin?: string;
   margin_free?: string;
   unrealized_pnl?: string;
-  mt5_uid?: string;
+  mt5_uid?: string; // Removed from API in v4.106.132; kept optional for compatibility
 }
 
 export interface TradFiTransactionRecord {

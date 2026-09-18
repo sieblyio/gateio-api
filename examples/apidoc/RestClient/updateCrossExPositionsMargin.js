@@ -4,8 +4,8 @@ import { RestClient } from 'gateio-api';
 
 // This example shows how to call this Gate.io API endpoint with either node.js, javascript (js) or typescript (ts) with the npm module "gateio-api" for Gate.io exchange
 // This Gate.io API SDK is available on npm via "npm install gateio-api"
-// ENDPOINT: /tradfi/symbols/commissions
-// METHOD: GET
+// ENDPOINT: /crossex/positions/margin
+// METHOD: POST
 // PUBLIC: NO
 
 const client = new RestClient({
@@ -13,7 +13,7 @@ const client = new RestClient({
   apiSecret: 'insert_api_secret_here',
 });
 
-client.getTradFiSymbolCommissions(params)
+client.updateCrossExPositionsMargin(params)
   .then((response) => {
     console.log(response);
   })

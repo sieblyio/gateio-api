@@ -20,6 +20,7 @@ import {
   GetAlphaOrdersReq,
   GetAlphaTickersReq,
 } from './types/request/alpha.js';
+import { ListAnnouncementArticlesReq } from './types/request/announcement.js';
 import {
   AddAutoInvestPlanPositionReq,
   CreateAutoInvestPlanReq,
@@ -64,6 +65,7 @@ import {
   SetCrossExMarginPositionLeverageReq,
   SetCrossExPositionLeverageReq,
   UpdateCrossExAccountReq,
+  UpdateCrossExPositionsMarginReq,
 } from './types/request/crossex.js';
 import {
   GetDeliveryAutoOrdersReq,
@@ -111,10 +113,12 @@ import {
   CreateChaseOrderReq,
   CreateTrailOrderReq,
   DeleteAllFuturesOrdersReq,
+  FuturesSettle,
   GetChaseOrderDetailReq,
   GetChaseOrdersReq,
   GetFundingRatesReq,
   GetFuturesAccountBookReq,
+  GetFuturesADLRiskStatesReq,
   GetFuturesAutoOrdersReq,
   GetFuturesCandlesReq,
   GetFuturesContractLeverageReq,
@@ -189,6 +193,7 @@ import {
   CreateOTCFiatOrderReq,
   CreateOTCQuoteReq,
   CreateOTCStablecoinOrderReq,
+  CreateOTCUploadPreUploadReq,
   GetOTCBankSupplementChecklistReq,
   GetOTCFiatOrderDetailReq,
   GetOTCFiatOrderListReq,
@@ -319,6 +324,7 @@ import {
   CreateAlphaOrderResp,
   CreateAlphaQuoteResp,
 } from './types/response/alpha.js';
+import { AnnouncementArticleListResponse } from './types/response/announcement.js';
 import {
   AutoInvestCoinItem,
   AutoInvestConfigItem,
@@ -362,6 +368,7 @@ import {
   SetCrossExMarginPositionLeverageResp,
   SetCrossExPositionLeverageResp,
   UpdateCrossExAccountResp,
+  UpdateCrossExPositionsMarginResp,
 } from './types/response/crossex.js';
 import {
   DeliveryAccount,
@@ -405,6 +412,7 @@ import {
   DeleteFuturesBatchOrdersResp,
   FuturesAccount,
   FuturesAccountBookRecord,
+  FuturesADLRiskStates,
   FuturesAutoDeleveragingHistoryRecord,
   FuturesCandle,
   FuturesContract,
@@ -485,6 +493,7 @@ import {
   CreateOTCFiatOrderResp,
   CreateOTCQuoteResp,
   CreateOTCStablecoinOrderResp,
+  CreateOTCUploadPreUploadResp,
   GetOTCBankListResp,
   GetOTCBankSupplementChecklistResp,
   GetOTCFiatOrderDetailResp,
@@ -702,6 +711,12 @@ export class RestClient extends BaseRestClient {
 
   getSystemMaintenanceStatus(): Promise<any> {
     return this.get('/v1/public/system_info');
+  }
+
+  listAnnouncementArticles(
+    params?: ListAnnouncementArticlesReq,
+  ): Promise<AnnouncementArticleListResponse> {
+    return this.post('/ann/list_article', { body: params ?? {} });
   }
 
   /**================================================================================================================================
@@ -1785,6 +1800,7 @@ export class RestClient extends BaseRestClient {
     side?: 'buy' | 'sell';
     account?: 'spot' | 'margin' | 'cross_margin' | 'unified';
     action_mode?: 'ACK' | 'RESULT' | 'FULL';
+    trade_quote?: string;
     xGateExptime?: number;
   }): Promise<SpotOrder[]> {
     const { xGateExptime, ...query } = params;
@@ -2086,7 +2102,7 @@ export class RestClient extends BaseRestClient {
   cancelSpotPovOrders(
     params?: CancelSpotPovOrdersReq,
   ): Promise<SpotPovOrder[]> {
-    return this.postPrivate('/spot/pov_orders/cancel', { query: params });
+    return this.deletePrivate('/spot/pov_orders', { query: params });
   }
 
   /**
@@ -2110,7 +2126,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<SpotPovOrder>
    */
   cancelSpotPovOrder(params: { order_id: string }): Promise<SpotPovOrder> {
-    return this.postPrivate(`/spot/pov_orders/${params.order_id}/cancel`);
+    return this.deletePrivate(`/spot/pov_orders/${params.order_id}`);
   }
 
   /**
@@ -2653,7 +2669,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<Contract[]>
    */
   getFuturesContracts(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     limit?: number;
     offset?: number;
   }): Promise<FuturesContract[]> {
@@ -2668,10 +2684,16 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<Contract>
    */
   getFuturesContract(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract: string;
   }): Promise<FuturesContract> {
     return this.get(`/futures/${params.settle}/contracts/${params.contract}`);
+  }
+
+  listFuturesADLRiskStates(
+    params: GetFuturesADLRiskStatesReq,
+  ): Promise<FuturesADLRiskStates> {
+    return this.get(`/futures/${params.settle}/adl_risk_states`);
   }
 
   /**
@@ -2737,7 +2759,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<GetFuturesTickersResp[]>
    */
   getFuturesTickers(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract?: string;
   }): Promise<FuturesTicker[]> {
     const { settle, ...query } = params;
@@ -2788,7 +2810,7 @@ export class RestClient extends BaseRestClient {
    * }[]>
    */
   getFuturesInsuranceBalanceHistory(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     limit?: number;
   }): Promise<
     {
@@ -2818,7 +2840,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<GetIndexConstituentsResp>
    */
   getIndexConstituents(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     index: string;
   }): Promise<IndexConstituents> {
     return this.get(
@@ -2865,7 +2887,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<GetFuturesAccountResp>
    */
   getFuturesAccount(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
   }): Promise<FuturesAccount> {
     return this.getPrivate(`/futures/${params.settle}/accounts`);
   }
@@ -2907,7 +2929,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<Position>
    */
   getFuturesPosition(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract: string;
   }): Promise<FuturesPosition> {
     return this.getPrivate(
@@ -2924,7 +2946,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<Position>
    */
   updateFuturesMargin(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract: string;
     change: string;
   }): Promise<FuturesPosition> {
@@ -2952,7 +2974,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<Position>
    */
   updateFuturesLeverage(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract: string;
     leverage: string;
     cross_leverage_limit?: string;
@@ -3005,7 +3027,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<Position>
    */
   updatePositionRiskLimit(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract: string;
     risk_limit: string;
   }): Promise<FuturesPosition> {
@@ -3025,7 +3047,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<FuturesAccount>
    */
   updateFuturesDualMode(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     dual_mode: boolean;
   }): Promise<FuturesAccount> {
     const { settle, ...query } = params;
@@ -3041,7 +3063,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<Position[]>
    */
   getDualModePosition(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract: string;
   }): Promise<FuturesPosition[]> {
     return this.getPrivate(
@@ -3096,7 +3118,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<FuturesPosition[]>
    */
   updateDualModePositionRiskLimit(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract: string;
     risk_limit: string;
   }): Promise<FuturesPosition[]> {
@@ -3203,7 +3225,7 @@ export class RestClient extends BaseRestClient {
    */
   submitFuturesBatchOrders(params: {
     xGateExptime?: number;
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     orders: SubmitFuturesOrderReq[];
   }): Promise<FuturesOrder[]> {
     const { xGateExptime, settle, orders } = params;
@@ -3227,7 +3249,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<FuturesOrder>
    */
   getFuturesOrder(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     order_id: string;
   }): Promise<FuturesOrder> {
     return this.getPrivate(
@@ -3245,7 +3267,7 @@ export class RestClient extends BaseRestClient {
    */
   cancelFuturesOrder(params: {
     xGateExptime?: number;
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     order_id: string;
     action_mode?: 'ACK' | 'RESULT' | 'FULL';
   }): Promise<FuturesOrder> {
@@ -3361,7 +3383,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<{ triggerTime: number }>
    */
   setFuturesOrderCancelCountdown(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     timeout: number;
     contract?: string;
   }): Promise<{ triggerTime: number }> {
@@ -3378,7 +3400,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<any>
    */
   getFuturesUserTradingFees(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract?: string;
   }): Promise<any> {
     const { settle, ...query } = params;
@@ -3397,7 +3419,7 @@ export class RestClient extends BaseRestClient {
    */
   batchCancelFuturesOrders(params: {
     xGateExptime?: number;
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     orderIds: string[];
   }): Promise<DeleteFuturesBatchOrdersResp[]> {
     const { xGateExptime, settle, orderIds } = params;
@@ -3424,7 +3446,7 @@ export class RestClient extends BaseRestClient {
    */
   batchUpdateFuturesOrders(params: {
     xGateExptime?: number;
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     orders: BatchAmendOrderReq[];
   }): Promise<BatchAmendOrderResp[]> {
     const { xGateExptime, settle, orders } = params;
@@ -3484,7 +3506,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<FuturesPriceTriggeredOrder[]>
    */
   cancelAllOpenFuturesOrders(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     contract: string;
   }): Promise<FuturesPriceTriggeredOrder[]> {
     const { settle, ...query } = params;
@@ -3500,7 +3522,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<FuturesPriceTriggeredOrder>
    */
   getFuturesPriceTriggeredOrder(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     order_id: number;
   }): Promise<FuturesPriceTriggeredOrder> {
     return this.getPrivate(
@@ -3515,7 +3537,7 @@ export class RestClient extends BaseRestClient {
    * @returns Promise<FuturesPriceTriggeredOrder>
    */
   cancelFuturesPriceTriggeredOrder(params: {
-    settle: 'btc' | 'usdt' | 'usd';
+    settle: FuturesSettle;
     order_id: number;
   }): Promise<FuturesPriceTriggeredOrder> {
     return this.deletePrivate(
@@ -5365,15 +5387,24 @@ export class RestClient extends BaseRestClient {
     return this.getPrivate('/otc/bank_list');
   }
 
+  createOTCUploadPreUpload(
+    params: CreateOTCUploadPreUploadReq,
+  ): Promise<CreateOTCUploadPreUploadResp> {
+    return this.postPrivate('/otc/upload/pre_upload', { body: params });
+  }
+
   /**
    * Create / bind a bank card (multipart/form-data)
    */
   createOTCBank(params: CreateOTCBankReq): Promise<CreateOTCBankResp> {
     const { documentation_file, ...fields } = params;
-    const form = new FormData();
-    appendGateMultipartFields(form, fields);
-    appendGateMultipartFile(form, 'documentation_file', documentation_file);
-    return this.postPrivateMultipart('/otc/bank/create', form);
+    if (documentation_file) {
+      const form = new FormData();
+      appendGateMultipartFields(form, fields);
+      appendGateMultipartFile(form, 'documentation_file', documentation_file);
+      return this.postPrivateMultipart('/otc/bank/create', form);
+    }
+    return this.postPrivate('/otc/bank/create', { body: fields });
   }
 
   /**
@@ -5998,6 +6029,12 @@ export class RestClient extends BaseRestClient {
     return this.postPrivate('/crossex/position', { body: params });
   }
 
+  updateCrossExPositionsMargin(
+    params: UpdateCrossExPositionsMarginReq,
+  ): Promise<UpdateCrossExPositionsMarginResp> {
+    return this.postPrivate('/crossex/positions/margin', { body: params });
+  }
+
   /**
    * Query margin asset interest rates
    *
@@ -6332,7 +6369,7 @@ export class RestClient extends BaseRestClient {
   getTradFiSymbolCommissions(
     params?: TradFiGetSymbolCommissionsParams,
   ): Promise<TradFiApiResp<TradFiListData<TradFiSymbolCommissionItem>>> {
-    return this.get('/tradfi/symbols/commissions', params);
+    return this.getPrivate('/tradfi/symbols/commissions', params);
   }
 
   getTradFiSymbolDetail(

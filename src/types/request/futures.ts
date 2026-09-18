@@ -3,8 +3,10 @@
  * ==========================================================================================================================
  */
 
+export type FuturesSettle = 'btc' | 'usdt' | 'usd' | 'usd1';
+
 export interface GetFuturesOrderBookReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   interval?: string;
   limit?: number;
@@ -12,7 +14,7 @@ export interface GetFuturesOrderBookReq {
 }
 
 export interface GetFuturesTradesReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   limit?: number;
   offset?: number;
@@ -22,7 +24,7 @@ export interface GetFuturesTradesReq {
 }
 
 export interface GetFuturesCandlesReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   from?: number;
   to?: number;
@@ -31,7 +33,7 @@ export interface GetFuturesCandlesReq {
 }
 
 export interface GetFuturesStatsReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   from?: number;
   interval?: string;
@@ -39,7 +41,7 @@ export interface GetFuturesStatsReq {
 }
 
 export interface GetFundingRatesReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   limit?: number;
   from?: number;
@@ -47,12 +49,12 @@ export interface GetFundingRatesReq {
 }
 
 export interface BatchFundingRatesReq {
-  settle: 'btc' | 'usdt';
+  settle: 'btc' | 'usdt' | 'usd1';
   contracts: string[];
 }
 
 export interface GetLiquidationHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   from?: number;
   to?: number;
@@ -60,19 +62,19 @@ export interface GetLiquidationHistoryReq {
 }
 
 export interface GetRiskLimitTiersReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   limit?: number;
   offset?: number;
 }
 
 export interface GetRiskLimitTableReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   table_id: string;
 }
 
 export interface GetFuturesAccountBookReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   limit?: number;
   offset?: number;
@@ -90,8 +92,12 @@ export interface GetFuturesAccountBookReq {
     | 'bonus_offset';
 }
 
+export interface GetFuturesADLRiskStatesReq {
+  settle: 'btc' | 'usdt' | 'usd1';
+}
+
 export interface GetFuturesPositionsReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   holding?: boolean;
   limit?: number; // deprecated, use positions_limit instead
   positions_limit?: number; // v4.106.104: Replaces limit; omit to return full list, explicit values capped at 1-100
@@ -101,14 +107,14 @@ export interface GetFuturesPositionsReq {
 }
 
 export interface UpdateDualModePositionMarginReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   change: string;
   dual_side: 'dual_long' | 'dual_short';
 }
 
 export interface UpdateDualModePositionLeverageReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   leverage: string;
   cross_leverage_limit?: string;
@@ -116,7 +122,7 @@ export interface UpdateDualModePositionLeverageReq {
 
 export interface SubmitFuturesOrderReq {
   xGateExptime?: number;
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   size: number;
   iceberg?: number;
@@ -134,7 +140,7 @@ export interface SubmitFuturesOrderReq {
 }
 
 export interface GetFuturesOrdersReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   status: string;
   limit?: number;
@@ -144,14 +150,14 @@ export interface GetFuturesOrdersReq {
 
 export interface DeleteAllFuturesOrdersReq {
   xGateExptime?: number;
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   side?: string;
   action_mode?: 'ACK' | 'RESULT' | 'FULL';
 }
 
 export interface GetFuturesOrdersByTimeRangeReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   from?: number;
   to?: number;
@@ -161,7 +167,7 @@ export interface GetFuturesOrdersByTimeRangeReq {
 
 export interface UpdateFuturesOrderReq {
   xGateExptime?: number;
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   order_id: string;
   size?: number;
   price?: string;
@@ -169,7 +175,7 @@ export interface UpdateFuturesOrderReq {
 }
 
 export interface GetFuturesTradingHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   order?: number;
   limit?: number;
@@ -178,7 +184,7 @@ export interface GetFuturesTradingHistoryReq {
 }
 
 export interface GetFuturesTradingHistoryByTimeRangeReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   from?: number;
   to?: number;
@@ -188,7 +194,7 @@ export interface GetFuturesTradingHistoryByTimeRangeReq {
 }
 
 export interface GetFuturesPositionHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   limit?: number;
   offset?: number;
@@ -199,7 +205,7 @@ export interface GetFuturesPositionHistoryReq {
 }
 
 export interface GetFuturesLiquidationHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   limit?: number;
   at?: number;
@@ -232,11 +238,11 @@ export interface SubmitFuturesTriggeredOrderReq {
     | 'close-short-position'
     | 'plan-close-long-position'
     | 'plan-close-short-position';
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
 }
 
 export interface GetFuturesAutoOrdersReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   status: 'open' | 'finished';
   contract?: string;
   limit?: number;
@@ -256,7 +262,7 @@ export interface BatchAmendOrderReq {
 
 // v4.105.8: New GET /futures/{settle}/position_close_history endpoint request
 export interface GetFuturesPositionCloseHistoryReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   limit?: number;
   offset?: number;
@@ -266,12 +272,12 @@ export interface GetFuturesPositionCloseHistoryReq {
 
 // v4.104.6: New GET /futures/{settle}/insurance endpoint request
 export interface GetFuturesInsuranceReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   limit?: number;
 }
 
 export interface UpdateFuturesPriceTriggeredOrderReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   order_id: number | string;
   contract?: string;
   size?: number;
@@ -287,7 +293,7 @@ export interface UpdateFuturesPriceTriggeredOrderReq {
 
 /** GET /futures/{settle}/get_leverage/{contract} — v4.106.43: pos_margin_mode and dual_side required */
 export interface GetFuturesContractLeverageReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   pos_margin_mode: 'isolated' | 'cross';
   dual_side: 'dual_long' | 'dual_short';
@@ -361,7 +367,7 @@ export interface GetTrailOrderChangeLogReq {
 
 /** Chase limit order (autoorder/v1/chase) request types */
 export interface CreateChaseOrderReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract: string;
   amount: string;
   price_limit: string;
@@ -377,19 +383,19 @@ export interface CreateChaseOrderReq {
 }
 
 export interface StopChaseOrderReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   id?: string;
   text?: string;
 }
 
 export interface StopAllChaseOrdersReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   pos_margin_mode?: 'isolated' | 'cross' | string;
 }
 
 export interface GetChaseOrdersReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   contract?: string;
   is_finished?: boolean;
   start_at?: number;
@@ -404,6 +410,6 @@ export interface GetChaseOrdersReq {
 }
 
 export interface GetChaseOrderDetailReq {
-  settle: 'btc' | 'usdt' | 'usd';
+  settle: FuturesSettle;
   id: string;
 }

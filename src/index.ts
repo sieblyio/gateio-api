@@ -7,6 +7,7 @@ export * from './WebsocketClient.js';
 // Request Types
 export * from './types/request/account.js';
 export * from './types/request/alpha.js';
+export * from './types/request/announcement.js';
 export * from './types/request/autoinvest.js';
 export * from './types/request/collateralLoan.js';
 export * from './types/request/crossex.js';
@@ -33,6 +34,7 @@ export * from './types/request/withdrawal.js';
 // Response Types
 export * from './types/response/account.js';
 export * from './types/response/alpha.js';
+export * from './types/response/announcement.js';
 export * from './types/response/autoinvest.js';
 export * from './types/response/collateralloan.js';
 export * from './types/response/crossex.js';
