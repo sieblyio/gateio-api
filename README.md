@@ -19,6 +19,20 @@
 
 [1]: https://www.npmjs.com/package/gateio-api
 
+Public spot tickers:
+
+```javascript
+const { WebsocketClient } = require('gateio-api');
+const ws = new WebsocketClient();
+ws.subscribe({ topic: 'spot.tickers', payload: ['BTC_USDT'] }, 'spotV4');
+```
+
+`WebsocketClient` handles what a raw WebSocket does not:
+
+- reconnect
+- heartbeat
+- resubscribe
+
 Updated & performant JavaScript & Node.js SDK for the Gate.com (gate.io) REST APIs and WebSockets:
 
 - Professional, robust & performant Gate.com SDK with extensive production use in live trading environments.

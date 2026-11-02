@@ -13,6 +13,22 @@ export interface GetWithdrawalDepositRecordsReq {
   offset?: number;
 }
 
+/** GET /wallet/withdrawals. Deposit records do not take these filters. */
+export interface GetWithdrawalRecordsReq
+  extends GetWithdrawalDepositRecordsReq {
+  /**
+   * Withdrawal record id. Starts with `w`, for example `w1879219868`.
+   * When set, only that record is returned and the time filter is disabled.
+   */
+  withdraw_id?: string;
+
+  /**
+   * User-defined withdrawal order number.
+   * When set, that order's record is returned.
+   */
+  withdraw_order_id?: string;
+}
+
 export interface SubmitTransferReq {
   currency: string;
   from: 'spot' | 'margin' | 'futures' | 'delivery' | 'cross_margin' | 'options';

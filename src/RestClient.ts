@@ -306,6 +306,7 @@ import {
   GetSubAccountBalancesReq,
   GetTransferReq,
   GetWithdrawalDepositRecordsReq,
+  GetWithdrawalRecordsReq,
   ListPushOrdersReq,
   SubmitMainSubTransferReq,
   SubmitSubToSubTransferReq,
@@ -735,6 +736,9 @@ export class RestClient extends BaseRestClient {
    *
    * Withdrawals to Gate addresses do not incur transaction fees.
    *
+   * On HTTP 5xx or `SERVER_ERROR`, the withdrawal may still have been accepted.
+   * Set `withdraw_order_id`, then check `getWithdrawalRecords({ withdraw_order_id })` before sending it again.
+   *
    * @param params Withdrawal parameters
    * @returns Promise<Withdraw>
    */
@@ -804,13 +808,15 @@ export class RestClient extends BaseRestClient {
   /**
    * Retrieve withdrawal records
    *
-   * Record time range cannot exceed 30 days
+   * Record time range cannot exceed 30 days.
+   * `withdraw_id` returns that one record and disables the time filter.
+   * `withdraw_order_id` returns the user-defined order.
    *
    * @param params Parameters for filtering withdrawal records
    * @returns Promise<Withdraw[]>
    */
   getWithdrawalRecords(
-    params?: GetWithdrawalDepositRecordsReq,
+    params?: GetWithdrawalRecordsReq,
   ): Promise<WithdrawalRecord[]> {
     return this.getPrivate('/wallet/withdrawals', params);
   }
@@ -862,6 +868,9 @@ export class RestClient extends BaseRestClient {
    * Transfer between main and sub accounts
    *
    * Support transferring with sub user's spot or futures account. Note that only main user's spot account is used no matter which sub user's account is operated.
+   *
+   * On HTTP 5xx or `SERVER_ERROR`, the transfer may still have been accepted.
+   * Set `client_order_id`, then check `getTransferStatus({ client_order_id })` before sending it again.
    *
    * @param params Transfer parameters
    * @returns Promise<any>
