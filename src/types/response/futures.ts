@@ -631,11 +631,11 @@ export interface FuturesInsuranceHistory {
   b: string;
 }
 
-/** Trail order (autoorder/v1/trail) response types */
+/** Trail order (autoorder/v1/trail) response types; IDs and times are decimal strings */
 export interface TrailOrder {
-  id?: number | string;
-  user_id?: number | string;
-  user?: number | string;
+  id?: string;
+  user_id?: string;
+  user?: string;
   contract?: string;
   settle?: string;
   amount?: string;
@@ -646,22 +646,22 @@ export interface TrailOrder {
   text?: string;
   reduce_only?: boolean;
   position_related?: boolean;
-  created_at?: number | string;
-  activated_at?: number | string;
-  finished_at?: number | string;
-  create_time?: number | string;
-  active_time?: number | string;
-  finish_time?: number | string;
+  created_at?: string;
+  activated_at?: string;
+  finished_at?: string;
+  create_time?: string;
+  active_time?: string;
+  finish_time?: string;
   reason?: string;
   suborder_text?: string;
   is_dual_mode?: boolean;
   trigger_price?: string;
-  suborder_id?: number | string;
+  suborder_id?: string;
   side_label?: string;
   original_status?: number;
   status?: string;
   position_side_output?: string;
-  updated_at?: number | string;
+  updated_at?: string;
   extremum_price?: string;
   status_code?: string;
   created_at_precise?: string;
@@ -676,7 +676,8 @@ export interface TrailOrder {
 }
 
 export interface TrailChangeLog {
-  updated_at?: number;
+  /** Update time as a decimal string */
+  updated_at?: string;
   amount?: string;
   is_gte?: boolean;
   activation_price?: string;

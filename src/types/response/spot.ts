@@ -188,6 +188,8 @@ export interface SpotOrder {
   iceberg?: string;
   auto_borrow?: boolean;
   auto_repay?: boolean;
+  /** Redeem Simple Earn funds when placing an order */
+  use_earn?: boolean | null;
   left?: string;
   filled_amount?: string;
   fill_price?: string;

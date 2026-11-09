@@ -153,6 +153,8 @@ export interface SubmitSpotOrderReq {
   iceberg?: string;
   auto_borrow?: boolean;
   auto_repay?: boolean;
+  /** Redeem Simple Earn funds when placing an order */
+  use_earn?: boolean | null;
   stp_act?: string;
   action_mode?: string;
   stop_loss?: PatchSpotOrderTPSL;

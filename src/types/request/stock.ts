@@ -5,6 +5,33 @@ export interface GetStockUserAssetsReq {
   pnl_calc_price?: number;
 }
 
+export interface SetStockMarginFeatureReq {
+  /** Whether to enable margin financing */
+  margin_feature: boolean;
+}
+
+export interface GetStockBalanceRecordsReq {
+  /** Record types, separated by commas */
+  type?: string;
+  /** Business identifiers, separated by commas */
+  business?: string;
+  symbol?: string;
+  /** Record creation time in seconds; end_time must be greater than begin_time */
+  begin_time?: number;
+  /** Record creation time in seconds; must be greater than begin_time */
+  end_time?: number;
+  /** Return records with a greater primary key ID */
+  start_id?: number;
+  /** Defaults to desc without start_id, or asc with start_id */
+  sort_direction?: 'asc' | 'desc';
+  /** Return raw detail; defaults to false */
+  include_detail?: boolean;
+  /** Page number, defaults to 1 */
+  page?: number;
+  /** Records per page, defaults to 10, maximum 100 */
+  page_size?: number;
+}
+
 export interface GetStockSymbolsReq {
   symbols?: string;
   exchange?: string; // us | hk | jp
@@ -43,6 +70,14 @@ export interface GetStockOrderHistoryReq {
   end_time?: number;
   side?: 1 | 2;
   page?: number;
+  page_size?: number;
+}
+
+export interface GetStockOrderDealsReq {
+  order_id: number;
+  /** Page number, defaults to 1 */
+  page?: number;
+  /** Records per page, defaults to 10, maximum 100 */
   page_size?: number;
 }
 

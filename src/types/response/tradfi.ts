@@ -147,13 +147,13 @@ export interface TradFiOrderListData {
 }
 
 export interface TradFiModifyOrderResult {
-  order_id?: number;
-  symbol?: string;
-  state?: string;
-  volume?: string;
-  price?: string;
-  price_tp?: string;
-  price_sl?: string;
+  order_id: number;
+  symbol: string;
+  state: string;
+  volume: string;
+  price: string;
+  price_tp: string;
+  price_sl: string;
 }
 
 export interface TradFiOrderHistoryItem {

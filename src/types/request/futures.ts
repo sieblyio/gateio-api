@@ -314,7 +314,8 @@ export interface CreateTrailOrderReq {
   amount: string;
   activation_price?: string;
   is_gte?: boolean;
-  price_type?: 1 | 2 | 3;
+  /** Activation price type, required: 1 latest, 2 index, 3 mark */
+  price_type: 1 | 2 | 3;
   price_offset?: string;
   reduce_only?: boolean;
   position_related?: boolean;
