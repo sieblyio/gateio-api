@@ -55,6 +55,17 @@ export interface StockUserAssets {
   equity?: string;
   balance?: string;
   available?: string;
+  /** Non-negative loan amount */
+  loan_amount?: string;
+  buy_power?: string;
+  leverage?: string;
+  leave_liquidity?: string;
+  leave_liquidity_rate?: string;
+  aee?: string;
+  options_margin?: string;
+  margin_enabled?: boolean;
+  /** Annual margin financing interest rate; empty when no valid rate is available */
+  long_borrowing_rate?: string;
   position_market_value?: string;
   position_pnl?: string;
   today_pnl?: string;
@@ -62,6 +73,27 @@ export interface StockUserAssets {
   option_position_market_value?: string;
   option_position_pnl?: string;
   option_today_pnl?: string;
+}
+
+export interface StockBalanceRecordItem {
+  id?: number;
+  user_id?: number;
+  change?: string;
+  /** Cash balance snapshot after the change */
+  balance?: string;
+  /** Stock quantity change; may be empty for other records */
+  stock_change?: string;
+  type?: string;
+  business?: string;
+  business_id?: number;
+  symbol?: string;
+  /** Raw business details as a JSON string; returned only when include_detail=true */
+  detail?: string;
+  version?: number;
+  /** Business event time (Unix timestamp in seconds) */
+  time_create?: number;
+  /** Record creation time (Unix timestamp in seconds) */
+  create_time?: number;
 }
 
 export interface StockSymbolDescI18n {
@@ -92,6 +124,20 @@ export interface StockSymbolItem {
   buy_price_protection?: string;
   symbol_descs?: StockSymbolDescI18n[];
   timestamp?: number;
+  /** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
+  margin_mode?: 0 | 1 | 2 | 3;
+  /** Initial margin ratio for long positions */
+  long_im?: string;
+  /** Maintenance margin ratio for long positions */
+  long_mm?: string;
+  /** Initial margin ratio for short positions */
+  short_im?: string;
+  /** Maintenance margin ratio for short positions */
+  short_mm?: string;
+  /** Annual margin financing interest rate; empty when no valid rate is available */
+  long_borrowing_rate?: string;
+  /** Annual securities borrowing interest rate; empty when no valid rate is available */
+  short_borrowing_rate?: string;
 }
 
 export interface StockSymbolDetailItem {
@@ -121,6 +167,20 @@ export interface StockSymbolDetailItem {
   trade_mode?: StockTradeMode;
   order_fill_timing?: number;
   symbol_descs?: StockSymbolDescI18n[];
+  /** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
+  margin_mode?: 0 | 1 | 2 | 3;
+  /** Initial margin ratio for long positions */
+  long_im?: string;
+  /** Maintenance margin ratio for long positions */
+  long_mm?: string;
+  /** Initial margin ratio for short positions */
+  short_im?: string;
+  /** Maintenance margin ratio for short positions */
+  short_mm?: string;
+  /** Annual margin financing interest rate; empty when no valid rate is available */
+  long_borrowing_rate?: string;
+  /** Annual securities borrowing interest rate; empty when no valid rate is available */
+  short_borrowing_rate?: string;
   [key: string]: unknown;
 }
 
@@ -192,6 +252,29 @@ export interface StockOrderHistoryItem {
   time_setup?: number;
   time_done?: number;
   [key: string]: unknown;
+}
+
+export interface StockOrderDealItem {
+  id?: number;
+  deal_id?: number;
+  order_id?: number;
+  client_order_id?: string;
+  user_id?: number;
+  symbol?: string;
+  exchange?: 'us' | 'hk' | 'kr' | 'jp';
+  /** 1 sell, 2 buy */
+  side?: 1 | 2;
+  role?: 'maker' | 'taker';
+  /** Trade price in the instrument trading currency */
+  price?: string;
+  quantity?: string;
+  position_qty?: string;
+  avg_entry_price?: string;
+  /** Trade value in the instrument trading currency */
+  value?: string;
+  fx_rate?: string;
+  /** Fee in the instrument trading currency */
+  fee?: string;
 }
 
 export interface StockUpdateOrderResult {

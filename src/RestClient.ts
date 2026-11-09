@@ -259,6 +259,8 @@ import {
   CloseStockPositionReq,
   CreateStockOrderReq,
   CreateStockTransactionReq,
+  GetStockBalanceRecordsReq,
+  GetStockOrderDealsReq,
   GetStockOrderHistoryReq,
   GetStockOrdersReq,
   GetStockPositionsReq,
@@ -266,6 +268,7 @@ import {
   GetStockSymbolsReq,
   GetStockTransactionsReq,
   GetStockUserAssetsReq,
+  SetStockMarginFeatureReq,
   UpdateStockOrderReq,
 } from './types/request/stock.js';
 import {
@@ -551,12 +554,14 @@ import {
 } from './types/response/spot.js';
 import {
   StockApiResp,
+  StockBalanceRecordItem,
   StockClosePositionResult,
   StockCreateOrderResult,
   StockExchangeItem,
   StockFeeRateItem,
   StockListData,
   StockOrderBook,
+  StockOrderDealItem,
   StockOrderHistoryItem,
   StockOrderItem,
   StockPositionItem,
@@ -1386,11 +1391,11 @@ export class RestClient extends BaseRestClient {
    * Due to fluctuations in lending depth, hourly interest rates may vary, and thus, I cannot provide exact rates. When a currency is not supported, the interest rate returned will be an empty string.
    *
    * @param params Parameters for querying estimate rates
-   * @returns Promise<{ [key: string]: string }>
+   * @returns Promise<Record<string, string>>
    */
   getUnifiedEstimateRate(params: {
     currencies: string[];
-  }): Promise<{ [key: string]: string }> {
+  }): Promise<Record<string, string>> {
     return this.getPrivate('/unified/estimate_rate', params);
   }
 
@@ -2550,9 +2555,11 @@ export class RestClient extends BaseRestClient {
    * Please note that the interest rates are subject to change based on the borrowing and lending demand, and therefore, the provided rates may not be entirely accurate.
    *
    * @param params Parameters for retrieving estimated interest rates
-   * @returns Promise<any>
+   * @returns Promise<Record<string, string>>
    */
-  getEstimatedInterestRate(params: { currencies: string[] }): Promise<any> {
+  getEstimatedInterestRate(params: {
+    currencies: string[];
+  }): Promise<Record<string, string>> {
     return this.getPrivate('/margin/uni/estimate_rate', params);
   }
 
@@ -3613,12 +3620,13 @@ export class RestClient extends BaseRestClient {
    * Create trail order
    *
    * @param params settle and trail order parameters
-   * @returns Promise with code, message, data containing id and timestamp
+   * @returns Promise with code, message, timestamp and data.id
    */
   createTrailOrder(params: CreateTrailOrderReq): Promise<{
     code?: number;
     message?: string;
-    data?: { id?: string; timestamp?: number };
+    data?: { id?: string };
+    /** Response timestamp (milliseconds) */
     timestamp?: number;
   }> {
     const { settle, ...body } = params;
@@ -3631,9 +3639,15 @@ export class RestClient extends BaseRestClient {
    * Terminate trail order
    *
    * @param params settle and id or text
-   * @returns Promise<TrailOrder>
+   * @returns Promise with code, message, timestamp and data.order
    */
-  terminateTrailOrder(params: TerminateTrailOrderReq): Promise<TrailOrder> {
+  terminateTrailOrder(params: TerminateTrailOrderReq): Promise<{
+    code?: number;
+    message?: string;
+    data?: { order?: TrailOrder };
+    /** Response timestamp (milliseconds) */
+    timestamp?: number;
+  }> {
     const { settle, ...body } = params;
     return this.postPrivate(`/futures/${settle}/autoorder/v1/trail/stop`, {
       body,
@@ -3644,11 +3658,15 @@ export class RestClient extends BaseRestClient {
    * Batch terminate trail orders
    *
    * @param params settle and optional contract, related_position
-   * @returns Promise<{ orders: TrailOrder[] }>
+   * @returns Promise with code, message, timestamp and data.orders
    */
-  batchTerminateTrailOrders(
-    params: BatchTerminateTrailOrdersReq,
-  ): Promise<{ orders?: TrailOrder[] }> {
+  batchTerminateTrailOrders(params: BatchTerminateTrailOrdersReq): Promise<{
+    code?: number;
+    message?: string;
+    data?: { orders?: TrailOrder[] };
+    /** Response timestamp (milliseconds) */
+    timestamp?: number;
+  }> {
     const { settle, ...body } = params;
     return this.postPrivate(`/futures/${settle}/autoorder/v1/trail/stop_all`, {
       body,
@@ -3659,11 +3677,15 @@ export class RestClient extends BaseRestClient {
    * Get trail order list
    *
    * @param params query parameters
-   * @returns Promise<{ orders: TrailOrder[] }>
+   * @returns Promise with code, message, timestamp and data.orders
    */
-  getTrailOrderList(
-    params: GetTrailOrderListReq,
-  ): Promise<{ orders?: TrailOrder[] }> {
+  getTrailOrderList(params: GetTrailOrderListReq): Promise<{
+    code?: number;
+    message?: string;
+    data?: { orders?: TrailOrder[] };
+    /** Response timestamp (milliseconds) */
+    timestamp?: number;
+  }> {
     const { settle, ...query } = params;
     return this.getPrivate(`/futures/${settle}/autoorder/v1/trail/list`, query);
   }
@@ -3678,6 +3700,7 @@ export class RestClient extends BaseRestClient {
     code?: number;
     message?: string;
     data?: { order?: TrailOrder };
+    /** Response timestamp (milliseconds) */
     timestamp?: number;
   }> {
     const { settle, id } = params;
@@ -3690,9 +3713,15 @@ export class RestClient extends BaseRestClient {
    * Update trail order
    *
    * @param params settle, id and fields to update
-   * @returns Promise<TrailOrder>
+   * @returns Promise with code, message, timestamp and data.order
    */
-  updateTrailOrder(params: UpdateTrailOrderReq): Promise<TrailOrder> {
+  updateTrailOrder(params: UpdateTrailOrderReq): Promise<{
+    code?: number;
+    message?: string;
+    data?: { order?: TrailOrder };
+    /** Response timestamp (milliseconds) */
+    timestamp?: number;
+  }> {
     const { settle, id, ...body } = params;
     return this.postPrivate(`/futures/${settle}/autoorder/v1/trail/update`, {
       body: { id, ...body },
@@ -3703,11 +3732,15 @@ export class RestClient extends BaseRestClient {
    * Get trail order user modification records
    *
    * @param params settle, id and optional pagination
-   * @returns Promise<{ change_log: TrailChangeLog[] }>
+   * @returns Promise with code, message, timestamp and data.change_log
    */
-  getTrailOrderChangeLog(
-    params: GetTrailOrderChangeLogReq,
-  ): Promise<{ change_log?: TrailChangeLog[] }> {
+  getTrailOrderChangeLog(params: GetTrailOrderChangeLogReq): Promise<{
+    code?: number;
+    message?: string;
+    data?: { change_log?: TrailChangeLog[] };
+    /** Response timestamp (milliseconds) */
+    timestamp?: number;
+  }> {
     const { settle, ...query } = params;
     return this.getPrivate(
       `/futures/${settle}/autoorder/v1/trail/change_log`,
@@ -6651,6 +6684,30 @@ export class RestClient extends BaseRestClient {
   }
 
   /**
+   * Set stock margin financing availability
+   *
+   * @param params Whether to enable margin financing
+   * @returns Promise with empty data on success
+   */
+  setStockMarginFeature(
+    params: SetStockMarginFeatureReq,
+  ): Promise<StockApiResp<Record<string, never>>> {
+    return this.putPrivate('/stock/users/margin-feature', { body: params });
+  }
+
+  /**
+   * Query user stock balance records
+   *
+   * @param params Optional filters, time range, sort direction, details, and pagination
+   * @returns Promise with paginated balance records; detail is returned only when include_detail=true
+   */
+  getStockBalanceRecords(
+    params?: GetStockBalanceRecordsReq,
+  ): Promise<StockApiResp<StockListData<StockBalanceRecordItem>>> {
+    return this.getPrivate('/stock/users/balance-records', params);
+  }
+
+  /**
    * Query stock symbol list
    *
    * @param params Optional filters for symbols, exchange, and pagination
@@ -6729,6 +6786,18 @@ export class RestClient extends BaseRestClient {
     params?: GetStockOrderHistoryReq,
   ): Promise<StockApiResp<StockListData<StockOrderHistoryItem>>> {
     return this.getPrivate('/stock/orders/history', params);
+  }
+
+  /**
+   * Query stock order trade records
+   *
+   * @param params Order ID and optional pagination
+   * @returns Promise with paginated trade records
+   */
+  getStockOrderDeals(
+    params: GetStockOrderDealsReq,
+  ): Promise<StockApiResp<StockListData<StockOrderDealItem>>> {
+    return this.getPrivate('/stock/orders/deals', params);
   }
 
   /**

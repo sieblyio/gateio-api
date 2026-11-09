@@ -53,6 +53,8 @@ export interface AddAutoInvestPlanPositionReq {
 /** POST /earn/autoinvest/min_invest_amount */
 export interface GetAutoInvestMinAmountReq {
   money: string;
+  /** Asset type, required: 1 cryptocurrency, 2 TradFi stocks */
+  asset_type: 1 | 2;
   items: AutoInvestPlanPortfolioItemInput[];
 }
 

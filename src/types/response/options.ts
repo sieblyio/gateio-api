@@ -124,6 +124,8 @@ export interface OptionsAccount {
   point: string;
   currency: string;
   liq_triggered?: boolean; // Whether account is in liquidation status
+  /** Notional value upper limit, including positions and outstanding orders */
+  position_notional_limit?: string;
   margin_mode?: number; // 0: classic options account; 1: Multi-Currency Margin Mode; 2: Portfolio Margin Mode; 3: Single-Currency Margin Mode
 }
 export interface OptionsAccountChangeRecord {
