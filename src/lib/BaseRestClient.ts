@@ -38,7 +38,6 @@ interface SignedRequest<T extends object | undefined = {}> {
   sign: string;
   queryParamsWithSign: string;
   timestamp: number;
-  recvWindow: number;
 }
 
 interface UnsignedRequest<T extends object | undefined = {}> {
@@ -151,7 +150,6 @@ export abstract class BaseRestClient {
     networkOptions: AxiosRequestConfig = {},
   ) {
     this.options = {
-      recvWindow: 5000,
       /** Throw errors if any request params are empty */
       strictParamValidation: false,
       ...restClientOptions,
@@ -363,7 +361,7 @@ export abstract class BaseRestClient {
   }
 
   /**
-   * @private sign request and set recv window
+   * @private sign request and set timestamp
    */
   private async signRequest<
     T extends ParamsInQueryBodyOrHeader | undefined = {},
@@ -377,13 +375,11 @@ export abstract class BaseRestClient {
 
     const res: SignedRequest<T> = {
       originalParams: {
-        // recvWindow: this.options.recvWindow,
         ...data,
       },
 
       sign: '',
       timestamp,
-      recvWindow: 0,
       serializedParams: '',
       queryParamsWithSign: '',
     };
@@ -392,7 +388,6 @@ export abstract class BaseRestClient {
       return res;
     }
 
-    // It's possible to override the recv window on a per rquest level
     const strictParamValidation = this.options.strictParamValidation;
     const encodeQueryStringValues = false;
 
