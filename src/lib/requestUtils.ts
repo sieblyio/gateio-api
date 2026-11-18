@@ -13,8 +13,10 @@ export interface RestClientOptions {
   useTestnet?: boolean;
 
   /**
-   * Override the default/global max size of the request window (in ms) for signed api calls.
-   * If you don't include a recv window when making an API call, this value will be used as default
+   * Ignored by REST clients. Gate REST has no recvWindow; it uses a Timestamp header
+   * with a fixed 60-second tolerance, so keep the system clock in sync.
+   * To offset WebSocket signature timestamps, set `recvWindow` in the WebsocketClient options.
+   * @deprecated Ignored by REST clients; retained for backwards compatibility.
    */
   recvWindow?: number;
 
