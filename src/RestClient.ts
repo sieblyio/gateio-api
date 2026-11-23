@@ -222,6 +222,7 @@ import {
   P2PMerchantGetTransactionDetailsReq,
   P2PMerchantMyAdsListReq,
   P2PMerchantPlaceBizPushOrderReq,
+  P2PMerchantPreUploadChatFileReq,
   P2PMerchantSendChatMessageReq,
   P2PMerchantSetMerchantWorkHoursReq,
   P2PMerchantUploadChatFileReq,
@@ -520,6 +521,7 @@ import {
   P2PMerchantCounterpartyUserInfo,
   P2PMerchantMyAdsListData,
   P2PMerchantPaymentMethod,
+  P2PMerchantPreUploadChatFileData,
   P2PMerchantTransactionDetails,
   P2PMerchantTransactionListData,
   P2PMerchantUserInfo,
@@ -5917,11 +5919,28 @@ export class RestClient extends BaseRestClient {
 
   /**
    * Upload chat file
+   * @deprecated Use preUploadP2PMerchantChatFile instead.
    */
   uploadP2PMerchantChatFile(
     params: P2PMerchantUploadChatFileReq,
   ): Promise<P2PMerchantApiResp<{ file_key: string }>> {
     return this.postPrivate('/p2p/merchant/chat/upload_chat_file', {
+      body: params,
+    });
+  }
+
+  /**
+   * Get credentials for a direct chat file upload (maximum 100 MiB)
+   *
+   * Upload using the returned URL and form fields. After HTTP 204, send the
+   * returned file_key with sendP2PMerchantChatMessage using type=1.
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/p2p/#pre-upload-chat-file
+   */
+  preUploadP2PMerchantChatFile(
+    params: P2PMerchantPreUploadChatFileReq,
+  ): Promise<P2PMerchantApiResp<P2PMerchantPreUploadChatFileData>> {
+    return this.postPrivate('/p2p/merchant/chat/pre_upload_chat_file', {
       body: params,
     });
   }

@@ -15,11 +15,11 @@ export type StockAssetType = 'STOCK' | 'ETF';
 export type StockTradeStatus = 'pre_market' | 'open' | 'post_market';
 
 /**
- * v4.106.148.
+ * v4.106.182.
  * 0 disabled, 1 buy only, 2 sell only, 4 buy and sell,
- * 5 manual suspension, 6 strategy exception, 7 stock halt, 8 circuit breaker halt.
+ * 5 trading suspended.
  */
-export type StockTradeMode = 0 | 1 | 2 | 4 | 5 | 6 | 7 | 8;
+export type StockTradeMode = 0 | 1 | 2 | 4 | 5;
 
 /**
  * `GET /stock/orders` and `GET /stock/orders/history`. JSON stays an integer.

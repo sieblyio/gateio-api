@@ -136,3 +136,12 @@ export interface P2PMerchantUploadChatFileReq {
   image_content_type: string;
   base64_img: string;
 }
+
+export interface P2PMerchantPreUploadChatFileReq {
+  content_type:
+    | 'image/jpeg'
+    | 'image/jpg'
+    | 'image/png'
+    | 'image/webp'
+    | 'video/mp4';
+}
