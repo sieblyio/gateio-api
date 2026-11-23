@@ -117,6 +117,7 @@ src/
       rebate.ts
       spot.ts
       stock.ts
+      stockOptions.ts
       subaccount.ts
       tradfi.ts
       unified.ts
@@ -143,6 +144,7 @@ src/
       rebate.ts
       spot.ts
       stock.ts
+      stockOptions.ts
       subaccount.ts
       tradfi.ts
       unified.ts
@@ -4666,6 +4668,154 @@ export interface GetPartnerAgentDataAggregatedReq {
    */
 
 ================
+File: src/types/request/stockOptions.ts
+================
+/** Stock Options API request types */
+⋮----
+export interface GetStockOptionUnderlyingsReq {
+  /** Comma-separated underlying symbols; omit to query all */
+  underlyings?: string;
+}
+⋮----
+/** Comma-separated underlying symbols; omit to query all */
+⋮----
+export interface GetStockOptionContractsReq {
+  underlying: string;
+  exchange?: 'us';
+  /** Expiration date in YYYY-MM-DD format */
+  expiration_date?: string;
+  option_type?: 'call' | 'put';
+  /** Page number, defaults to 1 */
+  page?: number;
+  /** Contracts per page, defaults to 1000, maximum 1000 */
+  page_size?: number;
+}
+⋮----
+/** Expiration date in YYYY-MM-DD format */
+⋮----
+/** Page number, defaults to 1 */
+⋮----
+/** Contracts per page, defaults to 1000, maximum 1000 */
+⋮----
+export interface GetStockOptionExpirationsReq {
+  underlying: string;
+}
+⋮----
+export interface GetStockOptionChainReq {
+  underlying: string;
+  /** Expiration date in YYYY-MM-DD format */
+  expiration_date: string;
+  option_type?: 'call' | 'put' | 'all';
+}
+⋮----
+/** Expiration date in YYYY-MM-DD format */
+⋮----
+export interface GetStockOptionPositionsReq {
+  underlying?: string;
+  symbol?: string;
+  /** Valuation price for market value and PnL; defaults to latest */
+  price_type?: 'latest' | 'mark';
+}
+⋮----
+/** Valuation price for market value and PnL; defaults to latest */
+⋮----
+export interface CloseStockOptionPositionReq {
+  symbol: string;
+  /** Positive decimal string, no greater than the available position */
+  quantity: string;
+  /** Defaults to market; closing orders always use day */
+  order_type?: 'market' | 'limit';
+  /** Required for limit orders; ignored for market orders */
+  price?: string;
+  client_order_id?: string;
+}
+⋮----
+/** Positive decimal string, no greater than the available position */
+⋮----
+/** Defaults to market; closing orders always use day */
+⋮----
+/** Required for limit orders; ignored for market orders */
+⋮----
+export interface GetStockOptionOrdersReq {
+  underlying?: string;
+  symbol?: string;
+  /** 1 sell, 2 buy; omit for both */
+  side?: 1 | 2;
+}
+⋮----
+/** 1 sell, 2 buy; omit for both */
+⋮----
+export interface CreateStockOptionOrderReq {
+  symbol: string;
+  /** 1 sell, 2 buy */
+  side: 1 | 2;
+  order_type: 'market' | 'limit';
+  /** Limit orders support day and gtc; market orders support day only */
+  time_in_force: 'day' | 'gtc';
+  /** Positive decimal string; required for limit orders, ignored for market orders */
+  price?: string;
+  /** Positive decimal string within the contract's order quantity limits */
+  quantity: string;
+  /** Up to 30 UTF-8 bytes; generated when omitted or whitespace-only */
+  client_order_id?: string;
+}
+⋮----
+/** 1 sell, 2 buy */
+⋮----
+/** Limit orders support day and gtc; market orders support day only */
+⋮----
+/** Positive decimal string; required for limit orders, ignored for market orders */
+⋮----
+/** Positive decimal string within the contract's order quantity limits */
+⋮----
+/** Up to 30 UTF-8 bytes; generated when omitted or whitespace-only */
+⋮----
+export interface CancelAllStockOptionOrdersReq {
+  underlying?: string;
+  symbol?: string;
+  /** 1 sell, 2 buy; omit for both */
+  side?: 1 | 2;
+}
+⋮----
+/** 1 sell, 2 buy; omit for both */
+⋮----
+export interface UpdateStockOptionOrderReq {
+  /** New positive limit price as a decimal string */
+  price: string;
+  /** New total quantity as a decimal string, at least filled_quantity */
+  quantity: string;
+}
+⋮----
+/** New positive limit price as a decimal string */
+⋮----
+/** New total quantity as a decimal string, at least filled_quantity */
+⋮----
+export interface GetStockOptionOrderHistoryReq {
+  underlying?: string;
+  symbol?: string;
+  /** Order creation time in seconds; must not exceed end_time */
+  begin_time?: number;
+  /** Order creation time in seconds; must not precede begin_time */
+  end_time?: number;
+  /** 1 sell, 2 buy; omit for both */
+  side?: 1 | 2;
+  /** Page number, defaults to 1 */
+  page?: number;
+  /** Records per page, defaults to 100, maximum 100 */
+  page_size?: number;
+}
+⋮----
+/** Order creation time in seconds; must not exceed end_time */
+⋮----
+/** Order creation time in seconds; must not precede begin_time */
+⋮----
+/** 1 sell, 2 buy; omit for both */
+⋮----
+/** Page number, defaults to 1 */
+⋮----
+/** Records per page, defaults to 100, maximum 100 */
+
+================
 File: src/types/response/alpha.ts
 ================
 /**==========================================================================================================================
@@ -5580,6 +5730,290 @@ export interface PartnerDataAggregatedResponse {
 }
 
 ================
+File: src/types/response/stockOptions.ts
+================
+/** Stock Options API response types */
+⋮----
+export interface StockOptionApiResp<T> {
+  /** Business error label; empty on success */
+  label: string;
+  message?: string;
+  data: T;
+  /** Server timestamp in milliseconds */
+  timestamp: number;
+}
+⋮----
+/** Business error label; empty on success */
+⋮----
+/** Server timestamp in milliseconds */
+⋮----
+export interface StockOptionListData<T> {
+  list?: T[];
+}
+⋮----
+export interface StockOptionPaginatedListData<T> {
+  total?: number;
+  total_page?: number;
+  list?: T[];
+}
+⋮----
+export interface StockOptionFeeRate {
+  sec?: string;
+  min_sec?: string;
+  /** Empty when there is no maximum SEC fee */
+  max_sec?: string;
+  taf?: string;
+  min_taf?: string;
+  max_taf?: string;
+  occ?: string;
+  orf?: string;
+  cat?: string;
+}
+⋮----
+/** Empty when there is no maximum SEC fee */
+⋮----
+export interface StockOptionUnderlyingDescI18n {
+  lang?: string;
+  value?: string;
+}
+⋮----
+export interface StockOptionUnderlyingItem {
+  underlying?: string;
+  description?: string;
+  descs?: StockOptionUnderlyingDescI18n[];
+  icon_link?: string;
+  price_precision?: number;
+  min_order_volume?: string;
+  max_order_volume?: string;
+  step_order_volume?: string;
+}
+⋮----
+export interface StockOptionContractItem {
+  symbol?: string;
+  symbol_display?: string;
+  underlying?: string;
+  exchange?: string;
+  expiration_date?: string;
+  settlement_date?: string;
+  strike_price?: string;
+  option_type?: 'call' | 'put';
+  multiplier?: string;
+  open_interest?: string;
+  quote_currency?: string;
+  settlement_type?: string;
+  trade_status?: 'open' | 'closed';
+  /** 0 disabled, 4 buying and selling allowed */
+  trade_mode?: 0 | 4;
+  price_precision?: number;
+  min_order_volume?: string;
+  max_order_volume?: string;
+  step_order_volume?: string;
+}
+⋮----
+/** 0 disabled, 4 buying and selling allowed */
+⋮----
+export interface StockOptionExpirationItem {
+  /** Expiration date in YYYY-MM-DD format */
+  expiration_date?: string;
+  expiration_date_ts?: number;
+}
+⋮----
+/** Expiration date in YYYY-MM-DD format */
+⋮----
+export interface StockOptionExpirations {
+  underlying?: string;
+  list?: StockOptionExpirationItem[];
+}
+⋮----
+export interface StockOptionChainItem {
+  symbol?: string;
+  symbol_display?: string;
+  strike_price?: string;
+  option_type?: 'call' | 'put';
+  bid?: string;
+  ask?: string;
+  mark_price?: string;
+  mark_iv?: string;
+  last?: string;
+  display_price?: string;
+  breakeven_price?: string;
+  to_breakeven_pct?: string;
+  today_change_pct?: string;
+  open_interest?: string;
+  position?: string;
+  delta?: string;
+  gamma?: string;
+  theta?: string;
+  vega?: string;
+  rho?: string;
+  trade_status?: 'open' | 'closed';
+  /** 0 disabled, 4 buying and selling allowed */
+  trade_mode?: 0 | 4;
+}
+⋮----
+/** 0 disabled, 4 buying and selling allowed */
+⋮----
+export interface StockOptionChain {
+  underlying?: string;
+  expiration_date?: string;
+  expiration_date_ts?: number;
+  index_price?: string;
+  list?: StockOptionChainItem[];
+}
+⋮----
+export interface StockOptionOrderBookLevel {
+  price?: string;
+}
+⋮----
+export interface StockOptionOrderBook {
+  symbol?: string;
+  symbol_display?: string;
+  /** At most one price level, without order quantities */
+  bids?: StockOptionOrderBookLevel[];
+  /** At most one price level, without order quantities */
+  asks?: StockOptionOrderBookLevel[];
+}
+⋮----
+/** At most one price level, without order quantities */
+⋮----
+/** At most one price level, without order quantities */
+⋮----
+export interface StockOptionPositionItem {
+  symbol?: string;
+  symbol_display?: string;
+  underlying?: string;
+  side?: 'long' | 'short';
+  /** Position opening time in seconds; 0 when unavailable */
+  open_time?: number;
+  quantity?: string;
+  available?: string;
+  frozen?: string;
+  avg_entry_price?: string;
+  last_price?: string;
+  mark_price?: string;
+  previous_close?: string;
+  market_value?: string;
+  unrealized_pnl?: string;
+  today_pnl?: string;
+  today_buy_qty?: string;
+  today_sell_qty?: string;
+  today_buy_value?: string;
+  today_sell_value?: string;
+  trade_status?: 'open' | 'closed';
+  /** 0 disabled, 4 buying and selling allowed */
+  trade_mode?: 0 | 4;
+  multiplier?: string;
+  price_precision?: number;
+  min_order_volume?: string;
+  max_order_volume?: string;
+  step_order_volume?: string;
+}
+⋮----
+/** Position opening time in seconds; 0 when unavailable */
+⋮----
+/** 0 disabled, 4 buying and selling allowed */
+⋮----
+export interface StockOptionPositions {
+  /** Daily PnL including current positions and contracts fully closed today */
+  today_pnl?: string;
+  list?: StockOptionPositionItem[];
+}
+⋮----
+/** Daily PnL including current positions and contracts fully closed today */
+⋮----
+export interface StockOptionClosePositionResult {
+  order_id?: string;
+}
+⋮----
+export interface StockOptionOrderItem {
+  order_id?: string;
+  symbol?: string;
+  symbol_display?: string;
+  underlying?: string;
+  /** 1 sell, 2 buy */
+  side?: 1 | 2;
+  order_type?: 'market' | 'limit';
+  /** 1 new, 2 partially filled */
+  status?: 1 | 2;
+  status_desc?: string;
+  time_in_force?: 'day' | 'gtc';
+  quantity?: string;
+  filled_quantity?: string;
+  price?: string;
+  time_setup?: number;
+}
+⋮----
+/** 1 sell, 2 buy */
+⋮----
+/** 1 new, 2 partially filled */
+⋮----
+export interface StockOptionCreateOrderResult {
+  id?: string;
+}
+⋮----
+export interface StockOptionCancelAllOrdersResult {
+  success?: boolean;
+}
+⋮----
+export interface StockOptionOrderDetail {
+  order_id?: string;
+  symbol?: string;
+  symbol_display?: string;
+  underlying?: string;
+  /** 1 sell, 2 buy */
+  side?: 1 | 2;
+  order_type?: 'market' | 'limit';
+  /** 1 new, 2 partially filled, 3 filled, 4 cancelled, 5 rejected */
+  status?: number;
+  status_desc?: string;
+  time_in_force?: 'day' | 'gtc';
+  quantity?: string;
+  filled_quantity?: string;
+  price?: string;
+  time_setup?: number;
+  avg_fill_price?: string;
+  fee?: string;
+  time_done?: number;
+}
+⋮----
+/** 1 sell, 2 buy */
+⋮----
+/** 1 new, 2 partially filled, 3 filled, 4 cancelled, 5 rejected */
+⋮----
+export interface StockOptionUpdateOrderResult {
+  id?: string;
+}
+⋮----
+export interface StockOptionCancelOrderResult {
+  id?: string;
+}
+⋮----
+export interface StockOptionOrderHistoryItem {
+  order_id?: string;
+  symbol?: string;
+  symbol_display?: string;
+  underlying?: string;
+  /** 1 sell, 2 buy */
+  side?: 1 | 2;
+  order_type?: 'market' | 'limit';
+  /** 3 filled, 4 cancelled, 5 rejected */
+  status?: 3 | 4 | 5;
+  status_desc?: string;
+  time_in_force?: 'day' | 'gtc';
+  quantity?: string;
+  filled_quantity?: string;
+  price?: string;
+  time_setup?: number;
+  avg_fill_price?: string;
+  fee?: string;
+  time_done?: number;
+}
+⋮----
+/** 1 sell, 2 buy */
+⋮----
+/** 3 filled, 4 cancelled, 5 rejected */
+
+================
 File: src/types/response/withdrawal.ts
 ================
 export interface WithdrawalRecord {
@@ -5801,417 +6235,6 @@ limit?: number; // Maximum number of records returned in a single list
 page?: number; // Page number
 
 ================
-File: src/types/request/p2pMerchant.ts
-================
-/** P2P Merchant API request types */
-⋮----
-export interface P2PMerchantGetCounterpartyUserInfoReq {
-  biz_uid: string;
-}
-⋮----
-export interface P2PMerchantGetMyselfPaymentReq {
-  fiat?: string;
-}
-⋮----
-export interface P2PMerchantGetPendingTransactionListReq {
-  crypto_currency: string;
-  fiat_currency: string;
-  order_tab?: string;
-  select_type?: string;
-  status?: string;
-  txid?: number;
-  start_time?: number;
-  end_time?: number;
-}
-⋮----
-export interface P2PMerchantGetCompletedTransactionListReq {
-  crypto_currency: string;
-  fiat_currency: string;
-  select_type?: string;
-  status?: string;
-  txid?: number;
-  start_time?: number;
-  end_time?: number;
-  query_dispute?: number;
-  page?: number;
-  per_page?: number;
-}
-⋮----
-export interface P2PMerchantGetTransactionDetailsReq {
-  txid: number;
-  channel?: string;
-}
-⋮----
-export interface P2PMerchantConfirmPaymentReq {
-  trade_id: string;
-  payment_method: string;
-}
-⋮----
-export interface P2PMerchantConfirmReceiptReq {
-  trade_id: string;
-}
-⋮----
-export interface P2PMerchantCancelTransactionReq {
-  trade_id: string;
-  reason_id?: string;
-  reason_memo?: string;
-}
-⋮----
-export interface P2PMerchantPlaceBizPushOrderReq {
-  currencyType: string;
-  exchangeType: string;
-  type: string;
-  unitPrice: string;
-  number: string;
-  payType: string;
-  minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-  maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-  pay_type_json?: string;
-  rateFixed?: string;
-  oid?: string;
-  tierLimit?: string;
-  verifiedLimit?: string;
-  regTimeLimit?: string;
-  advertisersLimit?: string;
-  hide_payment?: string;
-  expire_min?: string;
-  trade_tips?: string;
-  auto_reply?: string;
-  min_completed_limit?: string;
-  max_completed_limit?: string;
-  completed_rate_limit?: string;
-  user_country_limit?: string;
-  user_order_limit?: string;
-  rateReferenceId?: string;
-  rateOffset?: string;
-  float_trend?: string;
-  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
-  fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
-  fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
-  polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
-}
-⋮----
-minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
-⋮----
-limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
-fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
-fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
-polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
-⋮----
-/** POST /p2p/merchant/account/set_merchant_work_hours — v4.106.96 */
-export interface P2PMerchantSetMerchantWorkHoursReq {
-  work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
-  cycle_type?: string;
-  day_of_week?: string;
-  time_zone?: string; // UTC offset -12 to +14
-  start_time?: string;
-  end_time?: string;
-}
-⋮----
-work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
-⋮----
-time_zone?: string; // UTC offset -12 to +14
-⋮----
-export interface P2PMerchantAdsUpdateStatusReq {
-  adv_no: number;
-  adv_status: 1 | 3 | 4;
-  /** Optional query param */
-  trade_type?: string;
-}
-⋮----
-/** Optional query param */
-⋮----
-export interface P2PMerchantAdsDetailReq {
-  adv_no: string;
-}
-⋮----
-export interface P2PMerchantMyAdsListReq {
-  asset?: string;
-  fiat_unit?: string;
-  trade_type?: string;
-}
-⋮----
-export interface P2PMerchantGetAdsListReq {
-  asset: string;
-  fiat_unit: string;
-  trade_type: string;
-}
-⋮----
-export interface P2PMerchantGetChatsListReq {
-  txid: number;
-  lastreceived?: number;
-  firstreceived?: number;
-}
-⋮----
-export interface P2PMerchantSendChatMessageReq {
-  txid: number;
-  message: string;
-  /** 0=Text, 1=File (video or image). Default 0 */
-  type?: 0 | 1;
-}
-⋮----
-/** 0=Text, 1=File (video or image). Default 0 */
-⋮----
-export interface P2PMerchantUploadChatFileReq {
-  image_content_type: string;
-  base64_img: string;
-}
-
-================
-File: src/types/response/p2pMerchant.ts
-================
-/** P2P Merchant API response types */
-⋮----
-export interface P2PMerchantApiResp<T> {
-  timestamp: number;
-  method: string;
-  code: number;
-  message: string;
-  data: T;
-  version: string;
-}
-⋮----
-export interface P2PMerchantUserInfo {
-  is_self?: boolean;
-  user_timest?: string;
-  counterparties_num?: number;
-  email_verified?: string;
-  verified?: string;
-  has_phone?: string;
-  user_name?: string;
-  user_note?: string;
-  complete_transactions?: string;
-  paid_transactions?: string;
-  accepted_transactions?: string;
-  transactions_used_time?: string;
-  cancelled_used_time_month?: string;
-  complete_transactions_month?: string;
-  complete_rate_month?: number;
-  orders_buy_rate_month?: number;
-  is_black?: number;
-  is_follow?: number;
-  have_traded?: number;
-  biz_uid?: string;
-  blue_vip?: number;
-  work_status?: number;
-  registration_days?: number;
-  first_trade_days?: number;
-  need_replenish?: number;
-  merchant_info?: { type?: string; market?: string };
-  online_status?: number;
-  work_hours?: Record<string, unknown> | null;
-  transactions_month?: number;
-  transactions_all?: number;
-  trade_versatile?: boolean;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantCounterpartyUserInfo {
-  user_timest?: string;
-  email_verified?: string;
-  verified?: string;
-  has_phone?: string;
-  user_name?: string;
-  user_note?: string;
-  complete_transactions?: string;
-  paid_transactions?: string;
-  accepted_transactions?: string;
-  transactions_used_time?: string;
-  cancelled_used_time_month?: string;
-  complete_transactions_month?: string;
-  complete_rate_month?: number;
-  is_follow?: number;
-  have_traded?: number;
-  biz_uid?: string;
-  registration_days?: number;
-  first_trade_days?: number;
-  trade_versatile?: boolean;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantPaymentMethod {
-  pay_type: string;
-  pay_name: string;
-  ids: number[];
-  list: Record<string, unknown>[];
-}
-⋮----
-export interface P2PMerchantTransactionListItem {
-  type_buy?: number;
-  timest?: string;
-  timest_expire?: string;
-  type?: string;
-  trade_type?: string;
-  timestamp?: number;
-  rate?: string;
-  amount?: string;
-  total?: string;
-  txid?: number;
-  status?: string;
-  order_status?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantTransactionListData {
-  list: P2PMerchantTransactionListItem[];
-  trans_time?: { od_time?: number }[];
-  count: number;
-  exported_num: number;
-}
-⋮----
-export interface P2PMerchantTransactionDetails {
-  is_sell?: number;
-  txid?: number;
-  orderid?: number;
-  timest?: number;
-  last_pay_time?: number;
-  remain_pay_time?: number;
-  currencyType?: string;
-  want_type?: string;
-  rate?: string;
-  amount?: string;
-  total?: string;
-  status?: string;
-  state?: string;
-  its_uid?: string;
-  its_nickname?: string;
-  its_realname?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantAdsDetail {
-  rate?: string;
-  type?: string;
-  amount?: string;
-  min_amount?: string;
-  max_amount?: string;
-  fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
-  fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
-  minFiatAmount?: string; // v4.106.102
-  maxFiatAmount?: string; // v4.106.102
-  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
-  limitBasisText?: string; // v4.106.102
-  polymarket_limit?: string; // v4.106.102
-  total?: string;
-  orderid?: number;
-  timestamp?: number;
-  currencyType?: string;
-  want_type?: string;
-  status?: string;
-  [key: string]: unknown;
-}
-⋮----
-fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
-fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
-minFiatAmount?: string; // v4.106.102
-maxFiatAmount?: string; // v4.106.102
-limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
-limitBasisText?: string; // v4.106.102
-polymarket_limit?: string; // v4.106.102
-⋮----
-export interface P2PMerchantMyAdsListItem {
-  type?: string;
-  rate?: string;
-  amount?: string;
-  total?: string;
-  id?: string;
-  status?: string;
-  currencyType?: string;
-  want_type?: string;
-  fiat_min_amount?: string; // v4.106.102
-  fiat_max_amount?: string; // v4.106.102
-  limit_basis?: string; // v4.106.103
-  limit_basis_text?: string; // v4.106.103
-  [key: string]: unknown;
-}
-⋮----
-fiat_min_amount?: string; // v4.106.102
-fiat_max_amount?: string; // v4.106.102
-limit_basis?: string; // v4.106.103
-limit_basis_text?: string; // v4.106.103
-⋮----
-export interface P2PMerchantMyAdsListData {
-  lists: P2PMerchantMyAdsListItem[];
-}
-⋮----
-export interface P2PMerchantAdsListItem {
-  index?: number;
-  asset?: string;
-  fiat_unit?: string;
-  adv_no?: number;
-  price?: string;
-  max_single_trans_amount?: string;
-  min_single_trans_amount?: string;
-  nick_name?: string;
-  surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
-  trade_methods?: string[]; // v4.106.103: Supported payment methods list
-  fiat_min_amount?: string; // v4.106.103
-  fiat_max_amount?: string; // v4.106.103
-  limit_basis?: string; // v4.106.103
-  limit_basis_text?: string; // v4.106.103
-}
-⋮----
-surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
-trade_methods?: string[]; // v4.106.103: Supported payment methods list
-fiat_min_amount?: string; // v4.106.103
-fiat_max_amount?: string; // v4.106.103
-limit_basis?: string; // v4.106.103
-limit_basis_text?: string; // v4.106.103
-⋮----
-export interface P2PMerchantChatMessage {
-  is_sell?: number;
-  msg_type?: number;
-  msg?: string;
-  username?: string;
-  uid?: string;
-  timest?: number;
-  type?: number;
-  pic?: string;
-  file_key?: string;
-  file_type?: string;
-  width?: string;
-  height?: string;
-  msg_obj?: Record<string, unknown>;
-  risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
-  toast_msg?: string; // v4.106.96
-  [key: string]: unknown;
-}
-⋮----
-risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
-toast_msg?: string; // v4.106.96
-⋮----
-/** v4.106.96: Risk control response when place_biz_push_order hits off-platform diversion check */
-export interface P2PMerchantPlaceOrderRiskData {
-  risk_code?: string;
-  risk_event?: {
-    type?: string;
-    title?: string;
-    msg?: string;
-    action?: string;
-    content_risk_type?: string;
-    trade_tips?: string;
-    auto_reply?: string;
-  };
-}
-⋮----
-/** v4.106.96: send_chat_message risk fields in data */
-export interface P2PMerchantSendChatMessageData {
-  risk_type?: number;
-  toast_msg?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface P2PMerchantChatsListData {
-  messages: P2PMerchantChatMessage[];
-  has_history?: boolean;
-  txid?: number;
-  SRVTM?: number;
-  order_status?: string;
-  memo?: string;
-}
-
-================
 File: src/types/websockets/client.ts
 ================
 import type { ClientRequestArgs } from 'http';
@@ -6426,6 +6449,173 @@ export interface GetAutoInvestPlansReq {
 }
 ⋮----
 /** Plan status: e.g. History (history) or Active (active) */
+
+================
+File: src/types/request/p2pMerchant.ts
+================
+/** P2P Merchant API request types */
+⋮----
+export interface P2PMerchantGetCounterpartyUserInfoReq {
+  biz_uid: string;
+}
+⋮----
+export interface P2PMerchantGetMyselfPaymentReq {
+  fiat?: string;
+}
+⋮----
+export interface P2PMerchantGetPendingTransactionListReq {
+  crypto_currency: string;
+  fiat_currency: string;
+  order_tab?: string;
+  select_type?: string;
+  status?: string;
+  txid?: number;
+  start_time?: number;
+  end_time?: number;
+}
+⋮----
+export interface P2PMerchantGetCompletedTransactionListReq {
+  crypto_currency: string;
+  fiat_currency: string;
+  select_type?: string;
+  status?: string;
+  txid?: number;
+  start_time?: number;
+  end_time?: number;
+  query_dispute?: number;
+  page?: number;
+  per_page?: number;
+}
+⋮----
+export interface P2PMerchantGetTransactionDetailsReq {
+  txid: number;
+  channel?: string;
+}
+⋮----
+export interface P2PMerchantConfirmPaymentReq {
+  trade_id: string;
+  payment_method: string;
+}
+⋮----
+export interface P2PMerchantConfirmReceiptReq {
+  trade_id: string;
+}
+⋮----
+export interface P2PMerchantCancelTransactionReq {
+  trade_id: string;
+  reason_id?: string;
+  reason_memo?: string;
+}
+⋮----
+export interface P2PMerchantPlaceBizPushOrderReq {
+  currencyType: string;
+  exchangeType: string;
+  type: string;
+  unitPrice: string;
+  number: string;
+  payType: string;
+  minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+  maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+  pay_type_json?: string;
+  rateFixed?: string;
+  oid?: string;
+  tierLimit?: string;
+  verifiedLimit?: string;
+  regTimeLimit?: string;
+  advertisersLimit?: string;
+  hide_payment?: string;
+  expire_min?: string;
+  trade_tips?: string;
+  auto_reply?: string;
+  min_completed_limit?: string;
+  max_completed_limit?: string;
+  completed_rate_limit?: string;
+  user_country_limit?: string;
+  user_order_limit?: string;
+  rateReferenceId?: string;
+  rateOffset?: string;
+  float_trend?: string;
+  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
+  fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
+  fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
+  polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
+}
+⋮----
+minAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+maxAmount?: string; // v4.106.102: No longer required; trade quantity priced by currencyType
+⋮----
+limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount; defaults to 0
+fiatMinAmount?: string; // v4.106.102: Required when limitBasis is 1
+fiatMaxAmount?: string; // v4.106.102: Required when limitBasis is 1
+polymarket_limit?: string; // v4.106.102: Restrict trading with Polymarket users
+⋮----
+/** POST /p2p/merchant/account/set_merchant_work_hours — v4.106.96 */
+export interface P2PMerchantSetMerchantWorkHoursReq {
+  work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
+  cycle_type?: string;
+  day_of_week?: string;
+  time_zone?: string; // UTC offset -12 to +14
+  start_time?: string;
+  end_time?: string;
+}
+⋮----
+work_status: 0 | 1 | 2; // 0 resting, 1 working, 2 custom working hours
+⋮----
+time_zone?: string; // UTC offset -12 to +14
+⋮----
+export interface P2PMerchantAdsUpdateStatusReq {
+  adv_no: number;
+  adv_status: 1 | 3 | 4;
+  /** Optional query param */
+  trade_type?: string;
+}
+⋮----
+/** Optional query param */
+⋮----
+export interface P2PMerchantAdsDetailReq {
+  adv_no: string;
+}
+⋮----
+export interface P2PMerchantMyAdsListReq {
+  asset?: string;
+  fiat_unit?: string;
+  trade_type?: string;
+}
+⋮----
+export interface P2PMerchantGetAdsListReq {
+  asset: string;
+  fiat_unit: string;
+  trade_type: string;
+}
+⋮----
+export interface P2PMerchantGetChatsListReq {
+  txid: number;
+  lastreceived?: number;
+  firstreceived?: number;
+}
+⋮----
+export interface P2PMerchantSendChatMessageReq {
+  txid: number;
+  message: string;
+  /** 0=Text, 1=File (video or image). Default 0 */
+  type?: 0 | 1;
+}
+⋮----
+/** 0=Text, 1=File (video or image). Default 0 */
+⋮----
+export interface P2PMerchantUploadChatFileReq {
+  image_content_type: string;
+  base64_img: string;
+}
+⋮----
+export interface P2PMerchantPreUploadChatFileReq {
+  content_type:
+    | 'image/jpeg'
+    | 'image/jpg'
+    | 'image/png'
+    | 'image/webp'
+    | 'video/mp4';
+}
 
 ================
 File: src/types/request/stock.ts
@@ -6687,6 +6877,274 @@ export interface SetUnifiedDeltaNeutralReq {
 /** POST /unified/leverage/user_setting — set leverage for all borrowed currencies */
 export interface SetUserLeverageReq {
   leverage?: string;
+}
+
+================
+File: src/types/response/p2pMerchant.ts
+================
+/** P2P Merchant API response types */
+⋮----
+export interface P2PMerchantApiResp<T> {
+  timestamp: number;
+  method: string;
+  code: number;
+  message: string;
+  data: T;
+  version: string;
+}
+⋮----
+export interface P2PMerchantPreUploadChatFileData {
+  /** Direct upload URL; credentials expire after 45 minutes */
+  url?: string;
+  /** Submit all signed form fields unchanged, with the file field last */
+  fields?: Record<string, string>;
+  /** After a successful upload, send this as message with type=1 */
+  file_key?: string;
+}
+⋮----
+/** Direct upload URL; credentials expire after 45 minutes */
+⋮----
+/** Submit all signed form fields unchanged, with the file field last */
+⋮----
+/** After a successful upload, send this as message with type=1 */
+⋮----
+export interface P2PMerchantUserInfo {
+  is_self?: boolean;
+  user_timest?: string;
+  counterparties_num?: number;
+  email_verified?: string;
+  verified?: string;
+  has_phone?: string;
+  user_name?: string;
+  user_note?: string;
+  complete_transactions?: string;
+  paid_transactions?: string;
+  accepted_transactions?: string;
+  transactions_used_time?: string;
+  cancelled_used_time_month?: string;
+  complete_transactions_month?: string;
+  complete_rate_month?: number;
+  orders_buy_rate_month?: number;
+  is_black?: number;
+  is_follow?: number;
+  have_traded?: number;
+  biz_uid?: string;
+  blue_vip?: number;
+  work_status?: number;
+  registration_days?: number;
+  first_trade_days?: number;
+  need_replenish?: number;
+  merchant_info?: { type?: string; market?: string };
+  online_status?: number;
+  work_hours?: Record<string, unknown> | null;
+  transactions_month?: number;
+  transactions_all?: number;
+  trade_versatile?: boolean;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantCounterpartyUserInfo {
+  user_timest?: string;
+  email_verified?: string;
+  verified?: string;
+  has_phone?: string;
+  user_name?: string;
+  user_note?: string;
+  complete_transactions?: string;
+  paid_transactions?: string;
+  accepted_transactions?: string;
+  transactions_used_time?: string;
+  cancelled_used_time_month?: string;
+  complete_transactions_month?: string;
+  complete_rate_month?: number;
+  is_follow?: number;
+  have_traded?: number;
+  biz_uid?: string;
+  registration_days?: number;
+  first_trade_days?: number;
+  trade_versatile?: boolean;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantPaymentMethod {
+  pay_type: string;
+  pay_name: string;
+  ids: number[];
+  list: Record<string, unknown>[];
+}
+⋮----
+export interface P2PMerchantTransactionListItem {
+  type_buy?: number;
+  timest?: string;
+  timest_expire?: string;
+  type?: string;
+  trade_type?: string;
+  timestamp?: number;
+  rate?: string;
+  amount?: string;
+  total?: string;
+  txid?: number;
+  status?: string;
+  order_status?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantTransactionListData {
+  list: P2PMerchantTransactionListItem[];
+  trans_time?: { od_time?: number }[];
+  count: number;
+  exported_num: number;
+}
+⋮----
+export interface P2PMerchantTransactionDetails {
+  is_sell?: number;
+  txid?: number;
+  orderid?: number;
+  timest?: number;
+  last_pay_time?: number;
+  remain_pay_time?: number;
+  currencyType?: string;
+  want_type?: string;
+  rate?: string;
+  amount?: string;
+  total?: string;
+  status?: string;
+  state?: string;
+  its_uid?: string;
+  its_nickname?: string;
+  its_realname?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantAdsDetail {
+  rate?: string;
+  type?: string;
+  amount?: string;
+  min_amount?: string;
+  max_amount?: string;
+  fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
+  fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
+  minFiatAmount?: string; // v4.106.102
+  maxFiatAmount?: string; // v4.106.102
+  limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
+  limitBasisText?: string; // v4.106.102
+  polymarket_limit?: string; // v4.106.102
+  total?: string;
+  orderid?: number;
+  timestamp?: number;
+  currencyType?: string;
+  want_type?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+⋮----
+fiat_min_amount?: string; // v4.106.102: Min fiat amount per order
+fiat_max_amount?: string; // v4.106.102: Max fiat amount per order
+minFiatAmount?: string; // v4.106.102
+maxFiatAmount?: string; // v4.106.102
+limitBasis?: string; // v4.106.102: 0 by crypto quantity, 1 by fiat amount
+limitBasisText?: string; // v4.106.102
+polymarket_limit?: string; // v4.106.102
+⋮----
+export interface P2PMerchantMyAdsListItem {
+  type?: string;
+  rate?: string;
+  amount?: string;
+  total?: string;
+  id?: string;
+  status?: string;
+  currencyType?: string;
+  want_type?: string;
+  fiat_min_amount?: string; // v4.106.102
+  fiat_max_amount?: string; // v4.106.102
+  limit_basis?: string; // v4.106.103
+  limit_basis_text?: string; // v4.106.103
+  [key: string]: unknown;
+}
+⋮----
+fiat_min_amount?: string; // v4.106.102
+fiat_max_amount?: string; // v4.106.102
+limit_basis?: string; // v4.106.103
+limit_basis_text?: string; // v4.106.103
+⋮----
+export interface P2PMerchantMyAdsListData {
+  lists: P2PMerchantMyAdsListItem[];
+}
+⋮----
+export interface P2PMerchantAdsListItem {
+  index?: number;
+  asset?: string;
+  fiat_unit?: string;
+  adv_no?: number;
+  price?: string;
+  max_single_trans_amount?: string;
+  min_single_trans_amount?: string;
+  nick_name?: string;
+  surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
+  trade_methods?: string[]; // v4.106.103: Supported payment methods list
+  fiat_min_amount?: string; // v4.106.103
+  fiat_max_amount?: string; // v4.106.103
+  limit_basis?: string; // v4.106.103
+  limit_basis_text?: string; // v4.106.103
+}
+⋮----
+surplus_amount?: string; // v4.106.103: Remaining tradable crypto quantity
+trade_methods?: string[]; // v4.106.103: Supported payment methods list
+fiat_min_amount?: string; // v4.106.103
+fiat_max_amount?: string; // v4.106.103
+limit_basis?: string; // v4.106.103
+limit_basis_text?: string; // v4.106.103
+⋮----
+export interface P2PMerchantChatMessage {
+  is_sell?: number;
+  msg_type?: number;
+  msg?: string;
+  username?: string;
+  uid?: string;
+  timest?: number;
+  type?: number;
+  pic?: string;
+  file_key?: string;
+  file_type?: string;
+  width?: string;
+  height?: string;
+  msg_obj?: Record<string, unknown>;
+  risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
+  toast_msg?: string; // v4.106.96
+  [key: string]: unknown;
+}
+⋮----
+risk_type?: number; // v4.106.96: 1 off-platform traffic diversion risk
+toast_msg?: string; // v4.106.96
+⋮----
+/** v4.106.96: Risk control response when place_biz_push_order hits off-platform diversion check */
+export interface P2PMerchantPlaceOrderRiskData {
+  risk_code?: string;
+  risk_event?: {
+    type?: string;
+    title?: string;
+    msg?: string;
+    action?: string;
+    content_risk_type?: string;
+    trade_tips?: string;
+    auto_reply?: string;
+  };
+}
+⋮----
+/** v4.106.96: send_chat_message risk fields in data */
+export interface P2PMerchantSendChatMessageData {
+  risk_type?: number;
+  toast_msg?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface P2PMerchantChatsListData {
+  messages: P2PMerchantChatMessage[];
+  has_history?: boolean;
+  txid?: number;
+  SRVTM?: number;
+  order_status?: string;
+  memo?: string;
 }
 
 ================
@@ -7962,404 +8420,6 @@ export interface GetTransferReq {
 }
 
 ================
-File: src/types/response/stock.ts
-================
-export type StockCategory =
-  | 'CS'
-  | 'ETF'
-  | 'ADRC'
-  | 'ADR'
-  | 'ETV'
-  | 'PFD'
-  | 'ETS'
-  | 'ETN'
-  | 'FUND';
-⋮----
-export type StockAssetType = 'STOCK' | 'ETF';
-⋮----
-/** v4.106.159: `closed` and `gt_lp` removed. */
-export type StockTradeStatus = 'pre_market' | 'open' | 'post_market';
-⋮----
-/**
- * v4.106.148.
- * 0 disabled, 1 buy only, 2 sell only, 4 buy and sell,
- * 5 manual suspension, 6 strategy exception, 7 stock halt, 8 circuit breaker halt.
- */
-export type StockTradeMode = 0 | 1 | 2 | 4 | 5 | 6 | 7 | 8;
-⋮----
-/**
- * `GET /stock/orders` and `GET /stock/orders/history`. JSON stays an integer.
- * 0 unknown, 1 new, 2 partial, 3 filled, 4 canceled, 5 rejected,
- * 6 cancel rejected, 7 update succeeded, 8 update rejected.
- */
-export type StockOrderStatus = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-⋮----
-/**
- * `GET /stock/orders/history`. JSON stays an integer.
- * 0 unknown, 1 no quote, 2 no match, 3 trigger price exceeded,
- * 4 order value exceeds limit, 5 unknown rejection, 6 unknown cancellation,
- * 7 canceled by user, 8 time in force expired, 9 session unsupported,
- * 13 canceled due to corporate action.
- */
-export type StockOrderFinishAs = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 13;
-⋮----
-export interface StockApiResp<T> {
-  timestamp?: number;
-  data?: T;
-  code?: number;
-  message?: string;
-  label?: string;
-}
-⋮----
-export interface StockListData<T> {
-  list?: T[];
-  total?: number;
-  total_page?: number;
-}
-⋮----
-export interface StockUserAssets {
-  equity?: string;
-  balance?: string;
-  available?: string;
-  /** Non-negative loan amount */
-  loan_amount?: string;
-  buy_power?: string;
-  leverage?: string;
-  leave_liquidity?: string;
-  leave_liquidity_rate?: string;
-  aee?: string;
-  options_margin?: string;
-  margin_enabled?: boolean;
-  /** Annual margin financing interest rate; empty when no valid rate is available */
-  long_borrowing_rate?: string;
-  position_market_value?: string;
-  position_pnl?: string;
-  today_pnl?: string;
-  user_exists?: boolean;
-  option_position_market_value?: string;
-  option_position_pnl?: string;
-  option_today_pnl?: string;
-}
-⋮----
-/** Non-negative loan amount */
-⋮----
-/** Annual margin financing interest rate; empty when no valid rate is available */
-⋮----
-export interface StockBalanceRecordItem {
-  id?: number;
-  user_id?: number;
-  change?: string;
-  /** Cash balance snapshot after the change */
-  balance?: string;
-  /** Stock quantity change; may be empty for other records */
-  stock_change?: string;
-  type?: string;
-  business?: string;
-  business_id?: number;
-  symbol?: string;
-  /** Raw business details as a JSON string; returned only when include_detail=true */
-  detail?: string;
-  version?: number;
-  /** Business event time (Unix timestamp in seconds) */
-  time_create?: number;
-  /** Record creation time (Unix timestamp in seconds) */
-  create_time?: number;
-}
-⋮----
-/** Cash balance snapshot after the change */
-⋮----
-/** Stock quantity change; may be empty for other records */
-⋮----
-/** Raw business details as a JSON string; returned only when include_detail=true */
-⋮----
-/** Business event time (Unix timestamp in seconds) */
-⋮----
-/** Record creation time (Unix timestamp in seconds) */
-⋮----
-export interface StockSymbolDescI18n {
-  lang?: string;
-  value?: string;
-}
-⋮----
-export interface StockSymbolItem {
-  symbol?: string;
-  exchange?: string;
-  exchange_desc?: string;
-  quote_currency?: string;
-  quote_currency_precision?: number;
-  fx_rate?: string;
-  symbol_desc?: string;
-  category?: StockCategory | string;
-  asset_type?: StockAssetType;
-  trade_status?: StockTradeStatus;
-  trade_mode?: StockTradeMode;
-  order_fill_timing?: number;
-  icon_link?: string;
-  quote_currency_symbol?: string;
-  price_precision?: number;
-  volume_precision?: number;
-  is_ipo?: boolean;
-  ipo_price?: string;
-  sell_price_protection?: string;
-  buy_price_protection?: string;
-  symbol_descs?: StockSymbolDescI18n[];
-  timestamp?: number;
-  /** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
-  margin_mode?: 0 | 1 | 2 | 3;
-  /** Initial margin ratio for long positions */
-  long_im?: string;
-  /** Maintenance margin ratio for long positions */
-  long_mm?: string;
-  /** Initial margin ratio for short positions */
-  short_im?: string;
-  /** Maintenance margin ratio for short positions */
-  short_mm?: string;
-  /** Annual margin financing interest rate; empty when no valid rate is available */
-  long_borrowing_rate?: string;
-  /** Annual securities borrowing interest rate; empty when no valid rate is available */
-  short_borrowing_rate?: string;
-}
-⋮----
-/** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
-⋮----
-/** Initial margin ratio for long positions */
-⋮----
-/** Maintenance margin ratio for long positions */
-⋮----
-/** Initial margin ratio for short positions */
-⋮----
-/** Maintenance margin ratio for short positions */
-⋮----
-/** Annual margin financing interest rate; empty when no valid rate is available */
-⋮----
-/** Annual securities borrowing interest rate; empty when no valid rate is available */
-⋮----
-export interface StockSymbolDetailItem {
-  symbol?: string;
-  exchange?: string;
-  exchange_desc?: string;
-  quote_currency?: string;
-  quote_currency_precision?: number;
-  fx_rate?: string;
-  symbol_desc?: string;
-  category?: StockCategory | string;
-  asset_type?: StockAssetType;
-  settlement_currency?: string;
-  max_order_volume?: string;
-  step_order_volume?: string;
-  min_order_volume?: string;
-  price_precision?: number;
-  volume_precision?: number;
-  is_ipo?: boolean;
-  ipo_price?: string;
-  price_protection?: string;
-  sell_price_protection?: string;
-  buy_price_protection?: string;
-  slippage_rate?: string;
-  commission_rate?: string;
-  trade_status?: StockTradeStatus;
-  trade_mode?: StockTradeMode;
-  order_fill_timing?: number;
-  symbol_descs?: StockSymbolDescI18n[];
-  /** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
-  margin_mode?: 0 | 1 | 2 | 3;
-  /** Initial margin ratio for long positions */
-  long_im?: string;
-  /** Maintenance margin ratio for long positions */
-  long_mm?: string;
-  /** Initial margin ratio for short positions */
-  short_im?: string;
-  /** Maintenance margin ratio for short positions */
-  short_mm?: string;
-  /** Annual margin financing interest rate; empty when no valid rate is available */
-  long_borrowing_rate?: string;
-  /** Annual securities borrowing interest rate; empty when no valid rate is available */
-  short_borrowing_rate?: string;
-  [key: string]: unknown;
-}
-⋮----
-/** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
-⋮----
-/** Initial margin ratio for long positions */
-⋮----
-/** Maintenance margin ratio for long positions */
-⋮----
-/** Initial margin ratio for short positions */
-⋮----
-/** Maintenance margin ratio for short positions */
-⋮----
-/** Annual margin financing interest rate; empty when no valid rate is available */
-⋮----
-/** Annual securities borrowing interest rate; empty when no valid rate is available */
-⋮----
-export interface StockOrderBookLevel {
-  p?: string;
-  user_order?: boolean;
-  [key: string]: unknown;
-}
-⋮----
-export interface StockOrderBook {
-  symbol?: string;
-  bids?: StockOrderBookLevel[];
-  asks?: StockOrderBookLevel[];
-  timestamp?: number;
-}
-⋮----
-export interface StockOrderItem {
-  order_id?: string;
-  symbol?: string;
-  exchange?: string;
-  quote_currency?: string;
-  fx_rate?: string;
-  symbol_desc?: string;
-  trade_status?: StockTradeStatus;
-  trade_mode?: StockTradeMode;
-  price_type?: string;
-  side?: number;
-  status?: StockOrderStatus;
-  volume?: string;
-  fill_volume?: string;
-  price?: string;
-  time_setup?: number;
-  time_update?: number;
-  max_order_volume?: string;
-  step_order_volume?: string;
-  min_order_volume?: string;
-  price_precision?: number;
-  price_protection?: string;
-  sell_price_protection?: string;
-  buy_price_protection?: string;
-  commission_rate?: string;
-  slippage_rate?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface StockCreateOrderResult {
-  id?: string;
-}
-⋮----
-export interface StockOrderHistoryItem {
-  order_id?: string;
-  symbol?: string;
-  exchange?: string;
-  quote_currency?: string;
-  fx_rate?: string;
-  symbol_desc?: string;
-  price_type?: string;
-  status?: StockOrderStatus;
-  status_desc?: string;
-  status_detail?: { title?: string; message?: string } | null;
-  finish_as?: StockOrderFinishAs;
-  side?: number;
-  time_in_force?: string;
-  volume?: string;
-  fill_volume?: string;
-  price?: string;
-  avg_fill_price?: string | null;
-  commission?: string;
-  time_setup?: number;
-  time_done?: number;
-  [key: string]: unknown;
-}
-⋮----
-export interface StockOrderDealItem {
-  id?: number;
-  deal_id?: number;
-  order_id?: number;
-  client_order_id?: string;
-  user_id?: number;
-  symbol?: string;
-  exchange?: 'us' | 'hk' | 'kr' | 'jp';
-  /** 1 sell, 2 buy */
-  side?: 1 | 2;
-  role?: 'maker' | 'taker';
-  /** Trade price in the instrument trading currency */
-  price?: string;
-  quantity?: string;
-  position_qty?: string;
-  avg_entry_price?: string;
-  /** Trade value in the instrument trading currency */
-  value?: string;
-  fx_rate?: string;
-  /** Fee in the instrument trading currency */
-  fee?: string;
-}
-⋮----
-/** 1 sell, 2 buy */
-⋮----
-/** Trade price in the instrument trading currency */
-⋮----
-/** Trade value in the instrument trading currency */
-⋮----
-/** Fee in the instrument trading currency */
-⋮----
-export interface StockUpdateOrderResult {
-  order_id?: number;
-}
-⋮----
-export interface StockPositionItem {
-  symbol?: string;
-  exchange?: string;
-  quote_currency?: string;
-  quote_currency_precision?: number;
-  fx_rate?: string;
-  trade_status?: StockTradeStatus;
-  symbol_desc?: string;
-  position_pnl?: string;
-  today_pnl?: string;
-  pnl_rate?: string;
-  today_sell_amount?: string;
-  today_buy_amount?: string;
-  today_sell_volume?: string;
-  today_buy_volume?: string;
-  yesterday_volume?: string;
-  volume?: string;
-  available?: string;
-  transfer_out_pending_qty?: string;
-  avg_cost_price?: string;
-  diluted_cost_price?: string;
-  last_price?: string;
-  extended_last_price?: string | null;
-  max_order_volume?: string;
-  step_order_volume?: string;
-  min_order_volume?: string;
-  price_precision?: number;
-  price_protection?: string;
-  [key: string]: unknown;
-}
-⋮----
-export interface StockClosePositionResult {
-  order_id?: number;
-}
-⋮----
-export interface StockTransactionItem {
-  asset?: string;
-  symbol?: string;
-  symbol_display?: string;
-  type?: string;
-  type_desc?: string;
-  change?: string;
-  balance?: string;
-  ref_id?: string;
-  time?: number;
-  unit_text?: string;
-  detail?: object;
-}
-⋮----
-export interface StockExchangeItem {
-  exchange?: string;
-  exchange_desc?: string;
-  icon_link?: string;
-  support_transfer?: boolean;
-}
-⋮----
-export interface StockFeeRateItem {
-  vip_level?: number;
-  maker_fee?: string;
-  taker_fee?: string;
-}
-
-================
 File: src/types/response/unified.ts
 ================
 export interface UnifiedAccountInfo {
@@ -9263,15 +9323,402 @@ export interface GetEarnFixedTermHistoryResponse {
 }
 
 ================
-File: src/index.ts
+File: src/types/response/stock.ts
 ================
-// Request Types
+export type StockCategory =
+  | 'CS'
+  | 'ETF'
+  | 'ADRC'
+  | 'ADR'
+  | 'ETV'
+  | 'PFD'
+  | 'ETS'
+  | 'ETN'
+  | 'FUND';
 ⋮----
-// Response Types
+export type StockAssetType = 'STOCK' | 'ETF';
 ⋮----
-// Websockets Types
+/** v4.106.159: `closed` and `gt_lp` removed. */
+export type StockTradeStatus = 'pre_market' | 'open' | 'post_market';
 ⋮----
-// Shared Types
+/**
+ * v4.106.182.
+ * 0 disabled, 1 buy only, 2 sell only, 4 buy and sell,
+ * 5 trading suspended.
+ */
+export type StockTradeMode = 0 | 1 | 2 | 4 | 5;
+⋮----
+/**
+ * `GET /stock/orders` and `GET /stock/orders/history`. JSON stays an integer.
+ * 0 unknown, 1 new, 2 partial, 3 filled, 4 canceled, 5 rejected,
+ * 6 cancel rejected, 7 update succeeded, 8 update rejected.
+ */
+export type StockOrderStatus = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+⋮----
+/**
+ * `GET /stock/orders/history`. JSON stays an integer.
+ * 0 unknown, 1 no quote, 2 no match, 3 trigger price exceeded,
+ * 4 order value exceeds limit, 5 unknown rejection, 6 unknown cancellation,
+ * 7 canceled by user, 8 time in force expired, 9 session unsupported,
+ * 13 canceled due to corporate action.
+ */
+export type StockOrderFinishAs = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 13;
+⋮----
+export interface StockApiResp<T> {
+  timestamp?: number;
+  data?: T;
+  code?: number;
+  message?: string;
+  label?: string;
+}
+⋮----
+export interface StockListData<T> {
+  list?: T[];
+  total?: number;
+  total_page?: number;
+}
+⋮----
+export interface StockUserAssets {
+  equity?: string;
+  balance?: string;
+  available?: string;
+  /** Non-negative loan amount */
+  loan_amount?: string;
+  buy_power?: string;
+  leverage?: string;
+  leave_liquidity?: string;
+  leave_liquidity_rate?: string;
+  aee?: string;
+  options_margin?: string;
+  margin_enabled?: boolean;
+  /** Annual margin financing interest rate; empty when no valid rate is available */
+  long_borrowing_rate?: string;
+  position_market_value?: string;
+  position_pnl?: string;
+  today_pnl?: string;
+  user_exists?: boolean;
+  option_position_market_value?: string;
+  option_position_pnl?: string;
+  option_today_pnl?: string;
+}
+⋮----
+/** Non-negative loan amount */
+⋮----
+/** Annual margin financing interest rate; empty when no valid rate is available */
+⋮----
+export interface StockBalanceRecordItem {
+  id?: number;
+  user_id?: number;
+  change?: string;
+  /** Cash balance snapshot after the change */
+  balance?: string;
+  /** Stock quantity change; may be empty for other records */
+  stock_change?: string;
+  type?: string;
+  business?: string;
+  business_id?: number;
+  symbol?: string;
+  /** Raw business details as a JSON string; returned only when include_detail=true */
+  detail?: string;
+  version?: number;
+  /** Business event time (Unix timestamp in seconds) */
+  time_create?: number;
+  /** Record creation time (Unix timestamp in seconds) */
+  create_time?: number;
+}
+⋮----
+/** Cash balance snapshot after the change */
+⋮----
+/** Stock quantity change; may be empty for other records */
+⋮----
+/** Raw business details as a JSON string; returned only when include_detail=true */
+⋮----
+/** Business event time (Unix timestamp in seconds) */
+⋮----
+/** Record creation time (Unix timestamp in seconds) */
+⋮----
+export interface StockSymbolDescI18n {
+  lang?: string;
+  value?: string;
+}
+⋮----
+export interface StockSymbolItem {
+  symbol?: string;
+  exchange?: string;
+  exchange_desc?: string;
+  quote_currency?: string;
+  quote_currency_precision?: number;
+  fx_rate?: string;
+  symbol_desc?: string;
+  category?: StockCategory | string;
+  asset_type?: StockAssetType;
+  trade_status?: StockTradeStatus;
+  trade_mode?: StockTradeMode;
+  order_fill_timing?: number;
+  icon_link?: string;
+  quote_currency_symbol?: string;
+  price_precision?: number;
+  volume_precision?: number;
+  is_ipo?: boolean;
+  ipo_price?: string;
+  sell_price_protection?: string;
+  buy_price_protection?: string;
+  symbol_descs?: StockSymbolDescI18n[];
+  timestamp?: number;
+  /** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
+  margin_mode?: 0 | 1 | 2 | 3;
+  /** Initial margin ratio for long positions */
+  long_im?: string;
+  /** Maintenance margin ratio for long positions */
+  long_mm?: string;
+  /** Initial margin ratio for short positions */
+  short_im?: string;
+  /** Maintenance margin ratio for short positions */
+  short_mm?: string;
+  /** Annual margin financing interest rate; empty when no valid rate is available */
+  long_borrowing_rate?: string;
+  /** Annual securities borrowing interest rate; empty when no valid rate is available */
+  short_borrowing_rate?: string;
+}
+⋮----
+/** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
+⋮----
+/** Initial margin ratio for long positions */
+⋮----
+/** Maintenance margin ratio for long positions */
+⋮----
+/** Initial margin ratio for short positions */
+⋮----
+/** Maintenance margin ratio for short positions */
+⋮----
+/** Annual margin financing interest rate; empty when no valid rate is available */
+⋮----
+/** Annual securities borrowing interest rate; empty when no valid rate is available */
+⋮----
+export interface StockSymbolDetailItem {
+  symbol?: string;
+  exchange?: string;
+  exchange_desc?: string;
+  quote_currency?: string;
+  quote_currency_precision?: number;
+  fx_rate?: string;
+  symbol_desc?: string;
+  category?: StockCategory | string;
+  asset_type?: StockAssetType;
+  settlement_currency?: string;
+  max_order_volume?: string;
+  step_order_volume?: string;
+  min_order_volume?: string;
+  price_precision?: number;
+  volume_precision?: number;
+  is_ipo?: boolean;
+  ipo_price?: string;
+  price_protection?: string;
+  sell_price_protection?: string;
+  buy_price_protection?: string;
+  slippage_rate?: string;
+  commission_rate?: string;
+  trade_status?: StockTradeStatus;
+  trade_mode?: StockTradeMode;
+  order_fill_timing?: number;
+  symbol_descs?: StockSymbolDescI18n[];
+  /** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
+  margin_mode?: 0 | 1 | 2 | 3;
+  /** Initial margin ratio for long positions */
+  long_im?: string;
+  /** Maintenance margin ratio for long positions */
+  long_mm?: string;
+  /** Initial margin ratio for short positions */
+  short_im?: string;
+  /** Maintenance margin ratio for short positions */
+  short_mm?: string;
+  /** Annual margin financing interest rate; empty when no valid rate is available */
+  long_borrowing_rate?: string;
+  /** Annual securities borrowing interest rate; empty when no valid rate is available */
+  short_borrowing_rate?: string;
+  [key: string]: unknown;
+}
+⋮----
+/** 0 neither, 1 margin financing, 2 securities borrowing, 3 both */
+⋮----
+/** Initial margin ratio for long positions */
+⋮----
+/** Maintenance margin ratio for long positions */
+⋮----
+/** Initial margin ratio for short positions */
+⋮----
+/** Maintenance margin ratio for short positions */
+⋮----
+/** Annual margin financing interest rate; empty when no valid rate is available */
+⋮----
+/** Annual securities borrowing interest rate; empty when no valid rate is available */
+⋮----
+export interface StockOrderBookLevel {
+  p?: string;
+  user_order?: boolean;
+  [key: string]: unknown;
+}
+⋮----
+export interface StockOrderBook {
+  symbol?: string;
+  bids?: StockOrderBookLevel[];
+  asks?: StockOrderBookLevel[];
+  timestamp?: number;
+}
+⋮----
+export interface StockOrderItem {
+  order_id?: string;
+  symbol?: string;
+  exchange?: string;
+  quote_currency?: string;
+  fx_rate?: string;
+  symbol_desc?: string;
+  trade_status?: StockTradeStatus;
+  trade_mode?: StockTradeMode;
+  price_type?: string;
+  side?: number;
+  status?: StockOrderStatus;
+  volume?: string;
+  fill_volume?: string;
+  price?: string;
+  time_setup?: number;
+  time_update?: number;
+  max_order_volume?: string;
+  step_order_volume?: string;
+  min_order_volume?: string;
+  price_precision?: number;
+  price_protection?: string;
+  sell_price_protection?: string;
+  buy_price_protection?: string;
+  commission_rate?: string;
+  slippage_rate?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface StockCreateOrderResult {
+  id?: string;
+}
+⋮----
+export interface StockOrderHistoryItem {
+  order_id?: string;
+  symbol?: string;
+  exchange?: string;
+  quote_currency?: string;
+  fx_rate?: string;
+  symbol_desc?: string;
+  price_type?: string;
+  status?: StockOrderStatus;
+  status_desc?: string;
+  status_detail?: { title?: string; message?: string } | null;
+  finish_as?: StockOrderFinishAs;
+  side?: number;
+  time_in_force?: string;
+  volume?: string;
+  fill_volume?: string;
+  price?: string;
+  avg_fill_price?: string | null;
+  commission?: string;
+  time_setup?: number;
+  time_done?: number;
+  [key: string]: unknown;
+}
+⋮----
+export interface StockOrderDealItem {
+  id?: number;
+  deal_id?: number;
+  order_id?: number;
+  client_order_id?: string;
+  user_id?: number;
+  symbol?: string;
+  exchange?: 'us' | 'hk' | 'kr' | 'jp';
+  /** 1 sell, 2 buy */
+  side?: 1 | 2;
+  role?: 'maker' | 'taker';
+  /** Trade price in the instrument trading currency */
+  price?: string;
+  quantity?: string;
+  position_qty?: string;
+  avg_entry_price?: string;
+  /** Trade value in the instrument trading currency */
+  value?: string;
+  fx_rate?: string;
+  /** Fee in the instrument trading currency */
+  fee?: string;
+}
+⋮----
+/** 1 sell, 2 buy */
+⋮----
+/** Trade price in the instrument trading currency */
+⋮----
+/** Trade value in the instrument trading currency */
+⋮----
+/** Fee in the instrument trading currency */
+⋮----
+export interface StockUpdateOrderResult {
+  order_id?: number;
+}
+⋮----
+export interface StockPositionItem {
+  symbol?: string;
+  exchange?: string;
+  quote_currency?: string;
+  quote_currency_precision?: number;
+  fx_rate?: string;
+  trade_status?: StockTradeStatus;
+  symbol_desc?: string;
+  position_pnl?: string;
+  today_pnl?: string;
+  pnl_rate?: string;
+  today_sell_amount?: string;
+  today_buy_amount?: string;
+  today_sell_volume?: string;
+  today_buy_volume?: string;
+  yesterday_volume?: string;
+  volume?: string;
+  available?: string;
+  transfer_out_pending_qty?: string;
+  avg_cost_price?: string;
+  diluted_cost_price?: string;
+  last_price?: string;
+  extended_last_price?: string | null;
+  max_order_volume?: string;
+  step_order_volume?: string;
+  min_order_volume?: string;
+  price_precision?: number;
+  price_protection?: string;
+  [key: string]: unknown;
+}
+⋮----
+export interface StockClosePositionResult {
+  order_id?: number;
+}
+⋮----
+export interface StockTransactionItem {
+  asset?: string;
+  symbol?: string;
+  symbol_display?: string;
+  type?: string;
+  type_desc?: string;
+  change?: string;
+  balance?: string;
+  ref_id?: string;
+  time?: number;
+  unit_text?: string;
+  detail?: object;
+}
+⋮----
+export interface StockExchangeItem {
+  exchange?: string;
+  exchange_desc?: string;
+  icon_link?: string;
+  support_transfer?: boolean;
+}
+⋮----
+export interface StockFeeRateItem {
+  vip_level?: number;
+  maker_fee?: string;
+  taker_fee?: string;
+}
 
 ================
 File: docs/GATE_SDK_QUICKSTART_GUIDE.md
@@ -13497,6 +13944,17 @@ export interface TradFiSymbolCommissionItem {
 }
 
 ================
+File: src/index.ts
+================
+// Request Types
+⋮----
+// Response Types
+⋮----
+// Websockets Types
+⋮----
+// Shared Types
+
+================
 File: src/types/request/futures.ts
 ================
 /**==========================================================================================================================
@@ -14912,7 +15370,10 @@ Updated & performant JavaScript & Node.js SDK for the Gate.com (gate.io) REST AP
 - [Why not raw ws?](#why-not-raw-ws)
 - [Customise Logging](#customise-logging)
 - [Browser/Frontend Usage](#browserfrontend-usage)
-  - [Webpack](#webpack)
+  - [Vite and React](#vite-and-react)
+  - [Next.js and server-side requests](#nextjs-and-server-side-requests)
+  - [React Native and Expo](#react-native-and-expo)
+  - [Standalone Webpack bundle](#standalone-webpack-bundle)
 - [LLMs & AI](#use-with-llms--ai)
 - [Used By](#used-by)
 - [Contributions & Thanks](#contributions--thanks)
@@ -15349,15 +15810,37 @@ const ws = new WebsocketClient({ key: 'xxx', secret: 'yyy' }, DefaultLogger);
 
 ## Browser/Frontend Usage
 
-### Webpack
+The npm package includes ES module and CommonJS builds. You do not need to build the SDK's standalone Webpack bundle to use it in a frontend project. Choose the setup for your application below.
 
-Build a bundle using webpack:
+### Vite and React
 
-- `npm install`
-- `npm run build`
-- `npm run pack`
+Use the [Vite guide](https://sieblyio.github.io/docs/gateio/environments/vite.html) or [React guide](https://sieblyio.github.io/docs/gateio/environments/react.html) for a complete public market-data project that imports `gateio-api` from npm.
 
-The bundle can be found in `dist/`. Altough usage should be largely consistent, smaller differences will exist. Documentation is still TODO.
+Keep the supplied bundler configuration with the example: it provides EventEmitter and replaces the SDK's Node-only HTTPS agent import for browser use. Omit `keepAlive` in a browser. These examples use public Gate spot market data. Keep API credentials in a secure server-side environment and make authenticated calls there.
+
+Browser REST requests also depend on Gate's CORS policy. If a request is blocked, call the SDK through your application's server route instead. A development proxy does not solve CORS for a deployed application.
+
+### Next.js and server-side requests
+
+The [Next.js guide](https://sieblyio.github.io/docs/gateio/environments/next.html) runs the SDK in a Node.js Route Handler and returns the result to the frontend. Use this pattern when requests need credentials or cannot be made directly from the browser.
+
+### React Native and Expo
+
+Follow the [Expo guide](https://sieblyio.github.io/docs/gateio/environments/expo.html) for its Metro configuration and required polyfills, including `buffer`, `events`, `https-browserify`, `stream-http`, and `url`. Browser bundler configuration is not interchangeable with Metro configuration. The example uses public Gate spot market data; keep authenticated operations on your server.
+
+### Standalone Webpack bundle
+
+If you need a standalone UMD bundle rather than npm imports in your application, the SDK repository includes a [Webpack configuration](./webpack/webpack.config.cjs). From a checkout of this repository:
+
+```sh
+npm install
+npm run build
+npm run pack
+```
+
+The configuration writes `dist/gateapi.js` with the `gateapi` global name. This is a separate packaging option, not a required step for the framework guides above. Browser-specific configuration and API access restrictions still apply.
+
+For integrations migrating from the older `crypto-browserify` + `stream-browserify` polyfill setup, the current SDK signs with Web Crypto, and the supplied Webpack configuration disables `http` and `https` fallbacks. Node HTTPS agents and `keepAlive` are unavailable in browsers.
 
 ## Use with LLMs & AI
 
@@ -15640,6 +16123,7 @@ import {
   P2PMerchantGetTransactionDetailsReq,
   P2PMerchantMyAdsListReq,
   P2PMerchantPlaceBizPushOrderReq,
+  P2PMerchantPreUploadChatFileReq,
   P2PMerchantSendChatMessageReq,
   P2PMerchantSetMerchantWorkHoursReq,
   P2PMerchantUploadChatFileReq,
@@ -15689,6 +16173,19 @@ import {
   SetStockMarginFeatureReq,
   UpdateStockOrderReq,
 } from './types/request/stock.js';
+import {
+  CancelAllStockOptionOrdersReq,
+  CloseStockOptionPositionReq,
+  CreateStockOptionOrderReq,
+  GetStockOptionChainReq,
+  GetStockOptionContractsReq,
+  GetStockOptionExpirationsReq,
+  GetStockOptionOrderHistoryReq,
+  GetStockOptionOrdersReq,
+  GetStockOptionPositionsReq,
+  GetStockOptionUnderlyingsReq,
+  UpdateStockOptionOrderReq,
+} from './types/request/stockOptions.js';
 import {
   CreateSubAccountApiKeyReq,
   CreateSubAccountReq,
@@ -15938,6 +16435,7 @@ import {
   P2PMerchantCounterpartyUserInfo,
   P2PMerchantMyAdsListData,
   P2PMerchantPaymentMethod,
+  P2PMerchantPreUploadChatFileData,
   P2PMerchantTransactionDetails,
   P2PMerchantTransactionListData,
   P2PMerchantUserInfo,
@@ -15989,6 +16487,26 @@ import {
   StockUpdateOrderResult,
   StockUserAssets,
 } from './types/response/stock.js';
+import {
+  StockOptionApiResp,
+  StockOptionCancelAllOrdersResult,
+  StockOptionCancelOrderResult,
+  StockOptionChain,
+  StockOptionClosePositionResult,
+  StockOptionContractItem,
+  StockOptionCreateOrderResult,
+  StockOptionExpirations,
+  StockOptionFeeRate,
+  StockOptionListData,
+  StockOptionOrderBook,
+  StockOptionOrderDetail,
+  StockOptionOrderHistoryItem,
+  StockOptionOrderItem,
+  StockOptionPaginatedListData,
+  StockOptionPositions,
+  StockOptionUnderlyingItem,
+  StockOptionUpdateOrderResult,
+} from './types/response/stockOptions.js';
 import {
   CreatedSubAccountAPIKey,
   SubAccount,
@@ -20157,10 +20675,23 @@ sendP2PMerchantChatMessage(
 ⋮----
 /**
    * Upload chat file
+   * @deprecated Use preUploadP2PMerchantChatFile instead.
    */
 uploadP2PMerchantChatFile(
     params: P2PMerchantUploadChatFileReq,
   ): Promise<P2PMerchantApiResp<{ file_key: string }>>
+⋮----
+/**
+   * Get credentials for a direct chat file upload (maximum 100 MiB)
+   *
+   * Upload using the returned URL and form fields. After HTTP 204, send the
+   * returned file_key with sendP2PMerchantChatMessage using type=1.
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/p2p/#pre-upload-chat-file
+   */
+preUploadP2PMerchantChatFile(
+    params: P2PMerchantPreUploadChatFileReq,
+  ): Promise<P2PMerchantApiResp<P2PMerchantPreUploadChatFileData>>
 ⋮----
 /**==========================================================================================================================
    * CROSSEX
@@ -20957,13 +21488,202 @@ getStockExchanges(): Promise<StockApiResp<StockListData<StockExchangeItem>>>
    * @returns Promise with fee rate list by VIP level
    */
 getStockFeeRate(): Promise<StockApiResp<StockListData<StockFeeRateItem>>>
+⋮----
+// ============ STOCK OPTIONS ============
+⋮----
+/**
+   * Query stock option trading fee rates
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @returns Promise with SEC, TAF, OCC, ORF, and CAT fees
+   */
+getStockOptionFeeRate(): Promise<StockOptionApiResp<StockOptionFeeRate>>
+⋮----
+/**
+   * Query stock option underlyings
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional comma-separated underlying symbols
+   * @returns Promise with underlying list
+   */
+getStockOptionUnderlyings(
+    params?: GetStockOptionUnderlyingsReq,
+  ): Promise<
+    StockOptionApiResp<StockOptionListData<StockOptionUnderlyingItem>>
+  >
+⋮----
+/**
+   * Query stock option contracts
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Underlying, optional contract filters, and pagination
+   * @returns Promise with paginated contract list
+   */
+getStockOptionContracts(
+    params: GetStockOptionContractsReq,
+  ): Promise<
+    StockOptionApiResp<StockOptionPaginatedListData<StockOptionContractItem>>
+  >
+⋮----
+/**
+   * Query stock option expiration dates
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Underlying symbol
+   * @returns Promise with expiration dates and Unix timestamps
+   */
+getStockOptionExpirations(
+    params: GetStockOptionExpirationsReq,
+  ): Promise<StockOptionApiResp<StockOptionExpirations>>
+⋮----
+/**
+   * Query a stock option chain
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Underlying, expiration date, and optional option type
+   * @returns Promise with quotes, implied volatility, and Greeks
+   */
+getStockOptionChain(
+    params: GetStockOptionChainReq,
+  ): Promise<StockOptionApiResp<StockOptionChain>>
+⋮----
+/**
+   * Query a stock option order book
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param symbol Full option contract symbol
+   * @returns Promise with best bid and ask prices, without order quantities
+   */
+getStockOptionOrderBook(
+    symbol: string,
+  ): Promise<StockOptionApiResp<StockOptionOrderBook>>
+⋮----
+/**
+   * Query current stock option positions
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional underlying, contract, and PnL valuation price filters
+   * @returns Promise with positions and total daily PnL
+   */
+getStockOptionPositions(
+    params?: GetStockOptionPositionsReq,
+  ): Promise<StockOptionApiResp<StockOptionPositions>>
+⋮----
+/**
+   * Close a stock option position
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Contract, closing quantity, and optional order parameters
+   * @returns Promise with closing order ID
+   */
+closeStockOptionPosition(
+    params: CloseStockOptionPositionReq,
+  ): Promise<StockOptionApiResp<StockOptionClosePositionResult>>
+⋮----
+/**
+   * Query current stock option orders
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional underlying, contract, and side filters
+   * @returns Promise with unfinished orders, without pagination
+   */
+getStockOptionOrders(
+    params?: GetStockOptionOrdersReq,
+  ): Promise<StockOptionApiResp<StockOptionListData<StockOptionOrderItem>>>
+⋮----
+/**
+   * Create a stock option order
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Order parameters with decimal string price and quantity
+   * @returns Promise with created order ID
+   */
+createStockOptionOrder(
+    params: CreateStockOptionOrderReq,
+  ): Promise<StockOptionApiResp<StockOptionCreateOrderResult>>
+⋮----
+/**
+   * Cancel all or filtered stock option limit orders
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional underlying, contract, and side filters
+   * @returns Promise with cancellation request result
+   */
+cancelAllStockOptionOrders(
+    params?: CancelAllStockOptionOrdersReq,
+  ): Promise<StockOptionApiResp<StockOptionCancelAllOrdersResult>>
+⋮----
+/**
+   * Query stock option order details
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param orderId Order ID as a positive integer string
+   * @returns Promise with current or finished order details
+   */
+getStockOptionOrder(
+    orderId: string,
+  ): Promise<StockOptionApiResp<StockOptionOrderDetail>>
+⋮----
+/**
+   * Modify a stock option limit order
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param orderId Order ID as a positive integer string
+   * @param params New limit price and total order quantity
+   * @returns Promise with updated order ID
+   */
+updateStockOptionOrder(
+    orderId: string,
+    params: UpdateStockOptionOrderReq,
+  ): Promise<StockOptionApiResp<StockOptionUpdateOrderResult>>
+⋮----
+/**
+   * Cancel a stock option limit order
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param orderId Order ID as a positive integer string
+   * @returns Promise with cancelled order ID
+   */
+cancelStockOptionOrder(
+    orderId: string,
+  ): Promise<StockOptionApiResp<StockOptionCancelOrderResult>>
+⋮----
+/**
+   * Query historical stock option orders
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional underlying, contract, time range, side, and pagination
+   * @returns Promise with paginated finished orders
+   */
+getStockOptionOrderHistory(
+    params?: GetStockOptionOrderHistoryReq,
+  ): Promise<
+    StockOptionApiResp<
+      StockOptionPaginatedListData<StockOptionOrderHistoryItem>
+    >
+  >
 
 ================
 File: package.json
 ================
 {
   "name": "gateio-api",
-  "version": "1.6.9",
+  "version": "1.6.10",
   "description": "Complete & Robust Node.js SDK for Gate.com's REST APIs, WebSockets & WebSocket APIs, with TypeScript declarations.",
   "scripts": {
     "clean": "rm -rf dist/*",
