@@ -273,6 +273,19 @@ import {
   UpdateStockOrderReq,
 } from './types/request/stock.js';
 import {
+  CancelAllStockOptionOrdersReq,
+  CloseStockOptionPositionReq,
+  CreateStockOptionOrderReq,
+  GetStockOptionChainReq,
+  GetStockOptionContractsReq,
+  GetStockOptionExpirationsReq,
+  GetStockOptionOrderHistoryReq,
+  GetStockOptionOrdersReq,
+  GetStockOptionPositionsReq,
+  GetStockOptionUnderlyingsReq,
+  UpdateStockOptionOrderReq,
+} from './types/request/stockOptions.js';
+import {
   CreateSubAccountApiKeyReq,
   CreateSubAccountReq,
   UpdateSubAccountApiKeyReq,
@@ -573,6 +586,26 @@ import {
   StockUpdateOrderResult,
   StockUserAssets,
 } from './types/response/stock.js';
+import {
+  StockOptionApiResp,
+  StockOptionCancelAllOrdersResult,
+  StockOptionCancelOrderResult,
+  StockOptionChain,
+  StockOptionClosePositionResult,
+  StockOptionContractItem,
+  StockOptionCreateOrderResult,
+  StockOptionExpirations,
+  StockOptionFeeRate,
+  StockOptionListData,
+  StockOptionOrderBook,
+  StockOptionOrderDetail,
+  StockOptionOrderHistoryItem,
+  StockOptionOrderItem,
+  StockOptionPaginatedListData,
+  StockOptionPositions,
+  StockOptionUnderlyingItem,
+  StockOptionUpdateOrderResult,
+} from './types/response/stockOptions.js';
 import {
   CreatedSubAccountAPIKey,
   SubAccount,
@@ -6913,5 +6946,226 @@ export class RestClient extends BaseRestClient {
    */
   getStockFeeRate(): Promise<StockApiResp<StockListData<StockFeeRateItem>>> {
     return this.get('/stock/fee-rate');
+  }
+
+  // ============ STOCK OPTIONS ============
+
+  /**
+   * Query stock option trading fee rates
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @returns Promise with SEC, TAF, OCC, ORF, and CAT fees
+   */
+  getStockOptionFeeRate(): Promise<StockOptionApiResp<StockOptionFeeRate>> {
+    return this.get('/stock_options/fee-rate');
+  }
+
+  /**
+   * Query stock option underlyings
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional comma-separated underlying symbols
+   * @returns Promise with underlying list
+   */
+  getStockOptionUnderlyings(
+    params?: GetStockOptionUnderlyingsReq,
+  ): Promise<
+    StockOptionApiResp<StockOptionListData<StockOptionUnderlyingItem>>
+  > {
+    return this.get('/stock_options/underlyings', params);
+  }
+
+  /**
+   * Query stock option contracts
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Underlying, optional contract filters, and pagination
+   * @returns Promise with paginated contract list
+   */
+  getStockOptionContracts(
+    params: GetStockOptionContractsReq,
+  ): Promise<
+    StockOptionApiResp<StockOptionPaginatedListData<StockOptionContractItem>>
+  > {
+    return this.get('/stock_options/contracts', params);
+  }
+
+  /**
+   * Query stock option expiration dates
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Underlying symbol
+   * @returns Promise with expiration dates and Unix timestamps
+   */
+  getStockOptionExpirations(
+    params: GetStockOptionExpirationsReq,
+  ): Promise<StockOptionApiResp<StockOptionExpirations>> {
+    return this.get('/stock_options/market/expirations', params);
+  }
+
+  /**
+   * Query a stock option chain
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Underlying, expiration date, and optional option type
+   * @returns Promise with quotes, implied volatility, and Greeks
+   */
+  getStockOptionChain(
+    params: GetStockOptionChainReq,
+  ): Promise<StockOptionApiResp<StockOptionChain>> {
+    return this.get('/stock_options/market/chain', params);
+  }
+
+  /**
+   * Query a stock option order book
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param symbol Full option contract symbol
+   * @returns Promise with best bid and ask prices, without order quantities
+   */
+  getStockOptionOrderBook(
+    symbol: string,
+  ): Promise<StockOptionApiResp<StockOptionOrderBook>> {
+    return this.get(`/stock_options/market/${symbol}/orderbook`);
+  }
+
+  /**
+   * Query current stock option positions
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional underlying, contract, and PnL valuation price filters
+   * @returns Promise with positions and total daily PnL
+   */
+  getStockOptionPositions(
+    params?: GetStockOptionPositionsReq,
+  ): Promise<StockOptionApiResp<StockOptionPositions>> {
+    return this.getPrivate('/stock_options/positions', params);
+  }
+
+  /**
+   * Close a stock option position
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Contract, closing quantity, and optional order parameters
+   * @returns Promise with closing order ID
+   */
+  closeStockOptionPosition(
+    params: CloseStockOptionPositionReq,
+  ): Promise<StockOptionApiResp<StockOptionClosePositionResult>> {
+    return this.postPrivate('/stock_options/positions/close', { body: params });
+  }
+
+  /**
+   * Query current stock option orders
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional underlying, contract, and side filters
+   * @returns Promise with unfinished orders, without pagination
+   */
+  getStockOptionOrders(
+    params?: GetStockOptionOrdersReq,
+  ): Promise<StockOptionApiResp<StockOptionListData<StockOptionOrderItem>>> {
+    return this.getPrivate('/stock_options/orders', params);
+  }
+
+  /**
+   * Create a stock option order
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Order parameters with decimal string price and quantity
+   * @returns Promise with created order ID
+   */
+  createStockOptionOrder(
+    params: CreateStockOptionOrderReq,
+  ): Promise<StockOptionApiResp<StockOptionCreateOrderResult>> {
+    return this.postPrivate('/stock_options/orders', { body: params });
+  }
+
+  /**
+   * Cancel all or filtered stock option limit orders
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional underlying, contract, and side filters
+   * @returns Promise with cancellation request result
+   */
+  cancelAllStockOptionOrders(
+    params?: CancelAllStockOptionOrdersReq,
+  ): Promise<StockOptionApiResp<StockOptionCancelAllOrdersResult>> {
+    return this.deletePrivate('/stock_options/orders', { body: params });
+  }
+
+  /**
+   * Query stock option order details
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param orderId Order ID as a positive integer string
+   * @returns Promise with current or finished order details
+   */
+  getStockOptionOrder(
+    orderId: string,
+  ): Promise<StockOptionApiResp<StockOptionOrderDetail>> {
+    return this.getPrivate(`/stock_options/orders/${orderId}`);
+  }
+
+  /**
+   * Modify a stock option limit order
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param orderId Order ID as a positive integer string
+   * @param params New limit price and total order quantity
+   * @returns Promise with updated order ID
+   */
+  updateStockOptionOrder(
+    orderId: string,
+    params: UpdateStockOptionOrderReq,
+  ): Promise<StockOptionApiResp<StockOptionUpdateOrderResult>> {
+    return this.putPrivate(`/stock_options/orders/${orderId}`, {
+      body: params,
+    });
+  }
+
+  /**
+   * Cancel a stock option limit order
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param orderId Order ID as a positive integer string
+   * @returns Promise with cancelled order ID
+   */
+  cancelStockOptionOrder(
+    orderId: string,
+  ): Promise<StockOptionApiResp<StockOptionCancelOrderResult>> {
+    return this.deletePrivate(`/stock_options/orders/${orderId}`);
+  }
+
+  /**
+   * Query historical stock option orders
+   *
+   * https://www.gate.com/docs/developers/apiv4/en/stockoptions/
+   *
+   * @param params Optional underlying, contract, time range, side, and pagination
+   * @returns Promise with paginated finished orders
+   */
+  getStockOptionOrderHistory(
+    params?: GetStockOptionOrderHistoryReq,
+  ): Promise<
+    StockOptionApiResp<
+      StockOptionPaginatedListData<StockOptionOrderHistoryItem>
+    >
+  > {
+    return this.getPrivate('/stock_options/orders/history', params);
   }
 }
