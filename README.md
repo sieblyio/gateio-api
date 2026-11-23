@@ -33,7 +33,9 @@ ws.subscribe({ topic: 'spot.tickers', payload: ['BTC_USDT'] }, 'spotV4');
 - heartbeat
 - resubscribe
 
-Updated & performant JavaScript & Node.js SDK for the Gate.com (gate.io) REST APIs and WebSockets:
+Updated & performant JavaScript & Node.js SDK for the Gate.com (gate.io) REST APIs and WebSockets.
+
+Take a look at our dedicated [Gate.io API quickstart guides for major frameworks and JavaScript runtimes](#frameworks--quickstart-guides).
 
 - Professional, robust & performant Gate.com SDK with extensive production use in live trading environments.
 - Extensive integration with Gate.com (Gate.io) REST APIs and WebSockets.
@@ -70,6 +72,7 @@ Updated & performant JavaScript & Node.js SDK for the Gate.com (gate.io) REST AP
 ## Table of Contents
 
 - [Installation](#installation)
+  - [Frameworks & Quickstart Guides](#frameworks--quickstart-guides)
 - [Examples](#examples)
 - [Issues & Discussion](#issues--discussion)
 - [Related Projects](#related-projects)
@@ -93,6 +96,20 @@ Updated & performant JavaScript & Node.js SDK for the Gate.com (gate.io) REST AP
 ## Installation
 
 `npm install --save gateio-api`
+
+### Frameworks & Quickstart Guides
+
+Our complete Gate.io SDK supports all the major JavaScript runtimes. For maximum convenience, we've included guides to quickly get you started with the most popular runtimes. If you're not sure how to use this SDK with a runtime or framework not listed here, feel free to [open an issue on GitHub](https://github.com/sieblyio/gateio-api/issues).
+
+| Runtime                    | Details                                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Backend (trading bots)     | Using [Node.js and JavaScript](https://sieblyio.github.io/docs/gateio/environments/node.html), [Node.js and TypeScript](https://sieblyio.github.io/docs/gateio/environments/typescript.html), [Bun](https://sieblyio.github.io/docs/gateio/environments/bun.html), or [Deno](https://sieblyio.github.io/docs/gateio/environments/deno.html). This is the recommendation for algorithmic trading systems. |
+| Frontend / Web Development | Using [React with Vite](https://sieblyio.github.io/docs/gateio/environments/react.html) or [Vite with plain JavaScript](https://sieblyio.github.io/docs/gateio/environments/vite.html). Display REST and WebSocket prices in the browser.                                                                                                                                                                |
+| Next.js App Router         | Using the [Next.js App Router](https://sieblyio.github.io/docs/gateio/environments/next.html) to serve the price from a Route Handler running on Node.js.                                                                                                                                                                                                                                                |
+| Mobile (iOS & Android)     | Using [React Native with Expo for iOS and Android](https://sieblyio.github.io/docs/gateio/environments/expo.html). The example guides you to display the current BTC_USDT price from Gate.io and stream updates over WebSockets.                                                                                                                                                                         |
+| Cloudflare Workers         | [Cloudflare Workers](https://sieblyio.github.io/docs/gateio/environments/cloudflare-workers.html). Return a public price from a Worker, with a separate example for authenticated orders.                                                                                                                                                                                                                |
+
+Refer to [runtime setup](https://sieblyio.github.io/docs/gateio/compatibility.html) for installation commands, project configuration, and public price examples.
 
 ## Examples
 
@@ -136,11 +153,13 @@ Check out our JavaScript/TypeScript/Node.js SDKs & Projects:
 
 ## Documentation
 
+The [Gate.io SDK documentation](https://sieblyio.github.io/docs/gateio/) covers installation, client setup, public market data, authenticated trading, and WebSocket subscriptions.
+
 Most methods accept JS objects. These can be populated using parameters specified by Gate.com's API documentation, or check the type definition in each class within this repository.
 
 ### API Documentation Links
 
-- [Gate.com/gate.io API Documentation](https://www.gate.com/docs/developers/apiv4/en/)
+- [Gate.com (Gate.io) exchange API reference](https://www.gate.com/docs/developers/apiv4/en/)
   - [Spot Trading API](https://www.gate.com/docs/developers/apiv4/en/#spot-new)
   - [Margin Trading API](https://www.gate.com/docs/developers/apiv4/en/#margin-new)
   - [Futures Trading API](https://www.gate.com/docs/developers/apiv4/en/#futures-new)
