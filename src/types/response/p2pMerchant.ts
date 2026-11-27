@@ -9,6 +9,15 @@ export interface P2PMerchantApiResp<T> {
   version: string;
 }
 
+export interface P2PMerchantPreUploadChatFileData {
+  /** Direct upload URL; credentials expire after 45 minutes */
+  url?: string;
+  /** Submit all signed form fields unchanged, with the file field last */
+  fields?: Record<string, string>;
+  /** After a successful upload, send this as message with type=1 */
+  file_key?: string;
+}
+
 export interface P2PMerchantUserInfo {
   is_self?: boolean;
   user_timest?: string;
