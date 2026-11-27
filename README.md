@@ -73,6 +73,7 @@ Take a look at our dedicated [Gate.io API quickstart guides for major frameworks
 
 - [Installation](#installation)
   - [Frameworks & Quickstart Guides](#frameworks--quickstart-guides)
+  - [Try it in the browser](#try-it-in-the-browser)
 - [Examples](#examples)
 - [Issues & Discussion](#issues--discussion)
 - [Related Projects](#related-projects)
@@ -113,6 +114,15 @@ Our complete Gate.io SDK supports all the major JavaScript runtimes. For maximum
 | Cloudflare Workers         | [Cloudflare Workers](https://sieblyio.github.io/docs/gateio/environments/cloudflare-workers.html). Return a public price from a Worker, with a separate example for authenticated orders.                                                                                                                                                                                                                |
 
 Refer to [runtime setup](https://sieblyio.github.io/docs/gateio/compatibility.html) for installation commands, project configuration, and public price examples.
+
+### Try it in the browser
+
+- Node.js / JavaScript: [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/sieblyio/docs/tree/main/starters/gateio/node?title=Gate.io%20Node.js%20%2F%20JavaScript%20starter)
+- Node.js / TypeScript: [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/sieblyio/docs/tree/main/starters/gateio/typescript?title=Gate.io%20Node.js%20%2F%20TypeScript%20starter)
+- Vite (plain JavaScript): [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](<https://stackblitz.com/fork/github/sieblyio/docs/tree/main/starters/gateio/vite?title=Gate.io%20Vite%20(plain%20JavaScript)%20starter>)
+- React: [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/sieblyio/docs/tree/main/starters/gateio/react?title=Gate.io%20React%20starter)
+
+No account is needed. Keep API keys out of public sandboxes.
 
 ## Examples
 
